@@ -1,0 +1,106 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://maven.eveoh.nl/content/repositories/releases"
+        }
+    }
+    dependencies {
+      classpath "io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE"
+      classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
+      classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+    }
+}
+
+
+plugins {
+    id 'net.researchgate.release' version '2.4.1'
+    id "com.jfrog.bintray" version "1.7"
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: "spring-boot"
+apply plugin: "io.spring.dependency-management"
+
+apply from: 'build-docker.gradle'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+description = 'EPAM Report portal. SSO Authorization Service'
+
+repositories {
+    mavenCentral()
+    maven { url  "http://dl.bintray.com/epam/reportportal" }
+
+    maven { url 'https://repo.spring.io/libs-milestone' }
+
+    maven { url "http://jasperreports.sourceforge.net/maven2" }
+    maven { url "http://jaspersoft.artifactoryonline.com/jaspersoft/third-party-ce-artifacts" }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-starter-parent:Camden.RC1"
+
+    }
+}
+
+dependencies {
+    compile 'com.epam.reportportal:commons-dao:2.6.0'
+    compile 'com.epam.reportportal:commons-rules:2.6.0'
+    compile 'javax.inject:javax.inject:1'
+
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
+    compile 'org.springframework.cloud:spring-cloud-starter-security'
+    compile 'org.springframework.cloud:spring-cloud-starter-eureka'
+
+
+    compile 'org.springframework.cloud:spring-cloud-starter-config'
+    compile 'org.springframework.retry:spring-retry'
+
+    compile('org.hibernate:hibernate-validator:5.0.2.Final') {
+        exclude(module: 'validation-api')
+    }
+
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.springframework.boot:spring-boot-test'
+    testCompile 'org.springframework:spring-test'
+
+
+}
+
+/** Starting from 1.4 Spring Boot uses very strange repackage model which does not allow this JAR to be used as dependency
+ * So package jar by hands */
+task copyRuntimeLibs(type: Copy) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+}
+
+build.dependsOn(copyRuntimeLibs)
+
+
+jar {
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    manifest {
+        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
+                'Implementation-Version': version,
+                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
+                'Class-Path': configurations.runtime.files.collect {"lib/$it.name"}.join(' ')
+
+    }
+
+}
+
+
+bootRepackage {
+    enabled = false
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}

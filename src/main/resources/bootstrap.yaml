@@ -1,0 +1,37 @@
+
+info:
+  build:
+    name: Authorization Service
+    description: Authorization Service
+    version: '@version@'
+
+spring:
+  application:
+    name: uat
+  cloud:
+    config:
+      uri: http://${reportportal.config.server.host:localhost}:8761/configs
+      failFast: true
+      # Wait for config server to start
+      retry:
+        max-attempts: 20
+        initial-interval: 3000
+logging:
+  level:
+    org.springframework.security: debug
+
+# GitHUB Oauth Configuration
+github:
+  client:
+    clientId: 98b0a00f59294c9f27b4
+    clientSecret: 5a49e93ca2ae6bed3e117964c3517b5fbd1b37f5
+    accessTokenUri: https://github.com/login/oauth/access_token
+    userAuthorizationUri: https://github.com/login/oauth/authorize
+    clientAuthenticationScheme: form
+    scope: user,read:org
+  resource:
+    userInfoUri: https://api.github.com/user
+security:
+  sessions: stateless
+  basic:
+    enabled: false

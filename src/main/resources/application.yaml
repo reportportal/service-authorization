@@ -1,0 +1,55 @@
+server:
+  port: 9999
+
+# Eureka Configuration
+eureka:
+  instance:
+    hostname: ${reportportal.eureka.instance.hostname:localhost}
+  client:
+    serviceUrl:
+      defaultZone: http://${reportportal.eureka.hostname:localhost}:8761/eureka/
+
+spring:
+  # Redis Configuration
+  redis:
+    host: ${reportportal.redis.host:docker.local}
+    port: 6379
+  # Enable MongoDB repositories
+  data:
+    mongodb:
+      repositories:
+        enabled: true
+
+
+# MongoDB configuration
+rp:
+   session:
+        live: 1800
+   mongo:
+        host: ${reportportal.mongo.host:docker.local}
+        port: 27017
+        dbName: reportportal
+#        user: user
+#        password: 1q2w3e
+        connectionsPerHost: 50
+        threadsAllowedToBlockForConnectionMultiplier: 50
+        connectTimeout: 20000
+        socketTimeout: 60000
+        maxWaitTime: 120000
+        autoConnectRetry: true
+        socketKeepAlive: true
+        slaveOk: true
+        writeTimeout: 0
+        writeNumber: 1
+        writeFsync: false
+   cache:
+        project:
+          size: 1000
+          expiration: 1
+          info: 10
+        ticket:
+          size: 10000
+          expiration: 5
+        user:
+          size: 1000
+          expiration: 60
