@@ -69,7 +69,7 @@ public final class PersonalProjectUtils {
 		project.setAddInfo("Personal project of " + user.getFullName());
 		project.setConfiguration(defaultConfiguration());
 
-			/* Default email configuration */
+		/* Default email configuration */
 		ProjectUtils.setDefaultEmailCofiguration(project);
 
 		return project;
@@ -82,8 +82,8 @@ public final class PersonalProjectUtils {
 		Project.Configuration defaultConfig = new Project.Configuration();
 		defaultConfig.setEntryType(EntryType.PERSONAL);
 		defaultConfig.setInterruptJobTime(InterruptionJobDelay.ONE_DAY.getValue());
-		defaultConfig.setKeepLogs(KeepLogsDelay.THREE_MONTHS.getValue());
-		defaultConfig.setKeepScreenshots(KeepScreenshotsDelay.ONE_MONTH.getValue());
+		defaultConfig.setKeepLogs(KeepLogsDelay.TWO_WEEKS.getValue());
+		defaultConfig.setKeepScreenshots(KeepScreenshotsDelay.ONE_WEEK.getValue());
 		defaultConfig.setProjectSpecific(ProjectSpecific.DEFAULT);
 		defaultConfig.setStatisticsCalculationStrategy(StatisticsCalculationStrategy.TEST_BASED);
 		defaultConfig.setExternalSystem(new ArrayList<>());
