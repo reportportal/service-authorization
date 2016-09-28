@@ -34,64 +34,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth.github;
+package com.epam.reportportal.auth.integration.github;
 
-import com.google.common.base.MoreObjects;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Represents response from GET /user/emails GitHub API
+ * Represents response from GET /user GitHub API
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-class EmailResource {
+class UserResource {
 
+	public String login;
 	public String email;
-	public boolean verified;
-	public boolean primary;
+	public String name;
+	@JsonProperty("avatar_url")
+	public String avatarUrl;
 
-	public String getEmail() {
-		return email;
+	public Map<String, Object> details = new HashMap<>();
+
+	@JsonAnyGetter
+	public Map<String, Object> any() {
+		return details;
 	}
 
-	public boolean isVerified() {
-		return verified;
+	@JsonAnySetter
+	public void setUnknown(String name, Object value) {
+		details.put(name, value);
 	}
 
-	public boolean isPrimary() {
-		return primary;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public void setVerified(boolean verified) {
-		this.verified = verified;
-	}
-
-	public void setPrimary(boolean primary) {
-		this.primary = primary;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		EmailResource that = (EmailResource) o;
-		return verified == that.verified && primary == that.primary && Objects.equals(email, that.email);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(email, verified, primary);
-	}
-
-	@Override
-	public String toString() {
-		return MoreObjects.toStringHelper(this).add("email", email).add("verified", verified).add("primary", primary).toString();
-	}
 }

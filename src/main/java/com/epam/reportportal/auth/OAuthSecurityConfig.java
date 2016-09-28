@@ -36,8 +36,8 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.github.GitHubTokenServices;
-import com.epam.reportportal.auth.github.GitHubUserReplicator;
+import com.epam.reportportal.auth.integration.github.GitHubTokenServices;
+import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
@@ -82,6 +82,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private GitHubUserReplicator githubReplicator;
+
+	@Autowired
+	private OAuthSuccessHandler authSuccessHandler;
 
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
@@ -138,6 +141,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		githubFilter.setRestTemplate(githubTemplate);
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator);
 		githubFilter.setTokenServices(tokenServices);
+		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
 		return Collections.singletonList(githubFilter);
 	}
 

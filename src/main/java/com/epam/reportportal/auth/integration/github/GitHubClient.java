@@ -1,4 +1,4 @@
-package com.epam.reportportal.auth.github;
+package com.epam.reportportal.auth.integration.github;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;

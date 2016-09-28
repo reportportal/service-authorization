@@ -1,7 +1,8 @@
-package com.epam.reportportal.auth.github;
+package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.AuthUtils;
 import com.epam.ta.reportportal.database.entity.user.User;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -9,6 +10,9 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Token services for GitHub account info with internal ReportPortal's database
@@ -29,7 +33,9 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 
 		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getId(), "N/A",
 				AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
-		OAuth2Request request = new OAuth2Request(null, null, null, true, null, null, null, null, null);
+
+		Map<String, Serializable> extensionProperties =  ImmutableMap.<String, Serializable>builder().put("upstream_token", accessToken).build();
+		OAuth2Request request = new OAuth2Request(null, null, null, true, null, null, null, null, extensionProperties);
 		return new OAuth2Authentication(request, token);
 	}
 
