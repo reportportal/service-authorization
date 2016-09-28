@@ -50,30 +50,30 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * UUID should not be used for UI authentication.
+ * Checks whether client have more auth errors than defined and throws exception if so
  *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvider {
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private UiAuthenticationFailureEventHandler failureEventHandler;
+	@Autowired
+	private UiAuthenticationFailureEventHandler failureEventHandler;
 
-    @Autowired
-    private Provider<HttpServletRequest> request;
+	@Autowired
+	private Provider<HttpServletRequest> request;
 
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
-        if (!accountNonLocked) {
-            BusinessRule.fail().withError(ErrorType.ADDRESS_LOCKED);
-        }
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
+		if (!accountNonLocked) {
+			BusinessRule.fail().withError(ErrorType.ADDRESS_LOCKED);
+		}
 
-        Authentication auth = super.authenticate(authentication);
-        eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
-        return auth;
-    }
+		Authentication auth = super.authenticate(authentication);
+		eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
+		return auth;
+	}
 }

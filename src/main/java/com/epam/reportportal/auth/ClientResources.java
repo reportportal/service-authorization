@@ -43,7 +43,7 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 /**
  * Added to avoid having several resource details beans in the application context
  *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public class ClientResources {
 

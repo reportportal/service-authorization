@@ -60,19 +60,19 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
 /**
- * @author Andrei Varabyeu
+ * Set of general Security configs. This class is not supposed to be extended
+ *
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 
 class PrimarySecurityConfigs {
-
 
 	@Configuration
 	@EnableResourceServer
 	protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
-			http.antMatcher("/sso/me/**").authorizeRequests()
-					.anyRequest().authenticated();
+			http.antMatcher("/sso/me/**").authorizeRequests().anyRequest().authenticated();
 		}
 	}
 

@@ -42,13 +42,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 /**
  * @author Andrei Varabyeu
  */
-class AuthUtils {
+public class AuthUtils {
 
-	static final Function<UserRole, Collection<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections
+	public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections
 			.singletonList(new SimpleGrantedAuthority(userRole.getAuthority()));
 }

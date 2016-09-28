@@ -36,15 +36,20 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.github.GitHubTokenServices;
+import com.epam.reportportal.auth.github.GitHubUserReplicator;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
+import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
+import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -55,26 +60,38 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Main Security Extension Point.
  *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Configuration
 @EnableOAuth2Client
 @Order(6)
-@ConditionalOnMissingBean(OAuthSecurityConfig.class)
+@Conditional(OAuthSecurityConfig.HasExtensionsCondition.class)
 public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private static final String SSO_LOGIN_PATH = "/sso/login";
+	protected static final String SSO_LOGIN_PATH = "/sso/login";
 
 	@Autowired
 	private OAuth2ClientContext oauth2ClientContext;
 
-	protected List<OAuth2ClientAuthenticationProcessingFilter> getAdditionalFilters(OAuth2ClientContext oauth2ClientContext) throws Exception{
+	@Autowired
+	private GitHubUserReplicator githubReplicator;
+
+	/**
+	 * Extension point. Other Implementations can add their own OAuth processing filters
+	 *
+	 * @param oauth2ClientContext OAuth Client context
+	 * @return List of additional OAuth processing filters
+	 * @throws Exception in case of error
+	 */
+	protected List<OAuth2ClientAuthenticationProcessingFilter> getAdditionalFilters(OAuth2ClientContext oauth2ClientContext)
+			throws Exception {
 		return Collections.emptyList();
 	}
 
@@ -119,9 +136,30 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 				SSO_LOGIN_PATH + "/github");
 		OAuth2RestTemplate githubTemplate = new OAuth2RestTemplate(github().getClient(), oauth2ClientContext);
 		githubFilter.setRestTemplate(githubTemplate);
-		githubFilter
-				.setTokenServices(new UserInfoTokenServices(github().getResource().getUserInfoUri(), github().getResource().getClientId()));
+		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator);
+		githubFilter.setTokenServices(tokenServices);
 		return Collections.singletonList(githubFilter);
+	}
+
+	/**
+	 * Condition. Load this config is there are no subclasses in the application context
+	 */
+	protected static class HasExtensionsCondition extends SpringBootCondition {
+
+		@Override
+		public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+			String[] enablers = context.getBeanFactory().getBeanNamesForAnnotation(EnableOAuth2Client.class);
+			boolean extensions = Arrays.stream(enablers)
+					.filter(name -> !context.getBeanFactory().getType(name).equals(OAuthSecurityConfig.class))
+					.filter(name -> context.getBeanFactory().isTypeMatch(name, OAuthSecurityConfig.class)).findAny().isPresent();
+			if (extensions) {
+				return ConditionOutcome.noMatch("found @EnableOAuth2Client on a OAuthSecurityConfig subclass");
+			} else {
+				return ConditionOutcome.match("found no @EnableOAuth2Client on a OAuthSecurityConfig subsclass");
+			}
+
+		}
+
 	}
 
 }

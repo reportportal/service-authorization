@@ -32,7 +32,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * Spring's {@link UserDetailsService} implementation. Uses {@link User} entity
  * from ReportPortal database
  *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 class DatabaseUserDetailsService implements UserDetailsService {
 

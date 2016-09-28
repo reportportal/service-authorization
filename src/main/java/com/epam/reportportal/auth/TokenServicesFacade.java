@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
 /**
  * Facade for {@link org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices} to simplify work with them
  *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Service
 public class TokenServicesFacade {
@@ -97,13 +97,13 @@ public class TokenServicesFacade {
 	public OAuth2AccessToken createToken(ReportPortalClient client, String username,
 			Authentication userAuthentication) {
 		//@formatter:off
-		ClientDetails apiClient = clientDetailsService.loadClientByClientId(client.name());
-		OAuth2Request oAuth2Request = oAuth2RequestFactory.createOAuth2Request(apiClient, oAuth2RequestFactory.createTokenRequest(
+		ClientDetails clientDetails = clientDetailsService.loadClientByClientId(client.name());
+		OAuth2Request oAuth2Request = oAuth2RequestFactory.createOAuth2Request(clientDetails, oAuth2RequestFactory.createTokenRequest(
 				ImmutableMap.<String, String>builder()
 						.put("client_id", client.name())
 						.put("username", username)
 						.put("grant", "password")
-						.build(), apiClient));
+						.build(), clientDetails));
 		//@formatter:on
 		return tokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
 	}
