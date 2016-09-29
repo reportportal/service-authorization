@@ -47,7 +47,7 @@ public final class PersonalProjectUtils {
 	 * @return Corresponding personal project name
 	 */
 	public static String personalProjectName(String username) {
-		return username + "'s project";
+		return (username + "'s project").toLowerCase();
 	}
 
 	/**

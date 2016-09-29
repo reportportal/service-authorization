@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.personal.PersonalProjectUtils;
+import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
@@ -30,12 +31,14 @@ import com.epam.ta.reportportal.database.entity.ProjectRole;
 import com.epam.ta.reportportal.database.entity.project.EntryType;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -43,6 +46,7 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Date;
+import java.util.function.Predicate;
 
 /**
  * Replicates GitHub account info with internal ReportPortal's database
@@ -81,13 +85,16 @@ public class GitHubUserReplicator {
 			user.setLogin(login);
 
 			String email = userInfo.email;
-			if (!Strings.isNullOrEmpty(email)) {
-				user.setEmail(email);
-			} else {
+			if (Strings.isNullOrEmpty(email)) {
 				user.setEmail(
 						gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
 								.get().getEmail());
 			}
+			if (userRepository.emailExists(email)){
+				throw new OAuth2AccessDeniedException("User with email '" + email + "' already exists");
+			}
+			user.setEmail(email.toLowerCase());
+
 
 			if (!Strings.isNullOrEmpty(userInfo.name)) {
 				user.setFullName(userInfo.name);
@@ -140,6 +147,7 @@ public class GitHubUserReplicator {
 	}
 
 	//TODO assign once work on demo project has finished
+
 	/**
 	 * Assigns user to the default project
 	 *
