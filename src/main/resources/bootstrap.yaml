@@ -16,9 +16,6 @@ spring:
       retry:
         max-attempts: 20
         initial-interval: 3000
-logging:
-  level:
-    org.springframework.security: debug
 
 # GitHUB Oauth Configuration
 github:
