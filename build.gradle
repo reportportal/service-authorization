@@ -25,6 +25,7 @@ apply plugin: "spring-boot"
 apply plugin: "io.spring.dependency-management"
 
 apply from: 'build-docker.gradle'
+apply from: 'build-quaility.gradle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
