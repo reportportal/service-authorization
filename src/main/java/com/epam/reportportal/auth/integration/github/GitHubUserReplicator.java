@@ -26,6 +26,7 @@ import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
 import com.epam.ta.reportportal.database.entity.Project;
+import com.epam.ta.reportportal.database.entity.ProjectRole;
 import com.epam.ta.reportportal.database.entity.project.EntryType;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Date;
 
 /**
@@ -135,5 +137,19 @@ public class GitHubUserReplicator {
 			projectRepository.save(personalProject);
 		}
 		return personalProject;
+	}
+
+	//TODO assign once work on demo project has finished
+	/**
+	 * Assigns user to the default project
+	 *
+	 * @param user User to be assigned
+	 */
+	private void assignToDefaultProject(User user) {
+		Project.UserConfig userConfig = new Project.UserConfig();
+		userConfig.setProjectRole(ProjectRole.MEMBER);
+		userConfig.setProposedRole(ProjectRole.MEMBER);
+		projectRepository.addUsers("demo_project", Collections.singletonMap(user.getId(), userConfig));
+
 	}
 }
