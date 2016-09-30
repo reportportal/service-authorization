@@ -49,7 +49,7 @@ dependencyManagement {
 }
 
 dependencies {
-    compile 'com.epam.reportportal:commons-dao:2.6.1-SNAPSHOT'
+    compile 'com.epam.reportportal:commons-dao:2.6.1'
     compile 'com.epam.reportportal:commons-rules:2.6.0'
     compile 'javax.inject:javax.inject:1'
 

@@ -31,6 +31,7 @@ import com.epam.ta.reportportal.database.entity.ProjectRole;
 import com.epam.ta.reportportal.database.entity.project.EntryType;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
+import com.epam.ta.reportportal.database.entity.user.UserType;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
@@ -106,7 +107,7 @@ public class GitHubUserReplicator {
 			metaInfo.setSynchronizationDate(now);
 			user.setMetaInfo(metaInfo);
 
-			user.setEntryType(EntryType.INTERNAL);
+			user.setType(UserType.GITHUB);
 			user.setRole(UserRole.USER);
 			Object avatar_url = userInfo.avatarUrl;
 			if (null != avatar_url) {
