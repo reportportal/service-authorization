@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import java.sql.Date;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Generates Personal project for provided user
@@ -86,7 +87,7 @@ public final class PersonalProjectUtils {
 		defaultConfig.setKeepScreenshots(KeepScreenshotsDelay.ONE_WEEK.getValue());
 		defaultConfig.setProjectSpecific(ProjectSpecific.DEFAULT);
 		defaultConfig.setStatisticsCalculationStrategy(StatisticsCalculationStrategy.TEST_BASED);
-		defaultConfig.setExternalSystem(new ArrayList<>());
+		defaultConfig.setExternalSystem(Collections.emptyList());
 		defaultConfig.setIsAutoAnalyzerEnabled(false);
 
 		return defaultConfig;

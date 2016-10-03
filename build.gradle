@@ -34,7 +34,6 @@ description = 'EPAM Report portal. SSO Authorization Service'
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven { url  "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
     maven { url "http://jasperreports.sourceforge.net/maven2" }

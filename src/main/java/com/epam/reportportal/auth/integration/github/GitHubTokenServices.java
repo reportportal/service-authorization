@@ -32,6 +32,7 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -54,7 +55,7 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getId(), "N/A",
 				AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
 
-		Map<String, Serializable> extensionProperties =  ImmutableMap.<String, Serializable>builder().put("upstream_token", accessToken).build();
+		Map<String, Serializable> extensionProperties = Collections.singletonMap("upstream_token", accessToken);
 		OAuth2Request request = new OAuth2Request(null, null, null, true, null, null, null, null, extensionProperties);
 		return new OAuth2Authentication(request, token);
 	}
