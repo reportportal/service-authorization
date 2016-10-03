@@ -5,6 +5,7 @@ MAINTAINER Andrei Varabyeu <andrei_varabyeu@epam.com>
 RUN apk --no-cache add ttf-droid
 
 VOLUME /tmp
+ADD lib /lib
 ADD ${project.name}-${version}.jar app.jar
 
 RUN sh -c 'touch /app.jar'
