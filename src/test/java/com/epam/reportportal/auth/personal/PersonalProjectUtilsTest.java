@@ -38,7 +38,7 @@ public class PersonalProjectUtilsTest {
 	@Test
 	public void personalProjectName() throws Exception {
 		Assert.assertThat("Generated personal space name is incorrect", PersonalProjectUtils.personalProjectName("John"),
-				Matchers.is("John's project"));
+				Matchers.is("john_personal".toLowerCase()));
 	}
 
 	@Test
