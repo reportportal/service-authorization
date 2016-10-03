@@ -17,17 +17,6 @@ spring:
         max-attempts: 20
         initial-interval: 3000
 
-# GitHUB Oauth Configuration
-github:
-  client:
-    clientId: 98b0a00f59294c9f27b4
-    clientSecret: 5a49e93ca2ae6bed3e117964c3517b5fbd1b37f5
-    accessTokenUri: https://github.com/login/oauth/access_token
-    userAuthorizationUri: https://github.com/login/oauth/authorize
-    clientAuthenticationScheme: form
-    scope: user
-  resource:
-    userInfoUri: https://api.github.com/user
 security:
   sessions: stateless
   basic:
