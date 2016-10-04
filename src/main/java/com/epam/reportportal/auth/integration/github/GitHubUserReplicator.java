@@ -21,18 +21,16 @@
 package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.personal.PersonalProjectUtils;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
 import com.epam.ta.reportportal.database.entity.Project;
 import com.epam.ta.reportportal.database.entity.ProjectRole;
-import com.epam.ta.reportportal.database.entity.project.EntryType;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.database.entity.user.UserType;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.database.search.Filter;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,8 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Date;
-import java.util.function.Predicate;
+
+import static com.epam.ta.reportportal.database.search.FilterCondition.builder;
 
 /**
  * Replicates GitHub account info with internal ReportPortal's database
@@ -91,7 +90,7 @@ public class GitHubUserReplicator {
 						gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
 								.get().getEmail();
 			}
-			if (userRepository.emailExists(email)){
+			if (userRepository.exists(Filter.builder().withCondition(builder().eq("email", email).build()).build())){
 				throw new OAuth2AccessDeniedException("User with email '" + email + "' already exists");
 			}
 			user.setEmail(email.toLowerCase());
