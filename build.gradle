@@ -35,9 +35,6 @@ description = 'EPAM Report portal. SSO Authorization Service'
 repositories {
     mavenCentral()
     maven { url  "http://dl.bintray.com/epam/reportportal" }
-    maven { url 'https://repo.spring.io/libs-milestone' }
-    maven { url "http://jasperreports.sourceforge.net/maven2" }
-    maven { url "http://jaspersoft.artifactoryonline.com/jaspersoft/third-party-ce-artifacts" }
 }
 
 dependencyManagement {
@@ -48,7 +45,7 @@ dependencyManagement {
 }
 
 dependencies {
-    compile 'com.epam.reportportal:commons-dao:2.6.1'
+    compile 'com.epam.reportportal:commons-dao:2.6.2'
     compile 'com.epam.reportportal:commons-rules:2.6.0'
     compile 'javax.inject:javax.inject:1'
 
