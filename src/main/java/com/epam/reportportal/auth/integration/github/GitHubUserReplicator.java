@@ -87,9 +87,9 @@ public class GitHubUserReplicator {
 
 			String email = userInfo.email;
 			if (Strings.isNullOrEmpty(email)) {
-				user.setEmail(
+				email =
 						gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
-								.get().getEmail());
+								.get().getEmail();
 			}
 			if (userRepository.emailExists(email)){
 				throw new OAuth2AccessDeniedException("User with email '" + email + "' already exists");
