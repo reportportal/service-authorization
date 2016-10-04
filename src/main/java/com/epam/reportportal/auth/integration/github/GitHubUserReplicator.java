@@ -90,7 +90,7 @@ public class GitHubUserReplicator {
 						gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
 								.get().getEmail();
 			}
-			if (userRepository.exists(Filter.builder().withCondition(builder().eq("email", email).build()).build())){
+			if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())){
 				throw new OAuth2AccessDeniedException("User with email '" + email + "' already exists");
 			}
 			user.setEmail(email.toLowerCase());
