@@ -58,8 +58,7 @@ class PrimarySecurityConfigs {
 		public void configure(HttpSecurity http) throws Exception {
 			http.antMatcher("/sso/me/**").authorizeRequests()
 					.anyRequest().authenticated()
-			.and().antMatcher("/sso/internal/**").authorizeRequests()
-					.anyRequest().hasRole("INTERNAL");
+				.antMatchers("/sso/internal/**").hasRole("INTERNAL");
 		}
 	}
 
