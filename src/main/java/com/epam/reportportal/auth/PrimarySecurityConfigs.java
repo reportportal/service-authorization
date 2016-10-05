@@ -56,9 +56,12 @@ class PrimarySecurityConfigs {
 	protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
-			http.antMatcher("/sso/**").authorizeRequests()
-				.antMatchers("/sso/me/**").authenticated()
-				.antMatchers("/sso/internal/**").hasRole("INTERNAL");
+			http.requestMatchers()
+					.antMatchers("/sso/me/**", "/sso/internal/**")
+					.and()
+					.authorizeRequests()
+						.anyRequest().authenticated()
+						.antMatchers("/sso/internal/**").hasRole("INTERNAL");
 		}
 	}
 
