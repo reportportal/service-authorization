@@ -69,12 +69,6 @@ public class SsoEndpoint {
 		return new OperationCompletionRS(String.format("Token '%s' has revoked", token));
 	}
 
-	@RequestMapping(value = { "/sso/user/{user}" }, method = RequestMethod.DELETE)
-	public OperationCompletionRS revokeUserTokens(@PathVariable String user) {
-		tokenServicesFacade.revokeUserTokens(user);
-		return new OperationCompletionRS(String.format("Token of user '%s' has been revoked", user));
-	}
-
 	@RequestMapping(value = { "/sso/me/apitoken" }, method = RequestMethod.GET)
 	public OAuth2AccessToken getApiToken(Principal user) {
 		Optional<OAuth2AccessToken> tokens = tokenServicesFacade.getTokens(user.getName(), ReportPortalClient.api).findAny();
@@ -87,5 +81,12 @@ public class SsoEndpoint {
 		tokenServicesFacade.revokeUserTokens(user.getName(), ReportPortalClient.api);
 		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication());
 	}
+
+	@RequestMapping(value = { "/sso/internal/user/{user}" }, method = RequestMethod.DELETE)
+	public OperationCompletionRS revokeUserTokens(@PathVariable String user) {
+		tokenServicesFacade.revokeUserTokens(user);
+		return new OperationCompletionRS(String.format("Token of user '%s' has been revoked", user));
+	}
+
 
 }
