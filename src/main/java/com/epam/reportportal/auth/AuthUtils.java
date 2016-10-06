@@ -24,15 +24,19 @@ import com.epam.ta.reportportal.database.entity.user.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 /**
+ * Authentication utils
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-public class AuthUtils {
+public final class AuthUtils {
+
+	private AuthUtils(){
+		//statics only
+	}
 
 	public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections
 			.singletonList(new SimpleGrantedAuthority(userRole.getAuthority()));

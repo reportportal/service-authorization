@@ -28,6 +28,11 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+/**
+ * Application entry point
+ *
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
+ */
 @SpringBootApplication
 @Import({ MongodbConfiguration.class })
 @EnableEurekaClient

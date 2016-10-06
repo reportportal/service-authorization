@@ -42,6 +42,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
+ * Base SSO controller
+ *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @RestController
