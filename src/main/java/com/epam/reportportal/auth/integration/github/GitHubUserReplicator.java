@@ -91,7 +91,7 @@ public class GitHubUserReplicator {
 								.get().getEmail();
 			}
 			if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())){
-				throw new EmailAlreadyExistsException("User with email '" + email + "' already exists");
+				throw new UserSynchronizationException("User with email '" + email + "' already exists");
 			}
 			user.setEmail(email.toLowerCase());
 
@@ -108,9 +108,9 @@ public class GitHubUserReplicator {
 
 			user.setType(UserType.GITHUB);
 			user.setRole(UserRole.USER);
-			Object avatar_url = userInfo.avatarUrl;
-			if (null != avatar_url) {
-				ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatar_url.toString());
+			Object avatarUrl = userInfo.avatarUrl;
+			if (null != avatarUrl) {
+				ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl.toString());
 				try (InputStream photoStream = photoRs.getBody().getInputStream()) {
 					BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
 							photoStream);
@@ -126,7 +126,11 @@ public class GitHubUserReplicator {
 			user.setDefaultProject(generatePersonalProject(user).getId());
 			userRepository.save(user);
 
+		} else if (!UserType.GITHUB.equals(user.getType())) {
+			//if user with such login exists, but it's not GitHub user than throw an exception
+			throw new UserSynchronizationException("User with login '" + user.getId() + "' already exists");
 		}
+
 		return user;
 	}
 
@@ -147,9 +151,9 @@ public class GitHubUserReplicator {
 	}
 
 
-	public static class EmailAlreadyExistsException extends AuthenticationException {
+	public static class UserSynchronizationException extends AuthenticationException {
 
-		public EmailAlreadyExistsException(String msg) {
+		public UserSynchronizationException(String msg) {
 			super(msg);
 		}
 	}
