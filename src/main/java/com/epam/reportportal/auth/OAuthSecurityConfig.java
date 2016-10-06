@@ -162,7 +162,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 
-	public static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
+	private static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
 		response.sendRedirect(UriComponentsBuilder
 				.fromHttpRequest(new ServletServerHttpRequest(request))
 					.replacePath("ui/#login")
