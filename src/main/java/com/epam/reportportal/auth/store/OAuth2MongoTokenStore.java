@@ -32,7 +32,6 @@ import org.springframework.security.oauth2.provider.token.DefaultAuthenticationK
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -127,18 +126,20 @@ public class OAuth2MongoTokenStore implements TokenStore {
 
 	@Override
 	public Collection<OAuth2AccessToken> findTokensByClientId(String clientId) {
-		List<OAuth2AccessTokenEntity> tokens = oAuth2AccessTokenRepository.findByClientId(clientId);
-		return extractAccessTokens(tokens);
+		return oAuth2AccessTokenRepository
+				.findByClientId(clientId)
+				.map(this::extractAccessToken)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public Collection<OAuth2AccessToken> findTokensByClientIdAndUserName(String clientId, String userName) {
-		List<OAuth2AccessTokenEntity> tokens = oAuth2AccessTokenRepository.findByClientIdAndUserName(clientId, userName);
-		return extractAccessTokens(tokens);
+		return oAuth2AccessTokenRepository
+				.findByClientIdAndUserName(clientId, userName)
+				.map(this::extractAccessToken).collect(Collectors.toList());
 	}
 
-	private Collection<OAuth2AccessToken> extractAccessTokens(List<OAuth2AccessTokenEntity> tokens) {
-		return tokens.stream().map(entity -> (OAuth2AccessToken) SerializationUtils.deserialize(entity.getToken()))
-				.collect(Collectors.toList());
+	private OAuth2AccessToken extractAccessToken(OAuth2AccessTokenEntity token) {
+		return (OAuth2AccessToken) SerializationUtils.deserialize(token.getToken());
 	}
 }

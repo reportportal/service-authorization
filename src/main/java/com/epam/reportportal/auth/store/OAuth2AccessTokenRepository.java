@@ -25,6 +25,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Andrei Varabyeu
@@ -38,8 +39,10 @@ public interface OAuth2AccessTokenRepository extends MongoRepository<OAuth2Acces
 
     OAuth2AccessTokenEntity findByAuthenticationId(String authenticationId);
 
-    List<OAuth2AccessTokenEntity> findByClientIdAndUserName(String clientId, String userName);
+    Stream<OAuth2AccessTokenEntity> findByUserName(String userName);
 
-    List<OAuth2AccessTokenEntity> findByClientId(String clientId);
+    Stream<OAuth2AccessTokenEntity> findByClientIdAndUserName(String clientId, String userName);
+
+    Stream<OAuth2AccessTokenEntity> findByClientId(String clientId);
 
 }

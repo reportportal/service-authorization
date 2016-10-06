@@ -20,16 +20,15 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
-import com.epam.reportportal.auth.personal.PersonalProjectUtils;
 import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
 import com.epam.ta.reportportal.database.entity.Project;
-import com.epam.ta.reportportal.database.entity.ProjectRole;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.database.entity.user.UserType;
+import com.epam.ta.reportportal.database.personal.PersonalProjectUtils;
 import com.epam.ta.reportportal.database.search.Filter;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
@@ -43,7 +42,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Date;
 
 import static com.epam.ta.reportportal.database.search.FilterCondition.builder;
@@ -144,20 +142,5 @@ public class GitHubUserReplicator {
 			projectRepository.save(personalProject);
 		}
 		return personalProject;
-	}
-
-	//TODO assign once work on demo project has finished
-
-	/**
-	 * Assigns user to the default project
-	 *
-	 * @param user User to be assigned
-	 */
-	private void assignToDefaultProject(User user) {
-		Project.UserConfig userConfig = new Project.UserConfig();
-		userConfig.setProjectRole(ProjectRole.MEMBER);
-		userConfig.setProposedRole(ProjectRole.MEMBER);
-		projectRepository.addUsers("demo_project", Collections.singletonMap(user.getId(), userConfig));
-
 	}
 }
