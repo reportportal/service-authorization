@@ -22,10 +22,6 @@ package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.integration.github.GitHubTokenServices;
 import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
-import com.epam.ta.reportportal.commons.ExceptionMappings;
-import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
-import com.epam.ta.reportportal.commons.exception.rest.ReportPortalExceptionResolver;
-import com.epam.ta.reportportal.commons.exception.rest.RestExceptionHandler;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
@@ -39,6 +35,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -46,8 +43,10 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -108,22 +107,12 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 						.addAll(getAdditionalFilters(oauth2ClientContext)).build();
 
 		/* make sure filters have correct exception handler */
-		additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(new FilterRestAuthFailureHandlerAdapter(restExceptionHandler())));
+		additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
 		authCompositeFilter.setFilters(additionalFilters);
 
 		//install additional OAuth Authentication filters
 		 http.addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
 		//@formatter:on
-	}
-
-	@Bean
-	RestExceptionHandler restExceptionHandler(){
-		RestExceptionHandler handler = new RestExceptionHandler();
-
-		handler.setErrorResolver(new ReportPortalExceptionResolver(new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING)));
-		handler.setMessageConverters(messageConverters.getConverters());
-		return handler;
-
 	}
 
 	@Bean
@@ -171,5 +160,14 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 
 	}
+
+
+	public static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
+		response.sendRedirect(UriComponentsBuilder
+				.fromHttpRequest(new ServletServerHttpRequest(request))
+					.replacePath("ui/#login")
+					.replaceQuery("errorAuth=" + exception.getMessage()).build().toUriString());
+	};
+
 
 }
