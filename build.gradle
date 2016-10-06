@@ -100,3 +100,10 @@ bootRepackage {
 task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
+
+processResources {
+    exclude "**/public/*"
+    filesMatching('**/bootstrap.yaml') {
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [version: project.property("version")])
+    }
+}

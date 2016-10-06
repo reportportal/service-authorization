@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
 
@@ -89,7 +91,7 @@ public class GitHubUserReplicator {
 								.get().getEmail();
 			}
 			if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())){
-				throw new OAuth2AccessDeniedException("User with email '" + email + "' already exists");
+				throw new EmailAlreadyExistsException("User with email '" + email + "' already exists");
 			}
 			user.setEmail(email.toLowerCase());
 
@@ -142,5 +144,13 @@ public class GitHubUserReplicator {
 			projectRepository.save(personalProject);
 		}
 		return personalProject;
+	}
+
+
+	public static class EmailAlreadyExistsException extends AuthenticationException {
+
+		public EmailAlreadyExistsException(String msg) {
+			super(msg);
+		}
 	}
 }

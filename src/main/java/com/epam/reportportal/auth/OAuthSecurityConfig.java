@@ -22,10 +22,15 @@ package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.integration.github.GitHubTokenServices;
 import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
+import com.epam.ta.reportportal.commons.ExceptionMappings;
+import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
+import com.epam.ta.reportportal.commons.exception.rest.ReportPortalExceptionResolver;
+import com.epam.ta.reportportal.commons.exception.rest.RestExceptionHandler;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -70,6 +75,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private OAuthSuccessHandler authSuccessHandler;
 
+	@Autowired
+	private HttpMessageConverters messageConverters;
+
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
 	 *
@@ -95,13 +103,27 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 				.and().csrf().disable();
 
 		CompositeFilter authCompositeFilter = new CompositeFilter();
-		authCompositeFilter.setFilters(ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
+		List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
 						.addAll(getDefaultFilters(oauth2ClientContext))
-						.addAll(getAdditionalFilters(oauth2ClientContext)).build());
+						.addAll(getAdditionalFilters(oauth2ClientContext)).build();
+
+		/* make sure filters have correct exception handler */
+		additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(new FilterRestAuthFailureHandlerAdapter(restExceptionHandler())));
+		authCompositeFilter.setFilters(additionalFilters);
 
 		//install additional OAuth Authentication filters
 		 http.addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
 		//@formatter:on
+	}
+
+	@Bean
+	RestExceptionHandler restExceptionHandler(){
+		RestExceptionHandler handler = new RestExceptionHandler();
+
+		handler.setErrorResolver(new ReportPortalExceptionResolver(new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING)));
+		handler.setMessageConverters(messageConverters.getConverters());
+		return handler;
+
 	}
 
 	@Bean
