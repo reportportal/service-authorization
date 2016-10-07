@@ -74,8 +74,6 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private OAuthSuccessHandler authSuccessHandler;
 
-	@Autowired
-	private HttpMessageConverters messageConverters;
 
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
