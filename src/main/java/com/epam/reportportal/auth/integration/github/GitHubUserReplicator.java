@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
+import com.epam.ta.reportportal.commons.EntityUtils;
 import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
@@ -78,7 +79,7 @@ public class GitHubUserReplicator {
 	public User replicateUser(String accessToken) {
 		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
 		UserResource userInfo = gitHubClient.getUser();
-		String login = userInfo.login;
+		String login = EntityUtils.normalizeUsername(userInfo.login);
 		User user = userRepository.findOne(login);
 		if (null == user) {
 			user = new User();
@@ -93,7 +94,7 @@ public class GitHubUserReplicator {
 			if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())){
 				throw new UserSynchronizationException("User with email '" + email + "' already exists");
 			}
-			user.setEmail(email.toLowerCase());
+			user.setEmail(EntityUtils.normalizeEmail(email));
 
 
 			if (!Strings.isNullOrEmpty(userInfo.name)) {
