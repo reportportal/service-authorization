@@ -6,10 +6,10 @@ buildscript {
         }
     }
     dependencies {
-      classpath "io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE"
-      classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
-      classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
-      classpath 'org.ajoberstar:grgit:1.6.0-rc.1'
+        classpath "io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE"
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
+        classpath 'org.ajoberstar:grgit:1.6.0-rc.1'
     }
 }
 
@@ -34,7 +34,7 @@ description = 'EPAM Report portal. SSO Authorization Service'
 
 repositories {
     mavenCentral()
-    maven { url  "http://dl.bintray.com/epam/reportportal" }
+    maven { url "http://dl.bintray.com/epam/reportportal" }
 }
 
 dependencyManagement {
@@ -77,12 +77,12 @@ build.dependsOn(copyRuntimeLibs)
 
 
 jar {
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     manifest {
         attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
                 'Implementation-Version': version,
                 'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-                'Class-Path': configurations.runtime.files.collect {"lib/$it.name"}.join(' ')
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
 
     }
 
@@ -178,10 +178,14 @@ ext {
 
 task releaseDockerfile(type: Copy) {
     /* copy dockerfile and replace version of JAR */
-    from 'docker/Dockerfile-release'
+    from('docker/Dockerfile-release')
+
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.properties.findAll { it.value instanceof String }.collectEntries {
+        [it.key, it.value]
+    })
+
     into "${project.projectDir}/"
-    expand(project.properties)
-    rename ('Dockerfile-release', 'Dockerfile')
+    rename('Dockerfile-release', 'Dockerfile')
 }
 
 task addDockerfileToGit << {

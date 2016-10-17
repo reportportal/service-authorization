@@ -1,14 +1,13 @@
 FROM frolvlad/alpine-oraclejdk8:slim
 
 MAINTAINER Andrei Varabyeu <andrei_varabyeu@epam.com>
-LABEL version="${project.version}"
-LABEL description="${project.description}"
-
+LABEL version="@version@"
+LABEL description="@description@"
 
 RUN apk --no-cache add unzip
 
-ENV APP_FILE ${project.name}-${project.version}
-ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/${project.name}/${project.version}/$APP_FILE.zip
+ENV APP_FILE @name@-@version@
+ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/@name@/@version@/$APP_FILE.zip
 
 VOLUME /tmp
 ADD $APP_DOWNLOAD_URL /app/
