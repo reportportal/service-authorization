@@ -44,7 +44,7 @@ import java.net.URI;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Component
-class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
 	/*
 	 * Internal token services facade

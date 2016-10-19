@@ -72,7 +72,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	private GitHubUserReplicator githubReplicator;
 
 	@Autowired
-	private OAuthSuccessHandler authSuccessHandler;
+	protected OAuthSuccessHandler authSuccessHandler;
 
 
 	/**
