@@ -4,7 +4,7 @@ MAINTAINER Andrei Varabyeu <andrei_varabyeu@epam.com>
 
 VOLUME /tmp
 ADD lib /lib
-ADD ${project}-${version}.jar app.jar
+ADD ${project.name}-${version}.jar app.jar
 
 RUN sh -c 'touch /app.jar'
 EXPOSE 8080
