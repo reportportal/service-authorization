@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
+import com.epam.ta.reportportal.config.CacheConfiguration;
 import com.epam.ta.reportportal.config.MongodbConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,7 +35,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @SpringBootApplication
-@Import({ MongodbConfiguration.class })
+@Import({ MongodbConfiguration.class, CacheConfiguration.class })
 @EnableEurekaClient
 @EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
