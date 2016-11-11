@@ -109,7 +109,9 @@ public class OAuth2MongoTokenStore implements TokenStore {
 
 	@Override
 	public void removeRefreshToken(OAuth2RefreshToken token) {
-		oAuth2RefreshTokenRepository.delete(oAuth2RefreshTokenRepository.findByTokenId(token.getValue()));
+		if (null != token && null != token.getValue()){
+			oAuth2RefreshTokenRepository.delete(token.getValue());
+		}
 	}
 
 	@Override
