@@ -45,8 +45,8 @@ dependencyManagement {
 }
 
 dependencies {
-    compile 'com.epam.reportportal:commons-dao:2.7.0-ALPHA-7'
-    compile 'com.epam.reportportal:commons-rules:2.7.0-ALPHA-1'
+    compile 'com.epam.reportportal:commons-dao:2.7.0'
+    compile 'com.epam.reportportal:commons-rules:2.7.0'
     compile 'javax.inject:javax.inject:1'
 
     compile 'org.springframework.boot:spring-boot-starter-actuator'
