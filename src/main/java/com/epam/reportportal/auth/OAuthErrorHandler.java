@@ -22,6 +22,7 @@ package com.epam.reportportal.auth;
 
 import com.epam.ta.reportportal.commons.exception.rest.ErrorResolver;
 import com.epam.ta.reportportal.commons.exception.rest.RestError;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
@@ -48,6 +49,7 @@ public class OAuthErrorHandler extends DefaultWebResponseExceptionTranslator {
 			ResponseEntity<OAuth2Exception> translate = super.translate(e);
 			OAuth2Exception body = translate.getBody();
 			body.addAdditionalInformation("message", body.getMessage());
+			body.addAdditionalInformation("error_code", String.valueOf(ErrorType.ACCESS_DENIED.getCode()));
 			return translate;
 		} else {
 			RestError restError = errorResolver.resolveError(e);

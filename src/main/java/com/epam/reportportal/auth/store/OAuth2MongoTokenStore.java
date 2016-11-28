@@ -32,6 +32,7 @@ import org.springframework.security.oauth2.provider.token.DefaultAuthenticationK
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -99,12 +100,15 @@ public class OAuth2MongoTokenStore implements TokenStore {
 
 	@Override
 	public OAuth2RefreshToken readRefreshToken(String tokenValue) {
-		return SerializationUtils.deserialize(oAuth2RefreshTokenRepository.findByTokenId(tokenValue).getoAuth2RefreshToken());
+		return Optional.ofNullable(oAuth2RefreshTokenRepository.findByTokenId(tokenValue)).map(
+				OAuth2RefreshTokenEntity::getoAuth2RefreshToken).map(SerializationUtils::<OAuth2RefreshToken>deserialize).orElse(null);
 	}
 
 	@Override
 	public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
-		return SerializationUtils.deserialize(oAuth2RefreshTokenRepository.findByTokenId(token.getValue()).getAuthentication());
+		return Optional.ofNullable(oAuth2RefreshTokenRepository.findByTokenId(token.getValue()))
+				.map(OAuth2RefreshTokenEntity::getoAuth2RefreshToken)
+				.map(SerializationUtils::<OAuth2Authentication>deserialize).orElse(null);
 	}
 
 	@Override
