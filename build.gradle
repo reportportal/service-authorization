@@ -25,6 +25,7 @@ apply plugin: "io.spring.dependency-management"
 
 apply from: 'build-docker.gradle'
 apply from: 'build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
 
 
 sourceCompatibility = 1.8
