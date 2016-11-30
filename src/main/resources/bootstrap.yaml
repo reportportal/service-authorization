@@ -3,6 +3,7 @@ info:
     name: Authorization Service
     description: Authorization Service
     version: '@version@'
+    branch: '@branch@'
 
 spring:
   application:
