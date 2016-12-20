@@ -20,7 +20,9 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.event.UiUserSignedInEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -52,6 +54,9 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	@Autowired
 	private Provider<TokenServicesFacade> tokenServicesFacade;
 
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
+
 	OAuthSuccessHandler() {
 		super("/");
 	}
@@ -68,6 +73,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 		query.add("token_type", accessToken.getTokenType());
 		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request)).replacePath("/ui/authSuccess.html")
 				.replaceQueryParams(query).build().toUri();
+
+		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
 		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString());
 	}
