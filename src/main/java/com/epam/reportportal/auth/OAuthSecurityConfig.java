@@ -26,19 +26,15 @@ import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
@@ -48,9 +44,12 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static com.google.common.reflect.Reflection.newProxy;
 
 /**
  * Main Security Extension Point.
@@ -74,6 +73,8 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	protected OAuthSuccessHandler authSuccessHandler;
 
+	@Autowired
+	protected OAuthClientResourceProvider oauthProvider;
 
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
@@ -121,20 +122,22 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		return registration;
 	}
 
-	@Bean
-	@ConfigurationProperties("github")
-	ClientResources github() {
-		return new ClientResources();
-	}
 
 	private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
 		OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(
 				SSO_LOGIN_PATH + "/github");
-		OAuth2RestTemplate githubTemplate = new OAuth2RestTemplate(github().getClient(), oauth2ClientContext);
-		githubFilter.setRestTemplate(githubTemplate);
+		//		OAuth2RestTemplate githubTemplate = new OAuth2RestTemplate(oauthProvider.getResourceDetails("github"), oauth2ClientContext);
+		githubFilter.setRestTemplate(newProxy(OAuth2RestOperations.class, (proxy, method, args) -> {
+			try {
+				return method.invoke(new OAuth2RestTemplate(oauthProvider.loadFromDatabase("github"), oauth2ClientContext), args);
+			} catch (InvocationTargetException e) {
+				throw e.getTargetException();
+			}
+		}));
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator);
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
+		githubFilter.setAllowSessionCreation(false);
 		return Collections.singletonList(githubFilter);
 	}
 
@@ -156,16 +159,11 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 
 		}
-
 	}
 
-
 	private static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
-		response.sendRedirect(UriComponentsBuilder
-				.fromHttpRequest(new ServletServerHttpRequest(request))
-					.replacePath("ui/#login")
-					.replaceQuery("errorAuth=" + exception.getMessage()).build().toUriString());
+		response.sendRedirect(UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request)).replacePath("ui/#login")
+				.replaceQuery("errorAuth=" + exception.getMessage()).build().toUriString());
 	};
-
 
 }

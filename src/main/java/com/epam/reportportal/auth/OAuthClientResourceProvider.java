@@ -1,0 +1,108 @@
+/*
+ * Copyright 2016 EPAM Systems
+ *
+ *
+ * This file is part of EPAM Report Portal.
+ * https://github.com/reportportal/service-authorization
+ *
+ * Report Portal is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Report Portal is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.epam.reportportal.auth;
+
+import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
+import com.epam.ta.reportportal.database.entity.ServerSettings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
+import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.implicit.ImplicitResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.redirect.AbstractRedirectResourceDetails;
+import org.springframework.security.oauth2.common.AuthenticationScheme;
+import org.springframework.stereotype.Component;
+
+import java.lang.reflect.InvocationTargetException;
+
+import static com.google.common.reflect.Reflection.newProxy;
+import static java.util.Optional.ofNullable;
+
+/**
+ * @author Andrei Varabyeu
+ */
+@Component
+public class OAuthClientResourceProvider {
+
+	@Autowired
+	private ServerSettingsRepository serverSettingsRepository;
+
+	public OAuth2ProtectedResourceDetails getResourceDetails(String name) {
+		return newProxy(AuthorizationCodeResourceDetails.class, (proxy, method, args) -> {
+			try {
+				return method.invoke(loadFromDatabase(name), args);
+			} catch (InvocationTargetException e) {
+				throw e.getTargetException();
+			}
+		});
+	}
+
+	public OAuth2ProtectedResourceDetails loadFromDatabase(String name) {
+		return ofNullable(serverSettingsRepository.findOne("default")).map(ServerSettings::getoAuth2LoginDetails)
+				.flatMap(details -> details.stream().filter(d -> name.equals(d.getId())).findAny()).map(d -> {
+					BaseOAuth2ProtectedResourceDetails details;
+
+					String grantType = d.getGrantType();
+					switch (grantType) {
+					case "authorization_code":
+						details = new AuthorizationCodeResourceDetails();
+						break;
+					case "implicit":
+						details = new ImplicitResourceDetails();
+						break;
+					case "client_credentials":
+						details = new ClientCredentialsResourceDetails();
+						break;
+					case "password":
+						details = new ResourceOwnerPasswordResourceDetails();
+						break;
+					default:
+						details = new BaseOAuth2ProtectedResourceDetails();
+					}
+
+					if (null != d.getUserAuthorizationUri()) {
+						((AbstractRedirectResourceDetails) details).setUserAuthorizationUri(d.getUserAuthorizationUri());
+					}
+
+					details.setAccessTokenUri(d.getAccessTokenUri());
+					if (null != d.getAuthenticationScheme()) {
+						details.setAuthenticationScheme(AuthenticationScheme.valueOf(d.getAuthenticationScheme()));
+					}
+
+					details.setAuthenticationScheme(
+							ofNullable(d.getAuthenticationScheme()).map(AuthenticationScheme::valueOf).orElse(null));
+
+					details.setClientAuthenticationScheme(
+							ofNullable(d.getClientAuthenticationScheme()).map(AuthenticationScheme::valueOf).orElse(null));
+
+					details.setClientId(d.getClientId());
+					details.setClientSecret(d.getClientSecret());
+					details.setId(d.getId());
+					details.setScope(d.getScope());
+					details.setTokenName(d.getTokenName());
+					return details;
+
+				}).orElseThrow(() -> new OAuth2AccessDeniedException("Auth details '" + name + "' are not configured"));
+	}
+}
