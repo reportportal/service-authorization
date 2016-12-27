@@ -74,7 +74,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected OAuthSuccessHandler authSuccessHandler;
 
 	@Autowired
-	protected OAuthClientResourceProvider oauthProvider;
+	protected DynamicRestTemplateProvider restTemplateProvider;
 
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
@@ -126,14 +126,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
 		OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(
 				SSO_LOGIN_PATH + "/github");
-		//		OAuth2RestTemplate githubTemplate = new OAuth2RestTemplate(oauthProvider.getResourceDetails("github"), oauth2ClientContext);
-		githubFilter.setRestTemplate(newProxy(OAuth2RestOperations.class, (proxy, method, args) -> {
-			try {
-				return method.invoke(new OAuth2RestTemplate(oauthProvider.loadFromDatabase("github"), oauth2ClientContext), args);
-			} catch (InvocationTargetException e) {
-				throw e.getTargetException();
-			}
-		}));
+		githubFilter.setRestTemplate(restTemplateProvider.getRestTemplate("github", oauth2ClientContext));
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator);
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
