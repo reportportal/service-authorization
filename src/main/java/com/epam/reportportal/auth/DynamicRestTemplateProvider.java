@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static com.google.common.reflect.Reflection.newProxy;
@@ -81,7 +82,7 @@ public class DynamicRestTemplateProvider {
      */
     public OAuth2ProtectedResourceDetails loadFromDatabase(String name) {
         return ofNullable(serverSettingsRepository.findOne("default")).map(ServerSettings::getoAuth2LoginDetails)
-                .flatMap(details -> details.stream().filter(d -> name.equals(d.getId())).findAny())
+                .flatMap(details -> ofNullable(details.get(name)))
                 .map(RESOURCE_DETAILS_CONVERTER)
                 .orElseThrow(() -> new OAuth2AccessDeniedException("Auth details '" + name + "' are not configured"));
     }
@@ -127,7 +128,6 @@ public class DynamicRestTemplateProvider {
 
         details.setClientId(d.getClientId());
         details.setClientSecret(d.getClientSecret());
-        details.setId(d.getId());
         details.setScope(d.getScope());
         details.setTokenName(d.getTokenName());
         return details;
