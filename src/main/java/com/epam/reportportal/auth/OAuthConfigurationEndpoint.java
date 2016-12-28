@@ -21,12 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 /**
  * @author Andrei Varabyeu
  */
 @Controller
-@RequestMapping("/settings")
+@RequestMapping("/settings/{profileId}/oauth")
 public class OAuthConfigurationEndpoint {
 
 	@Autowired
@@ -40,7 +42,7 @@ public class OAuthConfigurationEndpoint {
 	 * @param oauthProviderName ID of third-party OAuth provider
 	 * @return All defined OAuth integration settings
 	 */
-	@RequestMapping(value = "/{profileId}/oauth/{authId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{authId}", method = { POST, PUT })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates ThirdParty OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
