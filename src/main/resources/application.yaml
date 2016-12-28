@@ -22,7 +22,8 @@ spring:
     mongodb:
       repositories:
         enabled: true
-
+  jackson:
+    default-property-inclusion: non_null
 
 # MongoDB configuration
 rp:
