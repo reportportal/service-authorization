@@ -55,8 +55,7 @@ public class OAuthConfigurationEndpoint {
 		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
 		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.of(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
 
-		OAuth2LoginDetails loginDetails = OAuthDetailsConverters.FROM_RESOURCE.apply(oauthDetails);
-		serverOAuthDetails.put(oauthProviderName, loginDetails);
+
 		if (OAuthSecurityConfig.GITHUB.equals(oauthProviderName)) {
 			oauthDetails.setScope(Collections.singletonList("user"));
 			oauthDetails.setGrantType("authorization_code");
@@ -64,6 +63,8 @@ public class OAuthConfigurationEndpoint {
 			oauthDetails.setUserAuthorizationUri("https://github.com/login/oauth/authorize");
 			oauthDetails.setClientAuthenticationScheme("form");
 		}
+		OAuth2LoginDetails loginDetails = OAuthDetailsConverters.FROM_RESOURCE.apply(oauthDetails);
+		serverOAuthDetails.put(oauthProviderName, loginDetails);
 
 		settings.setoAuth2LoginDetails(serverOAuthDetails);
 
