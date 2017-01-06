@@ -23,7 +23,10 @@ package com.epam.reportportal.auth;
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
 import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
 import com.epam.ta.reportportal.database.entity.ServerSettings;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -147,7 +150,7 @@ public class DynamicAuthProvider {
 		return details;
 	};
 
-	private OAuth2Exception noAuthDetailsException(String name) {
-		return new OAuth2AccessDeniedException("Auth details '" + name + "' are not configured");
+	private ProviderNotFoundException noAuthDetailsException(String name) {
+		return new ProviderNotFoundException("Auth details '" + name + "' are not configured");
 	}
 }

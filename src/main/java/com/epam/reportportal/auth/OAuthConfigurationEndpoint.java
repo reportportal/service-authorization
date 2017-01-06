@@ -8,6 +8,7 @@ import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
 import com.epam.ta.reportportal.database.entity.ServerSettings;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.settings.OAuthDetailsResource;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,17 +56,13 @@ public class OAuthConfigurationEndpoint {
 		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.of(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
 
 		OAuth2LoginDetails loginDetails = OAuthDetailsConverters.FROM_RESOURCE.apply(oauthDetails);
-		if (null != loginDetails.getClientId()) {
-			serverOAuthDetails.put(oauthProviderName, loginDetails);
-			if (OAuthSecurityConfig.GITHUB.equals(oauthProviderName)) {
-				oauthDetails.setScope(Collections.singletonList("user"));
-				oauthDetails.setGrantType("authorization_code");
-				oauthDetails.setAccessTokenUri("https://github.com/login/oauth/access_token");
-				oauthDetails.setUserAuthorizationUri("https://github.com/login/oauth/authorize");
-				oauthDetails.setClientAuthenticationScheme("form");
-			}
-		} else {
-			serverOAuthDetails.remove(oauthProviderName);
+		serverOAuthDetails.put(oauthProviderName, loginDetails);
+		if (OAuthSecurityConfig.GITHUB.equals(oauthProviderName)) {
+			oauthDetails.setScope(Collections.singletonList("user"));
+			oauthDetails.setGrantType("authorization_code");
+			oauthDetails.setAccessTokenUri("https://github.com/login/oauth/access_token");
+			oauthDetails.setUserAuthorizationUri("https://github.com/login/oauth/authorize");
+			oauthDetails.setClientAuthenticationScheme("form");
 		}
 
 		settings.setoAuth2LoginDetails(serverOAuthDetails);
@@ -73,6 +70,33 @@ public class OAuthConfigurationEndpoint {
 		repository.save(settings);
 		return serverOAuthDetails.entrySet().stream()
 				.collect(toMap(Map.Entry::getKey, e -> OAuthDetailsConverters.TO_RESOURCE.apply(e.getValue())));
+	}
+
+	/**
+	 * Deletes oauth integration settings
+	 *
+	 * @param profileId         settings ProfileID
+	 * @param oauthProviderName ID of third-party OAuth provider
+	 * @return All defined OAuth integration settings
+	 */
+	@RequestMapping(value = "/{authId}", method = { DELETE })
+	@ResponseBody
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Deletes ThirdParty OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
+	public OperationCompletionRS deleteOAuthSetting(@PathVariable String profileId, @PathVariable("authId") String oauthProviderName) {
+
+		ServerSettings settings = repository.findOne(profileId);
+		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
+		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.of(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
+
+		if (null != serverOAuthDetails.remove(oauthProviderName)) {
+			settings.setoAuth2LoginDetails(serverOAuthDetails);
+			repository.save(settings);
+		} else {
+			throw new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND);
+		}
+
+		return new OperationCompletionRS("Auth settings '" + oauthProviderName + "' were successfully removed");
 	}
 
 	/**

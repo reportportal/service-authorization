@@ -69,7 +69,7 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser).stream().map(userOrg -> userOrg.login)
 					.anyMatch(allowedOrganizations::contains);
 			if (!assignedToOrganization) {
-				throw new UserDeniedAuthorizationException("User '" + gitHubUser.login + "' does not belong to allowed GitHUB organization");
+				throw new InsufficientOrganizationException("User '" + gitHubUser.login + "' does not belong to allowed GitHUB organization");
 			}
 		}
 
@@ -86,6 +86,13 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 	@Override
 	public OAuth2AccessToken readAccessToken(String accessToken) {
 		throw new UnsupportedOperationException("Not supported: read access token");
+	}
+
+	public static class InsufficientOrganizationException extends AuthenticationException {
+
+		public InsufficientOrganizationException(String msg) {
+			super(msg);
+		}
 	}
 
 }
