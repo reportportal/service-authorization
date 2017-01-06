@@ -22,25 +22,21 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents response from GET /user GitHub API
+ * GitHub API: Organization resource representation
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-class UserResource {
+public class OrganizationResource {
 
 	public String login;
-	public String email;
-	public String name;
-	@JsonProperty("avatar_url")
-	public String avatarUrl;
-	@JsonProperty("organizations_url")
-	public String organizationsUrl;
+	public Long id;
+	public String url;
+	public String description;
 
 	public Map<String, Object> details = new HashMap<>();
 
