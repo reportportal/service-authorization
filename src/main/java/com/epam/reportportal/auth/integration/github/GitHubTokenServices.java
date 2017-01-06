@@ -29,6 +29,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
+import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -68,7 +69,7 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser).stream().map(userOrg -> userOrg.login)
 					.anyMatch(allowedOrganizations::contains);
 			if (!assignedToOrganization) {
-				throw new OAuth2AccessDeniedException("User '" + gitHubUser.login + "' does not belong to allowed GitHUB organization");
+				throw new UserDeniedAuthorizationException("User '" + gitHubUser.login + "' does not belong to allowed GitHUB organization");
 			}
 		}
 
