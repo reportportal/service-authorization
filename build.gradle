@@ -63,9 +63,8 @@ dependencies {
     compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
     compile 'org.springframework.cloud:spring-cloud-starter-security'
     compile 'org.springframework.cloud:spring-cloud-starter-eureka'
+    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 
-
-    compile 'org.springframework.cloud:spring-cloud-starter-config'
     compile 'org.springframework.retry:spring-retry'
 
     testCompile 'org.hamcrest:hamcrest-all:1.3'

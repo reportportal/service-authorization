@@ -1,21 +1,13 @@
 info:
+  name: Authorization Service
+  description: Authorization Service
   build:
-    name: Authorization Service
-    description: Authorization Service
     version: '@version@'
     branch: '@branch@'
 
 spring:
   application:
     name: uat
-  cloud:
-    config:
-      uri: http://${reportportal.config.server.host:localhost}:8761/configs
-      failFast: true
-      # Wait for config server to start
-      retry:
-        max-attempts: 20
-        initial-interval: 3000
 
 security:
   sessions: stateless
