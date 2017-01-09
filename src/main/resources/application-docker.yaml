@@ -1,0 +1,23 @@
+spring:
+  # Redis Configuration
+  redis:
+    host: redis
+    port: 6379
+
+
+# Eureka Configuration
+eureka:
+  instance:
+    hostname: ${HOSTNAME:uat}
+  client:
+    serviceUrl:
+      defaultZone: http://registry:8761/eureka/
+
+# MongoDB configuration
+rp:
+   mongo:
+     host: mongodb
+     port: 27017
+     dbName: reportportal
+     user:
+     password:
