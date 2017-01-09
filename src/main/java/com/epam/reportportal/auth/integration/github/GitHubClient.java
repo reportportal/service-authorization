@@ -60,11 +60,21 @@ public class GitHubClient {
 		});
 	}
 
+	public List<OrganizationResource> getUserOrganizations(String user) {
+		return getForObject(GITHUB_BASE_URL + "/users/{}/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
+		}, user);
+	}
+
+	public List<OrganizationResource> getUserOrganizations(UserResource user) {
+		return getForObject(user.organizationsUrl, new ParameterizedTypeReference<List<OrganizationResource>>() {
+		});
+	}
+
 	public ResponseEntity<Resource> downloadResource(String url) {
 		return this.restTemplate.getForEntity(url, Resource.class);
 	}
 
-	private <T> T getForObject(String url, ParameterizedTypeReference<T> type) {
-		return this.restTemplate.exchange(url, HttpMethod.GET, null, type).getBody();
+	private <T> T getForObject(String url, ParameterizedTypeReference<T> type, Object... urlVars) {
+		return this.restTemplate.exchange(url, HttpMethod.GET, null, type, urlVars).getBody();
 	}
 }

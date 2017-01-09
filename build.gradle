@@ -57,6 +57,8 @@ dependencies {
     compile 'com.github.reportportal:commons-rules:master-SNAPSHOT'
 
     compile 'javax.inject:javax.inject:1'
+    compile('org.hibernate:hibernate-validator')
+
 
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-data-redis'

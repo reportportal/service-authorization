@@ -21,19 +21,26 @@
 package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.AuthUtils;
+import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
 import com.epam.ta.reportportal.database.entity.user.User;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Splitter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
+import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Token services for GitHub account info with internal ReportPortal's database
@@ -43,14 +50,30 @@ import java.util.Map;
 public class GitHubTokenServices implements ResourceServerTokenServices {
 
 	private final GitHubUserReplicator replicator;
+	private final Supplier<OAuth2LoginDetails> loginDetails;
 
-	public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor) {
+	public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor, Supplier<OAuth2LoginDetails> loginDetails) {
 		this.replicator = replicatingPrincipalExtractor;
+		this.loginDetails = loginDetails;
 	}
 
 	@Override
 	public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException, InvalidTokenException {
-		User user = replicator.replicateUser(accessToken);
+		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+		UserResource gitHubUser = gitHubClient.getUser();
+
+		List<String> allowedOrganizations = ofNullable(loginDetails.get().getRestrictions())
+				.flatMap(restrictions -> ofNullable(restrictions.get("organizations"))).map(it -> Splitter.on(",").splitToList(it))
+				.orElse(Collections.emptyList());
+		if (!allowedOrganizations.isEmpty()) {
+			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser).stream().map(userOrg -> userOrg.login)
+					.anyMatch(allowedOrganizations::contains);
+			if (!assignedToOrganization) {
+				throw new InsufficientOrganizationException("User '" + gitHubUser.login + "' does not belong to allowed GitHUB organization");
+			}
+		}
+
+		User user = replicator.replicateUser(gitHubUser, gitHubClient);
 
 		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getId(), "N/A",
 				AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
@@ -63,6 +86,13 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 	@Override
 	public OAuth2AccessToken readAccessToken(String accessToken) {
 		throw new UnsupportedOperationException("Not supported: read access token");
+	}
+
+	public static class InsufficientOrganizationException extends AuthenticationException {
+
+		public InsufficientOrganizationException(String msg) {
+			super(msg);
+		}
 	}
 
 }

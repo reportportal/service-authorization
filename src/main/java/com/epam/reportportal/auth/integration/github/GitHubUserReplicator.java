@@ -37,9 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -79,6 +77,17 @@ public class GitHubUserReplicator {
 	public User replicateUser(String accessToken) {
 		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
 		UserResource userInfo = gitHubClient.getUser();
+		return replicateUser(userInfo, gitHubClient);
+	}
+
+	/**
+	 * Replicates GitHub user to internal database (if does NOT exist). Creates personal project for that user
+	 *
+	 * @param userInfo     GitHub user to be replicated
+	 * @param gitHubClient Configured github client
+	 * @return Internal User representation
+	 */
+	public User replicateUser(UserResource userInfo, GitHubClient gitHubClient) {
 		String login = EntityUtils.normalizeUsername(userInfo.login);
 		User user = userRepository.findOne(login);
 		if (null == user) {
@@ -87,15 +96,14 @@ public class GitHubUserReplicator {
 
 			String email = userInfo.email;
 			if (Strings.isNullOrEmpty(email)) {
-				email =
-						gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
-								.get().getEmail();
+				email = gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
+						.get().getEmail();
 			}
-			if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())){
+			if (userRepository
+					.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
 				throw new UserSynchronizationException("User with email '" + email + "' already exists");
 			}
 			user.setEmail(EntityUtils.normalizeEmail(email));
-
 
 			if (!Strings.isNullOrEmpty(userInfo.name)) {
 				user.setFullName(userInfo.name);
@@ -150,7 +158,6 @@ public class GitHubUserReplicator {
 		}
 		return personalProject;
 	}
-
 
 	public static class UserSynchronizationException extends AuthenticationException {
 
