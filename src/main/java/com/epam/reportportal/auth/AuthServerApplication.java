@@ -21,13 +21,25 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
+import com.epam.ta.reportportal.commons.ExceptionMappings;
+import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
+import com.epam.ta.reportportal.commons.exception.rest.ReportPortalExceptionResolver;
+import com.epam.ta.reportportal.commons.exception.rest.RestExceptionHandler;
 import com.epam.ta.reportportal.config.CacheConfiguration;
 import com.epam.ta.reportportal.config.MongodbConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.util.List;
 
 /**
  * Application entry point
@@ -42,6 +54,24 @@ public class AuthServerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AuthServerApplication.class, args);
+	}
+
+	@Configuration
+	public static class MvcConfig extends WebMvcConfigurerAdapter {
+
+		@Autowired
+		private HttpMessageConverters messageConverters;
+
+		@Override
+		public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
+			RestExceptionHandler handler = new RestExceptionHandler();
+			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+
+			DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING);
+			handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
+			handler.setMessageConverters(messageConverters.getConverters());
+			exceptionResolvers.add(handler);
+		}
 	}
 
 }
