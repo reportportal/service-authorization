@@ -54,7 +54,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Builds proxy instance of {@link RestTemplate} which load OAuth resouce details from DB on each operation
  *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Component
 public class DynamicAuthProvider {

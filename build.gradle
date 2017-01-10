@@ -53,7 +53,7 @@ configurations.all {
 dependencies {
 //    compile 'com.epam.reportportal:commons-dao:2.7.0'
 //    compile 'com.epam.reportportal:commons-rules:2.7.0'
-    compile 'com.github.reportportal:commons-dao:5c1c82876d'
+    compile 'com.github.reportportal:commons-dao:a5711fa79e'
     compile 'com.github.reportportal:commons-rules:master-SNAPSHOT'
 
     compile 'javax.inject:javax.inject:1'
