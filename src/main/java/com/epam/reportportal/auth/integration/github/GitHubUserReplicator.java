@@ -21,6 +21,8 @@
 package com.epam.reportportal.auth.integration.github;
 
 import com.epam.ta.reportportal.commons.EntityUtils;
+import com.epam.ta.reportportal.commons.Preconditions;
+import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
@@ -31,6 +33,7 @@ import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.database.entity.user.UserType;
 import com.epam.ta.reportportal.database.personal.PersonalProjectUtils;
 import com.epam.ta.reportportal.database.search.Filter;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.Objects;
 
 import static com.epam.ta.reportportal.database.search.FilterCondition.builder;
 
@@ -66,6 +70,25 @@ public class GitHubUserReplicator {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.dataStorage = dataStorage;
+	}
+
+	public User synchronizeUser(String accessToken) {
+		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+		UserResource userInfo = gitHubClient.getUser();
+		User user = userRepository.findOne(userInfo.login);
+		BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
+				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
+		if (!Strings.isNullOrEmpty(userInfo.name)) {
+			user.setFullName(userInfo.name);
+		}
+		user.getMetaInfo().setSynchronizationDate(Date.from(ZonedDateTime.now().toInstant()));
+
+		String newPhotoId = uploadAvatar(gitHubClient, userInfo.name, userInfo.avatarUrl);
+		if (!Strings.isNullOrEmpty(newPhotoId)) {
+			dataStorage.deleteData(user.getPhotoId());
+			user.setPhotoId(newPhotoId);
+		}
+		return user;
 	}
 
 	/**
@@ -118,17 +141,7 @@ public class GitHubUserReplicator {
 			user.setType(UserType.GITHUB);
 			user.setRole(UserRole.USER);
 			Object avatarUrl = userInfo.avatarUrl;
-			if (null != avatarUrl) {
-				ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl.toString());
-				try (InputStream photoStream = photoRs.getBody().getInputStream()) {
-					BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
-							photoStream);
-					String photoId = dataStorage.saveData(photo, photoRs.getBody().getFilename());
-					user.setPhotoId(photoId);
-				} catch (IOException e) {
-					LOGGER.error("Unable to load photo for user {}", login);
-				}
-			}
+			user.setPhotoId(uploadAvatar(gitHubClient, login, avatarUrl));
 
 			user.setIsExpired(false);
 
@@ -139,8 +152,22 @@ public class GitHubUserReplicator {
 			//if user with such login exists, but it's not GitHub user than throw an exception
 			throw new UserSynchronizationException("User with login '" + user.getId() + "' already exists");
 		}
-
 		return user;
+	}
+
+	private String uploadAvatar(GitHubClient gitHubClient, String login, Object avatarUrl) {
+		String photoId = null;
+		if (null != avatarUrl) {
+			ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl.toString());
+			try (InputStream photoStream = photoRs.getBody().getInputStream()) {
+				BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
+						photoStream);
+				photoId = dataStorage.saveData(photo, photoRs.getBody().getFilename());
+			} catch (IOException e) {
+				LOGGER.error("Unable to load photo for user {}", login);
+			}
+		}
+		return photoId;
 	}
 
 	/**
