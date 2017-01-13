@@ -23,6 +23,7 @@ package com.epam.reportportal.auth.integration.github;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,7 @@ public class GithubEndpoint {
 
 	private final GitHubUserReplicator replicator;
 
+	@Autowired
 	public GithubEndpoint(GitHubUserReplicator replicator) {
 		this.replicator = replicator;
 	}
