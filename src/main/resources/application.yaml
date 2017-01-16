@@ -1,6 +1,6 @@
 server:
   port: 9997
-  context-path: /uat
+#  context-path: /uat
 security:
   sessions: stateless
 
@@ -15,10 +15,10 @@ spring:
       port: 8500
       discovery:
         tags:
-          - urlprefix-${server.contextPath}
-          - traefik.frontend.rule=PathPrefixStrip:/uat
-        healthCheckPath: ${server.contextPath}/admin/health
-        host-info: ${server.contextPath}/admin/info
+          - urlprefix-${server.context-path}
+          - traefik.frontend.rule=PathPrefixStrip:${server.context-path}
+        healthCheckPath: ${server.context-path}/health
+        host-info: ${server.context-path}/info
         ip-address: 10.200.10.1
         prefer-ip-address: true
   # Redis Configuration

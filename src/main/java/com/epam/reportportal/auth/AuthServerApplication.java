@@ -37,7 +37,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  */
 @SpringBootApplication
 @Import({ MongodbConfiguration.class, CacheConfiguration.class, ConsulAutoConfiguration.class })
-//@EnableEurekaClient
 @EnableDiscoveryClient
 @EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
