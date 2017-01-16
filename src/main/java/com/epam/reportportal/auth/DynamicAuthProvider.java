@@ -23,23 +23,20 @@ package com.epam.reportportal.auth;
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
 import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
 import com.epam.ta.reportportal.database.entity.ServerSettings;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
-import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeAccessTokenProvider;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.implicit.ImplicitResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.redirect.AbstractRedirectResourceDetails;
 import org.springframework.security.oauth2.common.AuthenticationScheme;
-import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -72,7 +69,12 @@ public class DynamicAuthProvider {
 	public OAuth2RestOperations getRestTemplate(String name, OAuth2ClientContext oauth2ClientContext) {
 		return newProxy(OAuth2RestOperations.class, (proxy, method, args) -> {
 			try {
-				return method.invoke(new OAuth2RestTemplate(loadResourceDetails(name), oauth2ClientContext), args);
+				OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(loadResourceDetails(name), oauth2ClientContext);
+				AuthorizationCodeAccessTokenProvider accessTokenProvider = new AuthorizationCodeAccessTokenProvider();
+				accessTokenProvider.setStateMandatory(false);
+				restTemplate.setAccessTokenProvider(accessTokenProvider);
+				return method.invoke(restTemplate, args);
+
 			} catch (InvocationTargetException e) {
 				throw e.getTargetException();
 			}

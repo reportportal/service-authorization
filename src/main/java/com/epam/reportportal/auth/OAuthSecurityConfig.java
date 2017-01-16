@@ -128,11 +128,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
 		OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(
 				SSO_LOGIN_PATH + "/github");
-		OAuth2RestTemplate restTemplate = (OAuth2RestTemplate) dynamicAuthProvider.getRestTemplate(GITHUB, oauth2ClientContext);
-		AuthorizationCodeAccessTokenProvider accessTokenProvider = new AuthorizationCodeAccessTokenProvider();
-		accessTokenProvider.setStateMandatory(false);
-		restTemplate.setAccessTokenProvider(accessTokenProvider);
-		githubFilter.setRestTemplate(restTemplate);
+		githubFilter.setRestTemplate(dynamicAuthProvider.getRestTemplate(GITHUB, oauth2ClientContext));
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator, dynamicAuthProvider.getLoginDetailsSupplier(GITHUB));
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
