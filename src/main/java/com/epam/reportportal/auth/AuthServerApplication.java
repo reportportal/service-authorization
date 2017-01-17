@@ -37,6 +37,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.session.data.mongo.AbstractMongoSessionConverter;
+import org.springframework.session.data.mongo.JdkMongoSessionConverter;
 import org.springframework.session.data.mongo.config.annotation.web.http.EnableMongoHttpSession;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -76,6 +78,11 @@ public class AuthServerApplication {
 		@Bean
 		public RequestContextListener requestContextListener(){
 			return new RequestContextListener();
+		}
+
+		@Bean
+		public AbstractMongoSessionConverter mongoSessionConverter(){
+			return new JdkMongoSessionConverter();
 		}
 
 		@Override

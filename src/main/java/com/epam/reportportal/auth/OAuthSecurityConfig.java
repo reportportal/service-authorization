@@ -47,6 +47,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.session.ExpiringSession;
 import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.data.mongo.JdkMongoSessionConverter;
 import org.springframework.session.data.mongo.MongoOperationsSessionRepository;
 import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.context.annotation.RequestScope;
@@ -150,7 +151,10 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
 
-		FindByIndexNameSessionRepository sessionRepository = new MongoOperationsSessionRepository(mongoOperations);
+		MongoOperationsSessionRepository mongoOperationsSessionRepository = new MongoOperationsSessionRepository(mongoOperations);
+		mongoOperationsSessionRepository.setMongoSessionConverter(new JdkMongoSessionConverter());
+		FindByIndexNameSessionRepository sessionRepository = mongoOperationsSessionRepository;
+
 		githubFilter.setSessionAuthenticationStrategy(new RegisterSessionAuthenticationStrategy(new SpringSessionBackedSessionRegistry(sessionRepository)));
 		return Collections.singletonList(githubFilter);
 	}
