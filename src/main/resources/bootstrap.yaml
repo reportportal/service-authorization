@@ -18,6 +18,5 @@ spring:
         initial-interval: 3000
 
 security:
-  sessions: stateless
   basic:
     enabled: false
