@@ -1,7 +1,7 @@
 server:
   port: 9999
-security:
-  sessions: stateless
+#security:
+#  sessions: stateless
 
 
 # Eureka Configuration
