@@ -132,8 +132,6 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator, dynamicAuthProvider.getLoginDetailsSupplier(GITHUB));
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
-		githubFilter.setAllowSessionCreation(false);
-		githubFilter.setSessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy());
 		return Collections.singletonList(githubFilter);
 	}
 

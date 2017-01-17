@@ -69,11 +69,7 @@ public class DynamicAuthProvider {
 	public OAuth2RestOperations getRestTemplate(String name, OAuth2ClientContext oauth2ClientContext) {
 		return newProxy(OAuth2RestOperations.class, (proxy, method, args) -> {
 			try {
-				OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(loadResourceDetails(name), oauth2ClientContext);
-				AuthorizationCodeAccessTokenProvider accessTokenProvider = new AuthorizationCodeAccessTokenProvider();
-				accessTokenProvider.setStateMandatory(false);
-				restTemplate.setAccessTokenProvider(accessTokenProvider);
-				return method.invoke(restTemplate, args);
+				return method.invoke(new OAuth2RestTemplate(loadResourceDetails(name), oauth2ClientContext), args);
 
 			} catch (InvocationTargetException e) {
 				throw e.getTargetException();
