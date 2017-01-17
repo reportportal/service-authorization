@@ -30,6 +30,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -42,7 +43,12 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.session.ExpiringSession;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.data.mongo.MongoOperationsSessionRepository;
+import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -76,6 +82,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	protected DynamicAuthProvider dynamicAuthProvider;
+
+	@Autowired
+	private MongoOperations mongoOperations;
 
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
@@ -140,6 +149,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator, dynamicAuthProvider.getLoginDetailsSupplier(GITHUB));
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
+
+		FindByIndexNameSessionRepository sessionRepository = new MongoOperationsSessionRepository(mongoOperations);
+		githubFilter.setSessionAuthenticationStrategy(new RegisterSessionAuthenticationStrategy(new SpringSessionBackedSessionRegistry(sessionRepository)));
 		return Collections.singletonList(githubFilter);
 	}
 
