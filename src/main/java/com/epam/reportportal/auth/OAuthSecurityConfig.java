@@ -99,8 +99,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers(SSO_LOGIN_PATH + "/**", "/webjars/**", "/index.html", "/epam/**", "/info", "/health")
 					 .permitAll()
 				.anyRequest()
-					 .authenticated()
-				.and().csrf().disable();
+					 .authenticated();
 
 		CompositeFilter authCompositeFilter = new CompositeFilter();
 		List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
@@ -132,6 +131,8 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator, dynamicAuthProvider.getLoginDetailsSupplier(GITHUB));
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
+		githubFilter.setSessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy());
+		githubFilter.setAllowSessionCreation(false);
 		return Collections.singletonList(githubFilter);
 	}
 
