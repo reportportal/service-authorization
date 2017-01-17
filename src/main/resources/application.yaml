@@ -1,7 +1,7 @@
 server:
   port: 9999
-security:
-  sessions: stateless
+#security:
+#  sessions: stateless
 
 
 # Eureka Configuration
@@ -25,7 +25,7 @@ spring:
   jackson:
     default-property-inclusion: non_null
   session:
-    store-type: none
+    store-type: mongo
 
 
 # MongoDB configuration
