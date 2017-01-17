@@ -25,7 +25,7 @@ spring:
   jackson:
     default-property-inclusion: non_null
   session:
-    store-type: none
+    store-type: mongo
 
 
 # MongoDB configuration

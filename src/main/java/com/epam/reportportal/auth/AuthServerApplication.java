@@ -32,10 +32,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.session.data.mongo.config.annotation.web.http.EnableMongoHttpSession;
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -57,10 +60,16 @@ public class AuthServerApplication {
 	}
 
 	@Configuration
+	@EnableMongoHttpSession
 	public static class MvcConfig extends WebMvcConfigurerAdapter {
 
 		@Autowired
 		private HttpMessageConverters messageConverters;
+
+		@Bean
+		public RequestContextListener requestContextListener(){
+			return new RequestContextListener();
+		}
 
 		@Override
 		public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
