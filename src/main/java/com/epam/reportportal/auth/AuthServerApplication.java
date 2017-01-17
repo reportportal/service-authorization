@@ -59,6 +59,13 @@ public class AuthServerApplication {
 		SpringApplication.run(AuthServerApplication.class, args);
 	}
 
+	/*
+	 * Mongo HTTP session is used to share session between several instances
+	 * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
+	 * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
+	 * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
+	 * execution
+	 */
 	@Configuration
 	@EnableMongoHttpSession
 	public static class MvcConfig extends WebMvcConfigurerAdapter {
