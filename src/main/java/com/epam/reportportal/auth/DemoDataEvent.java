@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * Created by andrei_varabyeu on 12/26/16.
  */
-//@Component
+@Component
 @Deprecated
 //TODO do not forget to remove!
 public class DemoDataEvent {

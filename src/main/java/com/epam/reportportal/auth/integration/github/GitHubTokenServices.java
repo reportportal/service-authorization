@@ -79,7 +79,7 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 				AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
 
 		Map<String, Serializable> extensionProperties = Collections.singletonMap("upstream_token", accessToken);
-		OAuth2Request request = new OAuth2Request(null, null, null, true, null, null, null, null, extensionProperties);
+		OAuth2Request request = new OAuth2Request(null, loginDetails.get().getClientId(), null, true, null, null, null, null, extensionProperties);
 		return new OAuth2Authentication(request, token);
 	}
 
