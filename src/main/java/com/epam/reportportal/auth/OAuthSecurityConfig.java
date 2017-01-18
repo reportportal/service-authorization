@@ -37,6 +37,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
@@ -100,7 +101,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers(SSO_LOGIN_PATH + "/**", "/webjars/**", "/index.html", "/epam/**", "/info", "/health")
 					 .permitAll()
 				.anyRequest()
-					 .authenticated();
+					 .authenticated()
+ 	            .and().sessionManagement()
+				    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 		CompositeFilter authCompositeFilter = new CompositeFilter();
 		List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()

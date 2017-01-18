@@ -34,6 +34,7 @@ import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -62,7 +63,9 @@ class PrimarySecurityConfigs {
 					.authorizeRequests()
 					.antMatchers("/settings/**").hasRole("ADMINISTRATOR")
 					.antMatchers("/sso/internal/**").hasRole("INTERNAL")
-					.anyRequest().authenticated();
+					.anyRequest().authenticated()
+					.and().sessionManagement()
+						.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 		}
 	}
