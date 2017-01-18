@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -37,7 +38,7 @@ import java.util.Objects;
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-@Controller
+@RestController
 public class GithubEndpoint {
 
 	private final GitHubUserReplicator replicator;
