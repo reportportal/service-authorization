@@ -88,6 +88,7 @@ public class GitHubUserReplicator {
 			dataStorage.deleteData(user.getPhotoId());
 			user.setPhotoId(newPhotoId);
 		}
+		userRepository.save(user);
 		return user;
 	}
 
