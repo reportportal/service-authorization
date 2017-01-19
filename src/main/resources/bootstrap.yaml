@@ -1,7 +1,7 @@
 info:
   build:
     name: Authorization Service
-    description: Authorization Service
+    description: Unified Authorization Trap for all ReportPortal's Services
     version: '@version@'
     branch: '@branch@'
 

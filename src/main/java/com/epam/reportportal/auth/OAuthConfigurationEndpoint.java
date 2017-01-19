@@ -75,7 +75,7 @@ public class OAuthConfigurationEndpoint {
 
 		ServerSettings settings = repository.findOne(profileId);
 		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
-		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.of(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
+		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.ofNullable(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
 
 		if (OAuthSecurityConfig.GITHUB.equals(oauthProviderName)) {
 			oauthDetails.setScope(Collections.singletonList("user"));
