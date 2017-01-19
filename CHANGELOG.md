@@ -16,6 +16,7 @@
 
 * EPMRPP-20577,EPMRPP-20750 - GitHUB settings are moved to database and made configurable through UI
 * EPMRPP-23044 - GitHUB user synchronization
+* EPMRPP-23477 - Added GitHub integration status to UAT's service info endpoint
 
 ### Bugfixes
 
