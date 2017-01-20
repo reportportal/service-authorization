@@ -20,6 +20,6 @@
 
 ### Bugfixes
 
-* XXX
+* EPMRPP-23535 - If GitHub organization is empty, no one can log in 
 
 

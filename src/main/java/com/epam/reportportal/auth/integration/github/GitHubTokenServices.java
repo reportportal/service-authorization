@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -63,8 +64,9 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 		UserResource gitHubUser = gitHubClient.getUser();
 
 		List<String> allowedOrganizations = ofNullable(loginDetails.get().getRestrictions())
-				.flatMap(restrictions -> ofNullable(restrictions.get("organizations"))).map(it -> Splitter.on(",").splitToList(it))
-				.orElse(Collections.emptyList());
+				.flatMap(restrictions -> ofNullable(restrictions.get("organizations")))
+				.map(it -> Splitter.on(",").omitEmptyStrings().splitToList(it))
+				.orElse(emptyList());
 		if (!allowedOrganizations.isEmpty()) {
 			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser).stream().map(userOrg -> userOrg.login)
 					.anyMatch(allowedOrganizations::contains);
