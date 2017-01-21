@@ -102,7 +102,8 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 					 .permitAll()
 				.anyRequest()
 					 .authenticated()
- 	            .and().sessionManagement()
+ 	            .and().csrf().disable()
+				.sessionManagement()
 				    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 		CompositeFilter authCompositeFilter = new CompositeFilter();
