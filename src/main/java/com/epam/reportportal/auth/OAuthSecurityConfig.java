@@ -27,12 +27,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
@@ -72,6 +77,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	protected DynamicAuthProvider dynamicAuthProvider;
 
+	@Autowired
+	private MongoOperations mongoOperations;
+
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
 	 *
@@ -94,7 +102,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 					 .permitAll()
 				.anyRequest()
 					 .authenticated()
-				.and().csrf().disable();
+ 	            .and().csrf().disable()
+				.sessionManagement()
+				    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 		CompositeFilter authCompositeFilter = new CompositeFilter();
 		List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
@@ -122,11 +132,12 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
 		OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(
 				SSO_LOGIN_PATH + "/github");
+
 		githubFilter.setRestTemplate(dynamicAuthProvider.getRestTemplate(GITHUB, oauth2ClientContext));
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator, dynamicAuthProvider.getLoginDetailsSupplier(GITHUB));
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
-		githubFilter.setAllowSessionCreation(false);
+
 		return Collections.singletonList(githubFilter);
 	}
 

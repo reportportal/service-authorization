@@ -18,10 +18,10 @@ import java.util.*;
 //TODO do not forget to remove!
 public class DemoDataEvent {
 
-	@Autowired
+//	@Autowired
 	private ServerSettingsRepository serverSettingsRepository;
 
-	@EventListener(ContextRefreshedEvent.class)
+//	@EventListener(ContextRefreshedEvent.class)
 	public void onStart() {
 		ServerSettings settings = serverSettingsRepository.findOne("default");
 		settings.setoAuth2LoginDetails(null);

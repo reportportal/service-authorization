@@ -66,7 +66,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 			throws IOException, ServletException {
 		OAuth2Authentication oauth = (OAuth2Authentication) authentication;
 		OAuth2AccessToken accessToken = tokenServicesFacade.get()
-				.createToken(ReportPortalClient.ui, oauth.getName(), oauth.getUserAuthentication());
+				.createToken(ReportPortalClient.ui, oauth.getName(), oauth.getUserAuthentication(), oauth.getOAuth2Request().getExtensions());
 
 		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
 		query.add("token", accessToken.getValue());

@@ -33,6 +33,9 @@ spring:
         enabled: true
   jackson:
     default-property-inclusion: non_null
+  session:
+    store-type: mongo
+
 
 eureka:
   instance:
