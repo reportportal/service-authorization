@@ -14,8 +14,8 @@ spring:
       port: 8500
       discovery:
         tags:
-          - urlprefix-${server.context-path}
-          - traefik.frontend.rule=PathPrefixStrip:${server.context-path}
+          - urlprefix-${server.context-path:}
+          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:}
         healthCheckPath: ${server.context-path:}/health
         host-info: ${server.context-path:}/info
         ip-address: 10.200.10.1
