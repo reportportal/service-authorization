@@ -51,7 +51,7 @@ import java.util.List;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @SpringBootApplication
-@Import({ MongodbConfiguration.class, CacheConfiguration.class, ConsulAutoConfiguration.class })
+@Import({ MongodbConfiguration.class, CacheConfiguration.class })
 @EnableDiscoveryClient
 @EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
