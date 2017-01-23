@@ -65,6 +65,7 @@ dependencies {
     compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
     compile 'org.springframework.cloud:spring-cloud-starter-security'
     compile 'org.springframework.cloud:spring-cloud-starter-eureka'
+    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 
     //https://github.com/spring-projects/spring-security-oauth/issues/706
     //Cannot store oauth client details without session

@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -52,7 +52,7 @@ import java.util.List;
  */
 @SpringBootApplication
 @Import({ MongodbConfiguration.class, CacheConfiguration.class })
-@EnableEurekaClient
+@EnableDiscoveryClient
 @EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
 
@@ -60,35 +60,35 @@ public class AuthServerApplication {
 		SpringApplication.run(AuthServerApplication.class, args);
 	}
 
-	/*
-	 * Mongo HTTP session is used to share session between several instances
-	 * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
-	 * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
-	 * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
-	 * execution
-	 */
-	@Configuration
-	@EnableMongoHttpSession
-	public static class MvcConfig extends WebMvcConfigurerAdapter {
+    /*
+     * Mongo HTTP session is used to share session between several instances
+     * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
+     * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
+     * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
+     * execution
+     */
+    @Configuration
+    @EnableMongoHttpSession
+    public static class MvcConfig extends WebMvcConfigurerAdapter {
 
-		@Autowired
-		private HttpMessageConverters messageConverters;
+        @Autowired
+        private HttpMessageConverters messageConverters;
 
-		@Bean
-		public AbstractMongoSessionConverter mongoSessionConverter(){
-			return new JdkMongoSessionConverter();
-		}
+        @Bean
+        public AbstractMongoSessionConverter mongoSessionConverter(){
+            return new JdkMongoSessionConverter();
+        }
 
-		@Override
-		public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
-			RestExceptionHandler handler = new RestExceptionHandler();
-			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        @Override
+        public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
+            RestExceptionHandler handler = new RestExceptionHandler();
+            handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
-			DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING);
-			handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
-			handler.setMessageConverters(messageConverters.getConverters());
-			exceptionResolvers.add(handler);
-		}
-	}
+            DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING);
+            handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
+            handler.setMessageConverters(messageConverters.getConverters());
+            exceptionResolvers.add(handler);
+        }
+    }
 
 }

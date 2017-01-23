@@ -1,22 +1,31 @@
 server:
   port: 9999
+#  context-path: /uat
 security:
   sessions: stateless
 
 
-# Eureka Configuration
-eureka:
-  instance:
-    hostname: ${reportportal.eureka.instance.hostname:localhost}
-  client:
-    serviceUrl:
-      defaultZone: http://${reportportal.eureka.hostname:localhost}:8761/eureka/
-
 spring:
+  profiles:
+    ## Default one is still Eureka
+    active: ${rp.profiles:eureka}
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        tags:
+          - urlprefix-${server.context-path}
+          - traefik.frontend.rule=PathPrefixStrip:${server.context-path}
+        healthCheckPath: ${server.context-path}/health
+        host-info: ${server.context-path}/info
+        ip-address: 10.200.10.1
+        prefer-ip-address: true
   # Redis Configuration
   redis:
     host: ${reportportal.redis.host:docker.local}
     port: 6379
+
   # Enable MongoDB repositories
   data:
     mongodb:
@@ -26,6 +35,13 @@ spring:
     default-property-inclusion: non_null
   session:
     store-type: mongo
+
+
+eureka:
+  instance:
+    hostname: ${HOSTNAME:localhost}
+    status-page-url-path: ${server.contextPath}/info
+    health-check-url-path: ${server.contextPath}/health
 
 
 # MongoDB configuration
@@ -75,3 +91,29 @@ github:
 logging:
   level:
     org.springframework.security: debug
+
+
+## Consul as service registry
+---
+spring:
+  profiles: eureka
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        register: false
+
+## Consul as service registry
+---
+spring:
+  profiles: consul
+  cloud:
+    consul:
+      enabled: true
+      discovery:
+        register: true
+eureka:
+  client:
+    register-with-eureka: false
+    enabled: false
+---
