@@ -1,5 +1,5 @@
 server:
-  port: 9997
+  port: 9999
 #  context-path: /uat
 security:
   sessions: stateless
