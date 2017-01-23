@@ -1,6 +1,5 @@
 server:
   port: 9999
-#  context-path: /uat
 security:
   sessions: stateless
 
@@ -17,8 +16,8 @@ spring:
         tags:
           - urlprefix-${server.context-path}
           - traefik.frontend.rule=PathPrefixStrip:${server.context-path}
-        healthCheckPath: ${server.context-path}/health
-        host-info: ${server.context-path}/info
+        healthCheckPath: ${server.context-path:}/health
+        host-info: ${server.context-path:}/info
         ip-address: 10.200.10.1
         prefer-ip-address: true
       ## Disabled by default
@@ -42,8 +41,8 @@ spring:
 eureka:
   instance:
     hostname: ${HOSTNAME:localhost}
-    status-page-url-path: ${server.contextPath}/info
-    health-check-url-path: ${server.contextPath}/health
+    status-page-url-path: ${server.contextPath:}/info
+    health-check-url-path: ${server.contextPath:}/health
   ## Disabled by default
   client:
     register-with-eureka: false
@@ -54,7 +53,7 @@ rp:
    session:
         live: 1800
    mongo:
-        host: ${reportportal.mongo.host:docker.local}
+        host: ${reportportal.mongo.host:localhost}
         port: 27017
         dbName: reportportal
 #        user: user
