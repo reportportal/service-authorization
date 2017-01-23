@@ -21,6 +21,8 @@ spring:
         host-info: ${server.context-path}/info
         ip-address: 10.200.10.1
         prefer-ip-address: true
+      ## Disabled by default
+      enabled: false
   # Redis Configuration
   redis:
     host: ${reportportal.redis.host:docker.local}
@@ -42,7 +44,10 @@ eureka:
     hostname: ${HOSTNAME:localhost}
     status-page-url-path: ${server.contextPath}/info
     health-check-url-path: ${server.contextPath}/health
-
+  ## Disabled by default
+  client:
+    register-with-eureka: false
+    enabled: false
 
 # MongoDB configuration
 rp:
@@ -90,7 +95,7 @@ github:
     userInfoUri: https://api.github.com/user
 logging:
   level:
-    org.springframework.security: debug
+    org.springframework.security: warn
 
 
 ## Consul as service registry
