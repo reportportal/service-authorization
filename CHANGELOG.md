@@ -21,5 +21,5 @@
 ### Bugfixes
 
 * EPMRPP-23535 - If GitHub organization is empty, no one can log in 
-
+* EPMRPP-23561 - GitHub Auth: Request for update test user profile returns 404 error
 
