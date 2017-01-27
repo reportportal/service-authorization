@@ -74,7 +74,7 @@ public class GitHubUserReplicator {
 	public User synchronizeUser(String accessToken) {
 		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
 		UserResource userInfo = gitHubClient.getUser();
-		User user = userRepository.findOne(userInfo.login);
+		User user = userRepository.findOne(EntityUtils.normalizeUsername(userInfo.login));
 		BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
 		BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
 				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
