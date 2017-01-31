@@ -78,9 +78,7 @@ public class GitHubUserReplicator {
 		BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
 		BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
 				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
-		if (!Strings.isNullOrEmpty(userInfo.name)) {
-			user.setFullName(userInfo.name);
-		}
+		user.setFullName(userInfo.name);
 		user.getMetaInfo().setSynchronizationDate(Date.from(ZonedDateTime.now().toInstant()));
 
 		String newPhotoId = uploadAvatar(gitHubClient, userInfo.name, userInfo.avatarUrl);
