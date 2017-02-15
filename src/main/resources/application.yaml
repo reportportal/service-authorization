@@ -2,7 +2,9 @@ server:
   port: 9999
 security:
   sessions: stateless
-
+  oauth2:
+    resource:
+      filter-order: 3
 
 spring:
   profiles:

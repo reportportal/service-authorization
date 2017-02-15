@@ -44,6 +44,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Application entry point
@@ -57,7 +58,8 @@ import java.util.List;
 public class AuthServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AuthServerApplication.class, args);
+        Optional.ofNullable(System.getenv("rp.profiles")).ifPresent(p -> System.setProperty("spring.profiles.active",p));
+        SpringApplication.run(AuthServerApplication.class, args);
 	}
 
     /*
