@@ -21,7 +21,7 @@
 
 package com.epam.reportportal.auth.converter;
 
-import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
+import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
 import com.epam.ta.reportportal.ws.model.settings.OAuthDetailsResource;
 
 import java.util.function.Function;

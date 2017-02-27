@@ -27,7 +27,7 @@ spring:
       enabled: false
   # Redis Configuration
   redis:
-    host: ${reportportal.redis.host:docker.local}
+    host: ${reportportal.redis.host:localhost}
     port: 6379
 
   # Enable MongoDB repositories

@@ -21,15 +21,13 @@
 package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.AuthUtils;
-import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
+import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.google.common.base.Splitter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
-import org.springframework.security.oauth2.common.exceptions.UserDeniedAuthorizationException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
