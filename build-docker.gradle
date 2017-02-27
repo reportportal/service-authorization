@@ -27,7 +27,9 @@ task prepareDockerfile(type: Copy) {
     /* copy dockerfile and replace version of JAR */
     from 'docker/Dockerfile-develop'
     into "${project.buildDir}/libs"
-    expand(project.properties)
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.properties.findAll { it.value instanceof String }.collectEntries {
+        [it.key, it.value]
+    })
     rename ('Dockerfile-develop', 'Dockerfile')
 }
 
