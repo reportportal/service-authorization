@@ -21,8 +21,8 @@
 package com.epam.reportportal.auth;
 
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
-import com.epam.ta.reportportal.database.entity.OAuth2LoginDetails;
-import com.epam.ta.reportportal.database.entity.ServerSettings;
+import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
+import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -31,7 +31,6 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeAccessTokenProvider;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.implicit.ImplicitResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
