@@ -3,7 +3,12 @@ spring:
   redis:
     host: redis
     port: 6379
-
+  cloud:
+    consul:
+      host: consul
+      discovery:
+        hostname: ${HOSTNAME:uat}
+        prefer-ip-address: false
 
 # Eureka Configuration
 eureka:

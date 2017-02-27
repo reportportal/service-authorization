@@ -16,10 +16,11 @@ spring:
       port: 8500
       discovery:
         tags:
-          - urlprefix-${server.context-path:}
-          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:}
+          - urlprefix-${server.context-path:}/uat opts strip=/uat
+          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:/}
+          - statusPageUrlPath=${server.contextPath:}/info
+          - healthCheckUrlPath=${server.contextPath:}/health
         healthCheckPath: ${server.context-path:}/health
-        host-info: ${server.context-path:}/info
         ip-address: 10.200.10.1
         prefer-ip-address: true
       ## Disabled by default
@@ -97,6 +98,7 @@ github:
 logging:
   level:
     org.springframework.security: warn
+    org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver: warn
 
 
 ## Consul as service registry
