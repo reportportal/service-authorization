@@ -21,9 +21,9 @@ apply plugin: 'java'
 apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 
-apply from: 'build-docker.gradle'
 apply from: 'build-quality.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
 
 
 sourceCompatibility = 1.8
@@ -111,12 +111,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
 
-processResources {
-    exclude "**/public/*"
-    filesMatching('**/bootstrap.yaml') {
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [version: project.property("version")])
-    }
-}
 
 /* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
 apply plugin: 'maven'
