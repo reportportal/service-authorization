@@ -22,11 +22,15 @@ package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
+import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
 import com.epam.ta.reportportal.commons.exception.rest.ReportPortalExceptionResolver;
+import com.epam.ta.reportportal.commons.exception.rest.RestErrorDefinition;
 import com.epam.ta.reportportal.commons.exception.rest.RestExceptionHandler;
 import com.epam.ta.reportportal.config.CacheConfiguration;
 import com.epam.ta.reportportal.config.MongodbConfiguration;
+import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -37,6 +41,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.session.data.mongo.AbstractMongoSessionConverter;
 import org.springframework.session.data.mongo.JdkMongoSessionConverter;
 import org.springframework.session.data.mongo.config.annotation.web.http.EnableMongoHttpSession;
@@ -44,6 +50,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -58,39 +65,44 @@ import java.util.Optional;
 public class AuthServerApplication {
 
 	public static void main(String[] args) {
-        Optional.ofNullable(System.getenv("rp.profiles")).ifPresent(p -> System.setProperty("spring.profiles.active",p));
-        SpringApplication.run(AuthServerApplication.class, args);
+		Optional.ofNullable(System.getenv("rp.profiles")).ifPresent(p -> System.setProperty("spring.profiles.active", p));
+		SpringApplication.run(AuthServerApplication.class, args);
 	}
 
-    /*
-     * Mongo HTTP session is used to share session between several instances
-     * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
-     * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
-     * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
-     * execution
-     */
-    @Configuration
-    @EnableMongoHttpSession
-    public static class MvcConfig extends WebMvcConfigurerAdapter {
+	/*
+	 * Mongo HTTP session is used to share session between several instances
+	 * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
+	 * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
+	 * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
+	 * execution
+	 */
+	@Configuration
+	@EnableMongoHttpSession
+	public static class MvcConfig extends WebMvcConfigurerAdapter {
 
-        @Autowired
-        private HttpMessageConverters messageConverters;
+		@Autowired
+		private HttpMessageConverters messageConverters;
 
-        @Bean
-        public AbstractMongoSessionConverter mongoSessionConverter(){
-            return new JdkMongoSessionConverter();
-        }
+		@Bean
+		public AbstractMongoSessionConverter mongoSessionConverter() {
+			return new JdkMongoSessionConverter();
+		}
 
-        @Override
-        public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
-            RestExceptionHandler handler = new RestExceptionHandler();
-            handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+		@Override
+		public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
+			RestExceptionHandler handler = new RestExceptionHandler();
+			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
-            DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING);
-            handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
-            handler.setMessageConverters(messageConverters.getConverters());
-            exceptionResolvers.add(handler);
-        }
-    }
+			Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
+					.put(OAuth2Exception.class, new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
+							new DefaultExceptionMessageBuilder()))
+					.putAll(ExceptionMappings.DEFAULT_MAPPING).build();
+
+			DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(errorMappings);
+			handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
+			handler.setMessageConverters(messageConverters.getConverters());
+			exceptionResolvers.add(handler);
+		}
+	}
 
 }
