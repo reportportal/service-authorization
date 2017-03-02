@@ -32,7 +32,9 @@ import org.springframework.security.oauth2.provider.error.DefaultWebResponseExce
  * Bridge between {@link ErrorResolver} and {@link org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator}
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
+ * @deprecated in favor of default portal's error mapper
  */
+@Deprecated
 public class OAuthErrorHandler extends DefaultWebResponseExceptionTranslator {
 
 	private final ErrorResolver errorResolver;
