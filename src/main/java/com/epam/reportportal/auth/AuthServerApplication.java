@@ -51,7 +51,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Application entry point
@@ -64,45 +63,45 @@ import java.util.Optional;
 @EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
 
-	public static void main(String[] args) {
-		Optional.ofNullable(System.getenv("rp.profiles")).ifPresent(p -> System.setProperty("spring.profiles.active", p));
-		SpringApplication.run(AuthServerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(AuthServerApplication.class, args);
+    }
 
-	/*
-	 * Mongo HTTP session is used to share session between several instances
-	 * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
-	 * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
-	 * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
-	 * execution
-	 */
-	@Configuration
-	@EnableMongoHttpSession
-	public static class MvcConfig extends WebMvcConfigurerAdapter {
+    /*
+     * Mongo HTTP session is used to share session between several instances
+     * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
+     * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
+     * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
+     * execution
+     */
+    @Configuration
+    @EnableMongoHttpSession
+    public static class MvcConfig extends WebMvcConfigurerAdapter {
 
-		@Autowired
-		private HttpMessageConverters messageConverters;
+        @Autowired
+        private HttpMessageConverters messageConverters;
 
-		@Bean
-		public AbstractMongoSessionConverter mongoSessionConverter() {
-			return new JdkMongoSessionConverter();
-		}
+        @Bean
+        public AbstractMongoSessionConverter mongoSessionConverter() {
+            return new JdkMongoSessionConverter();
+        }
 
-		@Override
-		public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
-			RestExceptionHandler handler = new RestExceptionHandler();
-			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        @Override
+        public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
+            RestExceptionHandler handler = new RestExceptionHandler();
+            handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
-			Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
-					.put(OAuth2Exception.class, new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
-							new DefaultExceptionMessageBuilder()))
-					.putAll(ExceptionMappings.DEFAULT_MAPPING).build();
+            Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
+                    .put(OAuth2Exception.class,
+                            new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
+                                    new DefaultExceptionMessageBuilder()))
+                    .putAll(ExceptionMappings.DEFAULT_MAPPING).build();
 
-			DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(errorMappings);
-			handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
-			handler.setMessageConverters(messageConverters.getConverters());
-			exceptionResolvers.add(handler);
-		}
-	}
+            DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(errorMappings);
+            handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
+            handler.setMessageConverters(messageConverters.getConverters());
+            exceptionResolvers.add(handler);
+        }
+    }
 
 }

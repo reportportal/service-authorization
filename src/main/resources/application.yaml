@@ -7,9 +7,6 @@ security:
       filter-order: 3
 
 spring:
-  profiles:
-    ## Default one is still Eureka
-    active: ${rp.profiles:eureka}
   cloud:
     consul:
       host: localhost
