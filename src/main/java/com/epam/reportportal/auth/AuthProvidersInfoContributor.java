@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth;
 
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
+import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Shows list of supported authentication providers
@@ -47,8 +48,43 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 
 	@Override
 	public void contribute(Info.Builder builder) {
-		Optional<Set<String>> loginDetails = Optional.ofNullable(settingsRepository.findOne("default"))
-				.flatMap(settings -> Optional.ofNullable(settings.getoAuth2LoginDetails())).map(Map::keySet);
-		loginDetails.ifPresent(it -> builder.withDetail("auth_extensions", it));
+		ServerSettings settings = settingsRepository.findOne("default");
+		if (null != settings && null != settings.getoAuth2LoginDetails()) {
+			//@formatter:off
+			Map<String,AuthProviderInfo> providers = settings.getoAuth2LoginDetails().keySet().stream()
+					.map(OAuthProvider::findByName).filter(Optional::isPresent).map(Optional::get).collect(Collectors
+							.toMap(OAuthProvider::getName,
+									p -> new AuthProviderInfo(p.getButton(), p.buildPath(OAuthSecurityConfig.SSO_LOGIN_PATH))));
+			builder.withDetail("auth_extensions", providers);
+			//@formatter:on
+		}
+
 	}
+
+	public static class AuthProviderInfo {
+		private String button;
+		private String path;
+
+		public AuthProviderInfo(String button, String path) {
+			this.button = button;
+			this.path = path;
+		}
+
+		public String getButton() {
+			return button;
+		}
+
+		public void setButton(String button) {
+			this.button = button;
+		}
+
+		public String getPath() {
+			return path;
+		}
+
+		public void setPath(String path) {
+			this.path = path;
+		}
+	}
+
 }

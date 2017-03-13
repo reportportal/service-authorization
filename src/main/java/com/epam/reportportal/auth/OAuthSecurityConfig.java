@@ -63,7 +63,6 @@ import java.util.List;
 public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	protected static final String SSO_LOGIN_PATH = "/sso/login";
-	static final String GITHUB = "github";
 
 	@Autowired
 	private OAuth2ClientContext oauth2ClientContext;
@@ -128,13 +127,14 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 		return registration;
 	}
 
-
 	private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
+		String providerName = OAuthProvider.GITHUB.getName();
 		OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(
-				SSO_LOGIN_PATH + "/github");
+				OAuthProvider.GITHUB.buildPath(SSO_LOGIN_PATH));
 
-		githubFilter.setRestTemplate(dynamicAuthProvider.getRestTemplate(GITHUB, oauth2ClientContext));
-		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator, dynamicAuthProvider.getLoginDetailsSupplier(GITHUB));
+		githubFilter.setRestTemplate(dynamicAuthProvider.getRestTemplate(providerName, oauth2ClientContext));
+		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator,
+				dynamicAuthProvider.getLoginDetailsSupplier(providerName));
 		githubFilter.setTokenServices(tokenServices);
 		githubFilter.setAuthenticationSuccessHandler(authSuccessHandler);
 
@@ -151,7 +151,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 			String[] enablers = context.getBeanFactory().getBeanNamesForAnnotation(EnableOAuth2Client.class);
 			boolean extensions = Arrays.stream(enablers)
 					.filter(name -> !context.getBeanFactory().getType(name).equals(OAuthSecurityConfig.class))
-					.filter(name -> context.getBeanFactory().isTypeMatch(name, OAuthSecurityConfig.class)).findAny().isPresent();
+					.anyMatch(name -> context.getBeanFactory().isTypeMatch(name, OAuthSecurityConfig.class));
 			if (extensions) {
 				return ConditionOutcome.noMatch("found @EnableOAuth2Client on a OAuthSecurityConfig subclass");
 			} else {

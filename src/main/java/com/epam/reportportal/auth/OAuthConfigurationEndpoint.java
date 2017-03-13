@@ -37,12 +37,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.epam.ta.reportportal.commons.Predicates.isPresent;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -55,8 +55,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @RequestMapping("/settings/{profileId}/oauth")
 public class OAuthConfigurationEndpoint {
 
+	private final ServerSettingsRepository repository;
+
 	@Autowired
-	private ServerSettingsRepository repository;
+	public OAuthConfigurationEndpoint(ServerSettingsRepository repository) {
+		this.repository = repository;
+	}
 
 	/**
 	 * Updates oauth integration settings
@@ -73,18 +77,15 @@ public class OAuthConfigurationEndpoint {
 	public Map<String, OAuthDetailsResource> updateOAuthSettings(@PathVariable String profileId,
 			@PathVariable("authId") String oauthProviderName, @RequestBody @Validated OAuthDetailsResource oauthDetails) {
 
+		Optional<OAuthProvider> oAuthProvider = OAuthProvider.findByName(oauthProviderName);
+		BusinessRule.expect(oAuthProvider, isPresent()).verify(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, profileId);
+
 		ServerSettings settings = repository.findOne(profileId);
 		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
 		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.ofNullable(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
 
-		if (OAuthSecurityConfig.GITHUB.equals(oauthProviderName)) {
-			oauthDetails.setScope(Collections.singletonList("user"));
-			oauthDetails.setGrantType("authorization_code");
-			oauthDetails.setAccessTokenUri("https://github.com/login/oauth/access_token");
-			oauthDetails.setUserAuthorizationUri("https://github.com/login/oauth/authorize");
-			oauthDetails.setClientAuthenticationScheme("form");
-		}
 		OAuth2LoginDetails loginDetails = OAuthDetailsConverters.FROM_RESOURCE.apply(oauthDetails);
+		oAuthProvider.get().applyDefaults(loginDetails);
 		serverOAuthDetails.put(oauthProviderName, loginDetails);
 
 		settings.setoAuth2LoginDetails(serverOAuthDetails);
