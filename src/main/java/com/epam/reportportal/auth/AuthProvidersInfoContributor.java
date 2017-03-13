@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Map;
 import java.util.Optional;
@@ -54,11 +55,14 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 			Map<String,AuthProviderInfo> providers = settings.getoAuth2LoginDetails().keySet().stream()
 					.map(OAuthProvider::findByName).filter(Optional::isPresent).map(Optional::get).collect(Collectors
 							.toMap(OAuthProvider::getName,
-									p -> new AuthProviderInfo(p.getButton(), p.buildPath(OAuthSecurityConfig.SSO_LOGIN_PATH))));
+									p -> new AuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))));
 			builder.withDetail("auth_extensions", providers);
 			//@formatter:on
 		}
+	}
 
+	private String getAuthBasePath() {
+		return ServletUriComponentsBuilder.fromCurrentContextPath().path(OAuthSecurityConfig.SSO_LOGIN_PATH).toUriString();
 	}
 
 	public static class AuthProviderInfo {

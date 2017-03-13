@@ -78,7 +78,7 @@ public enum OAuthProvider {
 	}
 
 	public String buildPath(String basePath) {
-		return basePath + "/" + this.name;
+		return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
 	}
 
 	public static Optional<OAuthProvider> findByName(String name) {
