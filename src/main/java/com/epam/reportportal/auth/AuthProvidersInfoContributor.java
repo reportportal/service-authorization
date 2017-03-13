@@ -26,11 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath;
 
 /**
  * Shows list of supported authentication providers
@@ -62,7 +63,7 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 	}
 
 	private String getAuthBasePath() {
-		return ServletUriComponentsBuilder.fromCurrentContextPath().path(OAuthSecurityConfig.SSO_LOGIN_PATH).toUriString();
+		return fromCurrentContextPath().path(OAuthSecurityConfig.SSO_LOGIN_PATH).build().getPath();
 	}
 
 	public static class AuthProviderInfo {
