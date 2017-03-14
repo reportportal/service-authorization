@@ -48,11 +48,18 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
+project.ext {
+    releaseMode = project.hasProperty("releaseMode")
+}
+
 dependencies {
-//    compile 'com.epam.reportportal:commons-dao:2.7.0'
-//    compile 'com.epam.reportportal:commons-rules:2.7.0'
-    compile('com.github.reportportal:commons-dao:54f06ba440')
-    compile 'com.github.reportportal:commons-rules:master-SNAPSHOT'
+    if (releaseMode) {
+        compile 'com.epam.reportportal:commons-dao:3.0.0-BETA-1'
+        compile 'com.epam.reportportal:commons-rules:3.0.0-BETA-1'
+    } else {
+        compile('com.github.reportportal:commons-dao:54f06ba440')
+        compile 'com.github.reportportal:commons-rules:master-SNAPSHOT'
+    }
 
     compile 'javax.inject:javax.inject:1'
     compile('org.hibernate:hibernate-validator')
@@ -110,7 +117,6 @@ bootRepackage {
 task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
-
 
 /* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
 apply plugin: 'maven'
@@ -188,7 +194,9 @@ task releaseDockerfile(type: Copy) {
     /* copy dockerfile and replace version of JAR */
     from('docker/Dockerfile-release')
 
-    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.properties.findAll { it.value instanceof String }.collectEntries {
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.properties.findAll {
+        it.value instanceof String
+    }.collectEntries {
         [it.key, it.value]
     })
 
