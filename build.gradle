@@ -31,9 +31,17 @@ targetCompatibility = 1.8
 
 description = 'EPAM Report portal. SSO Authorization Service'
 
+project.ext {
+    releaseMode = project.hasProperty("releaseMode")
+}
+
 repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+
+    if (!releaseMode){
+        maven { url "https://jitpack.io" }
+    }
+
     maven { url "http://dl.bintray.com/epam/reportportal" }
 }
 
@@ -46,10 +54,6 @@ dependencyManagement {
 
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
-
-project.ext {
-    releaseMode = project.hasProperty("releaseMode")
 }
 
 dependencies {
