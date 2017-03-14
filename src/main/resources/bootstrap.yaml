@@ -8,7 +8,7 @@ info:
 spring:
   profiles:
     ## Default one is still Eureka
-    active: ${rp.profiles:eureka}
+    active: ${rp.profiles:}
   application:
     name: uat
 
