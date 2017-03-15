@@ -63,7 +63,7 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 	}
 
 	private String getAuthBasePath() {
-		return fromCurrentContextPath().path(OAuthSecurityConfig.SSO_LOGIN_PATH).build().getPath();
+		return fromCurrentContextPath().pathSegment(OAuthSecurityConfig.SSO_LOGIN_PATH).build().getPath();
 	}
 
 	public static class AuthProviderInfo {
