@@ -4,6 +4,7 @@ info:
     description: Unified Authorization Trap for all ReportPortal's Services
     version: '@version@'
     branch: '@branch@'
+    repo: '@repo@'
 
 spring:
   profiles:
