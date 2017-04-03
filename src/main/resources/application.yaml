@@ -14,7 +14,7 @@ spring:
       discovery:
         tags:
           - urlprefix-${server.context-path:}/uat opts strip=/uat
-          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:/uat}
+          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:/}uat
           - statusPageUrlPath=${server.contextPath:}/info
           - healthCheckUrlPath=${server.contextPath:}/health
         healthCheckPath: ${server.context-path:}/health
@@ -95,7 +95,7 @@ logging:
   level:
     org.springframework.security: warn
     org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver: warn
-
+    com.netflix.discovery.shared.resolver : warn
 
 ## Consul as service registry
 ---
