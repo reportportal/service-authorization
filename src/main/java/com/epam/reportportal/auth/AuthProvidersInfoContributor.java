@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
 import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +43,12 @@ import static org.springframework.web.servlet.support.ServletUriComponentsBuilde
 public class AuthProvidersInfoContributor implements InfoContributor {
 
 	private final ServerSettingsRepository settingsRepository;
+	private final Map<String, OAuthProvider> providersMap;
 
 	@Autowired
-	public AuthProvidersInfoContributor(ServerSettingsRepository settingsRepository) {
+	public AuthProvidersInfoContributor(ServerSettingsRepository settingsRepository, Map<String, OAuthProvider> providersMap) {
 		this.settingsRepository = settingsRepository;
+		this.providersMap = providersMap;
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 		if (null != settings && null != settings.getoAuth2LoginDetails()) {
 			//@formatter:off
 			Map<String,AuthProviderInfo> providers = settings.getoAuth2LoginDetails().keySet().stream()
-					.map(OAuthProvider::findByName).filter(Optional::isPresent).map(Optional::get).collect(Collectors
+					.map(it -> Optional.ofNullable(providersMap.get(it))).filter(Optional::isPresent).map(Optional::get).collect(Collectors
 							.toMap(OAuthProvider::getName,
 									p -> new AuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))));
 			builder.withDetail("auth_extensions", providers);

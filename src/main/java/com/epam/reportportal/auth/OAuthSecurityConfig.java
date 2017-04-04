@@ -22,6 +22,7 @@ package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.integration.github.GitHubTokenServices;
 import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
+import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
@@ -47,9 +48,12 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.inject.Named;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Main Security Extension Point.
@@ -78,6 +82,10 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private MongoOperations mongoOperations;
+
+	@Autowired
+	@Named("github")
+	private OAuthProvider githubProvider;
 
 	/**
 	 * Extension point. Other Implementations can add their own OAuth processing filters
@@ -120,6 +128,11 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
+	Map<String,OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
+		return providers.stream().collect(Collectors.toMap(OAuthProvider::getName, p -> p));
+	}
+
+	@Bean
 	FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
 		FilterRegistrationBean registration = new FilterRegistrationBean();
 		registration.setFilter(filter);
@@ -128,9 +141,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
-		String providerName = OAuthProvider.GITHUB.getName();
+		String providerName = githubProvider.getName();
 		OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(
-				OAuthProvider.GITHUB.buildPath(SSO_LOGIN_PATH));
+				githubProvider.buildPath(SSO_LOGIN_PATH));
 
 		githubFilter.setRestTemplate(dynamicAuthProvider.getRestTemplate(providerName, oauth2ClientContext));
 		GitHubTokenServices tokenServices = new GitHubTokenServices(githubReplicator,

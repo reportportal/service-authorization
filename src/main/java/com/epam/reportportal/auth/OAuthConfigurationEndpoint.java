@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.converter.OAuthDetailsConverters;
+import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.commons.Predicates;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
@@ -56,10 +57,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 public class OAuthConfigurationEndpoint {
 
 	private final ServerSettingsRepository repository;
+	private final Map<String, OAuthProvider> providers;
 
 	@Autowired
-	public OAuthConfigurationEndpoint(ServerSettingsRepository repository) {
+	public OAuthConfigurationEndpoint(ServerSettingsRepository repository, Map<String, OAuthProvider> providers) {
 		this.repository = repository;
+		this.providers = providers;
 	}
 
 	/**
@@ -77,7 +80,7 @@ public class OAuthConfigurationEndpoint {
 	public Map<String, OAuthDetailsResource> updateOAuthSettings(@PathVariable String profileId,
 			@PathVariable("authId") String oauthProviderName, @RequestBody @Validated OAuthDetailsResource oauthDetails) {
 
-		Optional<OAuthProvider> oAuthProvider = OAuthProvider.findByName(oauthProviderName);
+		Optional<OAuthProvider> oAuthProvider = Optional.ofNullable(providers.get(oauthProviderName));
 		BusinessRule.expect(oAuthProvider, isPresent()).verify(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, profileId);
 
 		ServerSettings settings = repository.findOne(profileId);
