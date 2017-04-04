@@ -53,7 +53,7 @@ import static java.util.Optional.ofNullable;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Component
-public class DynamicAuthProvider {
+public class AuthConfigService {
 
 	@Autowired
 	private ServerSettingsRepository serverSettingsRepository;

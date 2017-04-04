@@ -21,44 +21,55 @@
 package com.epam.reportportal.auth.oauth;
 
 import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
+import com.google.common.base.Preconditions;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Andrei Varabyeu
  */
 abstract public class OAuthProvider {
 
-	/**
-	 * Auth provider name
-	 */
-	private String name;
+    /**
+     * Auth provider name
+     */
+    private String name;
 
-	/**
-	 * HTML code of button
-	 */
-	private String button;
+    /**
+     * HTML code of button
+     */
+    private String button;
 
-	public OAuthProvider(String name, String button) {
-		this.name = name;
-		this.button = button;
-	}
+    public OAuthProvider(@Nonnull String name, @Nullable String button) {
+        this.name = Preconditions.checkNotNull(name, "Name should not be null");
+        this.button = button;
+    }
 
-	/**
-	 * Applies default settings
-	 *
-	 * @param details OAuth configuration
-	 */
-	abstract public void applyDefaults(OAuth2LoginDetails details);
+    /**
+     * Applies default settings
+     *
+     * @param details OAuth configuration
+     */
+    abstract public void applyDefaults(OAuth2LoginDetails details);
 
-	public String getName() {
-		return name;
-	}
+    abstract public ResourceServerTokenServices getTokenServices();
 
-	public String getButton() {
-		return button;
-	}
+    abstract public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext context);
 
-	public String buildPath(String basePath) {
-		return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
-	}
+    public String getName() {
+        return name;
+    }
+
+    public String getButton() {
+        return button;
+    }
+
+    public String buildPath(String basePath) {
+        return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
+    }
 
 }
