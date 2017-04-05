@@ -35,18 +35,24 @@ import javax.annotation.Nullable;
 abstract public class OAuthProvider {
 
     /**
+     * Is OAuth provider support dynamic configs
+     */
+    private final boolean configDynamic;
+
+    /**
      * Auth provider name
      */
-    private String name;
+    private final String name;
 
     /**
      * HTML code of button
      */
-    private String button;
+    private final String button;
 
-    public OAuthProvider(@Nonnull String name, @Nullable String button) {
+    public OAuthProvider(@Nonnull String name, @Nullable String button, boolean configDynamic) {
         this.name = Preconditions.checkNotNull(name, "Name should not be null");
         this.button = button;
+        this.configDynamic = configDynamic;
     }
 
     /**
@@ -54,7 +60,8 @@ abstract public class OAuthProvider {
      *
      * @param details OAuth configuration
      */
-    abstract public void applyDefaults(OAuth2LoginDetails details);
+    public void applyDefaults(OAuth2LoginDetails details) {
+    }
 
     abstract public ResourceServerTokenServices getTokenServices();
 
@@ -66,6 +73,10 @@ abstract public class OAuthProvider {
 
     public String getButton() {
         return button;
+    }
+
+    public boolean isConfigDynamic() {
+        return configDynamic;
     }
 
     public String buildPath(String basePath) {
