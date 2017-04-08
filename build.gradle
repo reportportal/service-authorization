@@ -20,6 +20,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
+apply plugin: 'jacoco'
 
 apply from: 'build-quality.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
@@ -208,3 +209,11 @@ addDockerfileToGit.dependsOn releaseDockerfile
 updateVersion.dependsOn removeDockerfileFromGit
 beforeReleaseBuild.dependsOn addDockerfileToGit
 afterReleaseBuild.dependsOn bintrayUpload
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+
+build.dependsOn jacocoTestReport
