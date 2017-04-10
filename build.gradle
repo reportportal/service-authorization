@@ -38,7 +38,7 @@ project.ext {
 repositories {
     mavenCentral()
 
-    if (!releaseMode){
+    if (!releaseMode) {
         maven { url "https://jitpack.io" }
     }
 
@@ -58,11 +58,11 @@ configurations.all {
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:3.0.0-BETA-8'
-        compile 'com.epam.reportportal:commons-rules:3.0.0-BETA-2'
+        compile 'com.epam.reportportal:commons-dao:3.0.0-RC1'
+        compile 'com.epam.reportportal:commons-rules:3.0.0-RC1'
     } else {
-        compile('com.github.reportportal:commons-dao:3.0.0-BETA-8')
-        compile 'com.github.reportportal:commons-rules:3.0.0-BETA-2'
+        compile('com.github.reportportal:commons-dao:3.0.0-RC1')
+        compile 'com.github.reportportal:commons-rules:3.0.0-RC1'
     }
 
     compile 'javax.inject:javax.inject:1'
