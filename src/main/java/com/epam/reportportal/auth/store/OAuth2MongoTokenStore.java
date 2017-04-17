@@ -35,117 +35,128 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.epam.reportportal.auth.AuthUtils.deserializeSafely;
+
 /**
  * @author Andrei Varabyeu
  */
 public class OAuth2MongoTokenStore implements TokenStore {
 
-	@Autowired
-	private OAuth2AccessTokenRepository oAuth2AccessTokenRepository;
+    @Autowired
+    private OAuth2AccessTokenRepository oAuth2AccessTokenRepository;
 
-	@Autowired
-	private OAuth2RefreshTokenRepository oAuth2RefreshTokenRepository;
+    @Autowired
+    private OAuth2RefreshTokenRepository oAuth2RefreshTokenRepository;
 
-	private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
+    private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
 
-	@Override
-	public OAuth2Authentication readAuthentication(OAuth2AccessToken token) {
-		return readAuthentication(token.getValue());
-	}
+    @Override
+    public OAuth2Authentication readAuthentication(OAuth2AccessToken token) {
+        return readAuthentication(token.getValue());
+    }
 
-	@Override
-	public OAuth2Authentication readAuthentication(String tokenId) {
-		return SerializationUtils.deserialize(oAuth2AccessTokenRepository.findByTokenId(tokenId).getAuthentication());
-	}
+    @Override
+    public OAuth2Authentication readAuthentication(String tokenId) {
+        final OAuth2AccessTokenEntity entity = oAuth2AccessTokenRepository.findByTokenId(tokenId);
+        return deserializeSafely(entity.getAuthentication(),
+                auth -> {
+                    // if we are at the place, there was InvalidClassException,
+                    // and we successfully recovered auth object
+                    // let's save it back to DB then, since now it has correct version UUID
+                    entity.setAuthentication(SerializationUtils.serialize(auth));
+                    oAuth2AccessTokenRepository.save(entity);
+                });
+    }
 
-	@Override
-	public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
-		OAuth2AccessTokenEntity tokenEntity = new OAuth2AccessTokenEntity();
-		tokenEntity.setTokenId(token.getValue());
-		tokenEntity.setToken(SerializationUtils.serialize(token));
-		tokenEntity.setAuthentication(SerializationUtils.serialize(authentication));
-		tokenEntity.setAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
-		tokenEntity.setUserName(authentication.isClientOnly() ? null : authentication.getName());
-		tokenEntity.setRefreshToken(null == token.getRefreshToken() ? null : token.getRefreshToken().getValue());
-		tokenEntity.setClientId(authentication.getOAuth2Request().getClientId());
+    @Override
+    public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
+        OAuth2AccessTokenEntity tokenEntity = new OAuth2AccessTokenEntity();
+        tokenEntity.setTokenId(token.getValue());
+        tokenEntity.setToken(SerializationUtils.serialize(token));
+        tokenEntity.setAuthentication(SerializationUtils.serialize(authentication));
+        tokenEntity.setAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
+        tokenEntity.setUserName(authentication.isClientOnly() ? null : authentication.getName());
+        tokenEntity.setRefreshToken(null == token.getRefreshToken() ? null : token.getRefreshToken().getValue());
+        tokenEntity.setClientId(authentication.getOAuth2Request().getClientId());
 
-		oAuth2AccessTokenRepository.save(tokenEntity);
-	}
+        oAuth2AccessTokenRepository.save(tokenEntity);
+    }
 
-	@Override
-	public OAuth2AccessToken readAccessToken(String tokenValue) {
-		OAuth2AccessTokenEntity token = oAuth2AccessTokenRepository.findByTokenId(tokenValue);
-		if (token == null) {
-			return null; //let spring security handle the invalid token
-		}
-		return SerializationUtils.deserialize(token.getToken());
-	}
+    @Override
+    public OAuth2AccessToken readAccessToken(String tokenValue) {
+        OAuth2AccessTokenEntity token = oAuth2AccessTokenRepository.findByTokenId(tokenValue);
+        if (token == null) {
+            return null; //let spring security handle the invalid token
+        }
+        return SerializationUtils.deserialize(token.getToken());
+    }
 
-	@Override
-	public void removeAccessToken(OAuth2AccessToken token) {
-		OAuth2AccessTokenEntity accessToken = oAuth2AccessTokenRepository.findByTokenId(token.getValue());
-		if (accessToken != null) {
-			oAuth2AccessTokenRepository.delete(accessToken);
-		}
-	}
+    @Override
+    public void removeAccessToken(OAuth2AccessToken token) {
+        OAuth2AccessTokenEntity accessToken = oAuth2AccessTokenRepository.findByTokenId(token.getValue());
+        if (accessToken != null) {
+            oAuth2AccessTokenRepository.delete(accessToken);
+        }
+    }
 
-	@Override
-	public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
-		OAuth2RefreshTokenEntity refreshEntity = new OAuth2RefreshTokenEntity();
-		refreshEntity.setAuthentication(SerializationUtils.serialize(authentication));
-		refreshEntity.setTokenId(refreshToken.getValue());
-		refreshEntity.setoAuth2RefreshToken(SerializationUtils.serialize(refreshToken));
-		oAuth2RefreshTokenRepository.save(refreshEntity);
-	}
+    @Override
+    public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
+        OAuth2RefreshTokenEntity refreshEntity = new OAuth2RefreshTokenEntity();
+        refreshEntity.setAuthentication(SerializationUtils.serialize(authentication));
+        refreshEntity.setTokenId(refreshToken.getValue());
+        refreshEntity.setoAuth2RefreshToken(SerializationUtils.serialize(refreshToken));
+        oAuth2RefreshTokenRepository.save(refreshEntity);
+    }
 
-	@Override
-	public OAuth2RefreshToken readRefreshToken(String tokenValue) {
-		return Optional.ofNullable(oAuth2RefreshTokenRepository.findByTokenId(tokenValue)).map(
-				OAuth2RefreshTokenEntity::getoAuth2RefreshToken).map(SerializationUtils::<OAuth2RefreshToken>deserialize).orElse(null);
-	}
+    @Override
+    public OAuth2RefreshToken readRefreshToken(String tokenValue) {
+        return Optional.ofNullable(oAuth2RefreshTokenRepository.findByTokenId(tokenValue)).map(
+                OAuth2RefreshTokenEntity::getoAuth2RefreshToken)
+                .map(SerializationUtils::<OAuth2RefreshToken>deserialize).orElse(null);
+    }
 
-	@Override
-	public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
-		return Optional.ofNullable(oAuth2RefreshTokenRepository.findByTokenId(token.getValue()))
-				.map(OAuth2RefreshTokenEntity::getoAuth2RefreshToken)
-				.map(SerializationUtils::<OAuth2Authentication>deserialize).orElse(null);
-	}
+    @Override
+    public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
+        return Optional.ofNullable(oAuth2RefreshTokenRepository.findByTokenId(token.getValue()))
+                .map(OAuth2RefreshTokenEntity::getoAuth2RefreshToken)
+                .map(SerializationUtils::<OAuth2Authentication>deserialize).orElse(null);
+    }
 
-	@Override
-	public void removeRefreshToken(OAuth2RefreshToken token) {
-		if (null != token && null != token.getValue()){
-			oAuth2RefreshTokenRepository.delete(token.getValue());
-		}
-	}
+    @Override
+    public void removeRefreshToken(OAuth2RefreshToken token) {
+        if (null != token && null != token.getValue()) {
+            oAuth2RefreshTokenRepository.delete(token.getValue());
+        }
+    }
 
-	@Override
-	public void removeAccessTokenUsingRefreshToken(OAuth2RefreshToken refreshToken) {
-		oAuth2AccessTokenRepository.delete(oAuth2AccessTokenRepository.findByRefreshToken(refreshToken.getValue()));
-	}
+    @Override
+    public void removeAccessTokenUsingRefreshToken(OAuth2RefreshToken refreshToken) {
+        oAuth2AccessTokenRepository.delete(oAuth2AccessTokenRepository.findByRefreshToken(refreshToken.getValue()));
+    }
 
-	@Override
-	public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
-		OAuth2AccessTokenEntity token = oAuth2AccessTokenRepository
-				.findByAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
-		return token == null ? null : SerializationUtils.deserialize(token.getToken());
-	}
+    @Override
+    public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
+        OAuth2AccessTokenEntity token = oAuth2AccessTokenRepository
+                .findByAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
+        return token == null ? null : SerializationUtils.deserialize(token.getToken());
+    }
 
-	@Override
-	public Collection<OAuth2AccessToken> findTokensByClientId(String clientId) {
-		return oAuth2AccessTokenRepository
-				.findByClientId(clientId)
-				.map(this::extractAccessToken)
-				.collect(Collectors.toList());
-	}
+    @Override
+    public Collection<OAuth2AccessToken> findTokensByClientId(String clientId) {
+        return oAuth2AccessTokenRepository
+                .findByClientId(clientId)
+                .map(this::extractAccessToken)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public Collection<OAuth2AccessToken> findTokensByClientIdAndUserName(String clientId, String userName) {
-		return oAuth2AccessTokenRepository
-				.findByClientIdAndUserName(clientId, userName)
-				.map(this::extractAccessToken).collect(Collectors.toList());
-	}
+    @Override
+    public Collection<OAuth2AccessToken> findTokensByClientIdAndUserName(String clientId, String userName) {
+        return oAuth2AccessTokenRepository
+                .findByClientIdAndUserName(clientId, userName)
+                .map(this::extractAccessToken).collect(Collectors.toList());
+    }
 
-	private OAuth2AccessToken extractAccessToken(OAuth2AccessTokenEntity token) {
-		return (OAuth2AccessToken) SerializationUtils.deserialize(token.getToken());
-	}
+    private OAuth2AccessToken extractAccessToken(OAuth2AccessTokenEntity token) {
+        return (OAuth2AccessToken) SerializationUtils.deserialize(token.getToken());
+    }
 }

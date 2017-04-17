@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
+import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.commons.EntityUtils;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.database.BinaryData;
@@ -39,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -183,12 +183,5 @@ public class GitHubUserReplicator {
 			projectRepository.save(personalProject);
 		}
 		return personalProject;
-	}
-
-	public static class UserSynchronizationException extends AuthenticationException {
-
-		public UserSynchronizationException(String msg) {
-			super(msg);
-		}
 	}
 }

@@ -4,11 +4,11 @@ info:
     description: Unified Authorization Trap for all ReportPortal's Services
     version: '@version@'
     branch: '@branch@'
+    repo: '@repo@'
 
 spring:
   profiles:
-    ## Default one is still Eureka
-    active: ${rp.profiles:eureka}
+    active: ${rp.profiles:default}
   application:
     name: uat
 
