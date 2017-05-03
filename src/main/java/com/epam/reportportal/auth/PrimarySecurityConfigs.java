@@ -58,7 +58,7 @@ class PrimarySecurityConfigs {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			http.requestMatchers()
-					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**", "/docs/**")
+					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**", "/api-docs/**")
 					.and()
 					.authorizeRequests()
 					.antMatchers("/settings/**").hasRole("ADMINISTRATOR")
