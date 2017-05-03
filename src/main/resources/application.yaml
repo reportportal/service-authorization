@@ -97,6 +97,12 @@ logging:
     org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver: warn
     com.netflix.discovery.shared.resolver : warn
 
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
+
 ## Consul as service registry
 ---
 spring:
@@ -111,9 +117,3 @@ eureka:
     register-with-eureka: false
     enabled: false
 ---
-
-springfox:
-  documentation:
-    swagger:
-      v2:
-        path: /api-docs

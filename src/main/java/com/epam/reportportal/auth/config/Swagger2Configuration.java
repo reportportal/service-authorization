@@ -77,7 +77,12 @@ public class Swagger2Configuration {
 
     @Bean
     public PathProvider rpPathProvider() {
-        return new RelativePathProvider(servletContext);
+        return new RelativePathProvider(servletContext) {
+            @Override
+            protected String getDocumentationPath() {
+                return super.getDocumentationPath() + "/docs";
+            }
+        };
     }
 
     @Bean
