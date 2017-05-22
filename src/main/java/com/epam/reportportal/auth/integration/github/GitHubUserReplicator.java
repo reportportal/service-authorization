@@ -31,7 +31,7 @@ import com.epam.ta.reportportal.database.entity.Project;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.database.entity.user.UserType;
-import com.epam.ta.reportportal.database.personal.PersonalProjectUtils;
+import com.epam.ta.reportportal.database.personal.PersonalProjectService;
 import com.epam.ta.reportportal.database.search.Filter;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.epam.ta.reportportal.database.search.FilterCondition.builder;
 
@@ -63,12 +64,16 @@ public class GitHubUserReplicator {
 	private final UserRepository userRepository;
 	private final ProjectRepository projectRepository;
 	private final DataStorage dataStorage;
+	private final PersonalProjectService personalProjectService;
 
 	@Autowired
-	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage) {
+	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
+			DataStorage dataStorage,
+			PersonalProjectService personalProjectService) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.dataStorage = dataStorage;
+		this.personalProjectService = personalProjectService;
 	}
 
 	public User synchronizeUser(String accessToken) {
@@ -144,7 +149,7 @@ public class GitHubUserReplicator {
 
 			user.setIsExpired(false);
 
-			user.setDefaultProject(generatePersonalProject(user).getId());
+			user.setDefaultProject(generatePersonalProject(user));
 			userRepository.save(user);
 
 		} else if (!UserType.GITHUB.equals(user.getType())) {
@@ -173,15 +178,14 @@ public class GitHubUserReplicator {
 	 * Generates personal project if does NOT exists
 	 *
 	 * @param user Owner of personal project
-	 * @return Created project
+	 * @return Created project name
 	 */
-	private Project generatePersonalProject(User user) {
-		String personalProjectName = PersonalProjectUtils.personalProjectName(user.getLogin());
-		Project personalProject = projectRepository.findOne(personalProjectName);
-		if (null == personalProject) {
-			personalProject = PersonalProjectUtils.generatePersonalProject(user);
+	private String generatePersonalProject(User user) {
+		Optional<String> projectName = projectRepository.findPersonalProjectName(user.getLogin());
+		return projectName.orElseGet(() -> {
+			Project personalProject = personalProjectService.generatePersonalProject(user);
 			projectRepository.save(personalProject);
-		}
-		return personalProject;
+			return personalProject.getId();
+		});
 	}
 }
