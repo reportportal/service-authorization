@@ -81,7 +81,7 @@ public class Swagger2Configuration {
 
     @Bean
     public PathProvider rpPathProvider() {
-        return new RelativePathProvider(servletContext);
+        return new RPPathProvider(servletContext, appName);
     }
 
     @Bean
