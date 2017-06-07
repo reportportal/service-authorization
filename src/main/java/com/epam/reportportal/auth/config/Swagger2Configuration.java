@@ -53,6 +53,9 @@ public class Swagger2Configuration {
     @Value("${info.build.version}")
     private String buildVersion;
 
+    @Autowired
+    @Value("${spring.application.name}")
+    private String appName;
 
     @Bean
     public Docket docket(){
@@ -67,7 +70,8 @@ public class Swagger2Configuration {
 				/* remove default endpoints from listing */
                 .select().apis(not(or(
                         basePackage("org.springframework.boot"),
-                        basePackage("org.springframework.cloud"))))
+                        basePackage("org.springframework.cloud"),
+                        basePackage("org.springframework.security.oauth2.provider.endpoint"))))
                 .build();
         //@formatter:on
 
@@ -83,6 +87,21 @@ public class Swagger2Configuration {
     @Bean
     public UiConfiguration uiConfig() {
         return new UiConfiguration(null);
+    }
+
+    private static class RPPathProvider extends RelativePathProvider {
+
+        private String gatewayPath;
+
+        RPPathProvider(ServletContext servletContext, String gatewayPath) {
+            super(servletContext);
+            this.gatewayPath = gatewayPath;
+        }
+
+        @Override
+        protected String applicationPath() {
+            return "/" + gatewayPath + super.applicationPath();
+        }
     }
 
 }
