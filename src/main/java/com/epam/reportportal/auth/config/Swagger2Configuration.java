@@ -53,10 +53,6 @@ public class Swagger2Configuration {
     @Value("${info.build.version}")
     private String buildVersion;
 
-    @Autowired
-    @Value("${spring.application.name}")
-    private String appName;
-
     @Bean
     public Docket docket(){
         ApiInfo rpInfo = new ApiInfo("Report Portal", "Report Portal UAT documentation", buildVersion, "urn:tos",
@@ -81,27 +77,12 @@ public class Swagger2Configuration {
 
     @Bean
     public PathProvider rpPathProvider() {
-        return new RPPathProvider(servletContext, appName);
+        return new RelativePathProvider(servletContext);
     }
 
     @Bean
     public UiConfiguration uiConfig() {
         return new UiConfiguration(null);
-    }
-
-    private static class RPPathProvider extends RelativePathProvider {
-
-        private String gatewayPath;
-
-        RPPathProvider(ServletContext servletContext, String gatewayPath) {
-            super(servletContext);
-            this.gatewayPath = gatewayPath;
-        }
-
-        @Override
-        protected String applicationPath() {
-            return "/" + gatewayPath + super.applicationPath();
-        }
     }
 
 }
