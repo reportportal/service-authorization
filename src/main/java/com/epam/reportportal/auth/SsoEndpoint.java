@@ -32,10 +32,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Map;
@@ -57,7 +54,7 @@ public class SsoEndpoint {
 		this.tokenServicesFacade = tokenServicesFacade;
 	}
 
-	@RequestMapping({ "/sso/me", "/sso/user" })
+	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = RequestMethod.DELETE)
 	public Map<String, Object> user(Authentication user) {
 		return ImmutableMap.<String, Object>builder().put("user", user.getName())
 				.put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
