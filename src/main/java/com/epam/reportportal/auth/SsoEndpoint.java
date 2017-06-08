@@ -54,7 +54,7 @@ public class SsoEndpoint {
 		this.tokenServicesFacade = tokenServicesFacade;
 	}
 
-	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = RequestMethod.DELETE)
+	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = RequestMethod.GET)
 	public Map<String, Object> user(Authentication user) {
 		return ImmutableMap.<String, Object>builder().put("user", user.getName())
 				.put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
