@@ -33,7 +33,6 @@ import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.settings.OAuthDetailsResource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -56,7 +55,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  */
 @Controller
 @RequestMapping("/settings/{profileId}/oauth")
-@Api(value = "OAuth Configuration Endpoint", tags = {"OAuth Configuration Endpoint"})
+@Api(description = "OAuth Configuration Endpoint")
 public class OAuthConfigurationEndpoint {
 
 	private final ServerSettingsRepository repository;
