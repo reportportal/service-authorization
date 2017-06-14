@@ -1,13 +1,13 @@
 FROM openjdk:8-jre-alpine
 
 LABEL maintainer "Andrei Varabyeu <andrei_varabyeu@epam.com>"
-LABEL version="3.0.0-BETA-3"
+LABEL version="3.0.1-BETA-3"
 LABEL description="EPAM Report portal. SSO Authorization Service"
 
 RUN apk --no-cache add unzip openssl
 
-ENV APP_FILE service-authorization-3.0.0-BETA-3
-ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/service-authorization/3.0.0-BETA-3/$APP_FILE.zip
+ENV APP_FILE service-authorization-3.0.1-BETA-3
+ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/service-authorization/3.0.1-BETA-3/$APP_FILE.zip
 ENV JAVA_OPTS="-Xmx512m"
 
 VOLUME /tmp
