@@ -1,19 +1,19 @@
-FROM frolvlad/alpine-oraclejdk8:slim
+FROM openjdk:8-jre-alpine
 
-MAINTAINER Andrei Varabyeu <andrei_varabyeu@epam.com>
+LABEL maintainer "Andrei Varabyeu <andrei_varabyeu@epam.com>"
 LABEL version="@version@"
 LABEL description="@description@"
 
-RUN apk --no-cache add unzip
+RUN apk --no-cache add unzip openssl
 
-ENV JAVA_OPTS="-Xmx512m"
 ENV APP_FILE @name@-@version@
 ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/@name@/@version@/$APP_FILE.zip
+ENV JAVA_OPTS="-Xmx512m"
 
 VOLUME /tmp
-ADD $APP_DOWNLOAD_URL /app/
 
 RUN mkdir /app
+RUN wget -O /app/ $APP_DOWNLOAD_URL
 RUN unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip
 RUN mv /app/$APP_FILE.jar /app/app.jar
 

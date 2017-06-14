@@ -7,7 +7,7 @@ spring:
     port: 6379
   cloud:
     consul:
-      host: consul
+      host: registry
       discovery:
         hostname: ${HOSTNAME:uat}
         prefer-ip-address: false
