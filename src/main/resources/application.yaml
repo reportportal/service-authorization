@@ -13,8 +13,8 @@ spring:
       port: 8500
       discovery:
         tags:
-          - urlprefix-${server.context-path:}/uat opts strip=/uat
-          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:/}uat
+          - urlprefix-${server.context-path:}/${spring.application.name} opts strip=/${spring.application.name}
+          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:}/${spring.application.name}
           - statusPageUrlPath=${server.contextPath:}/info
           - healthCheckUrlPath=${server.contextPath:}/health
         healthCheckPath: ${server.context-path:}/health
@@ -96,6 +96,12 @@ logging:
     org.springframework.security: warn
     org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver: warn
     com.netflix.discovery.shared.resolver : warn
+
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
 
 ## Consul as service registry
 ---

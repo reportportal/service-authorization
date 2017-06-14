@@ -7,3 +7,6 @@ jdk:
 
 notifications:
   slack: reportportal-dev:fl6xWHVQp1jvsMmCJxYW9YKP
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
