@@ -13,6 +13,7 @@ ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportpor
 VOLUME /tmp
 ADD $APP_DOWNLOAD_URL /app/
 
+RUN mkdir /app
 RUN unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip
 RUN mv /app/$APP_FILE.jar /app/app.jar
 
