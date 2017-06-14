@@ -13,7 +13,7 @@ ENV JAVA_OPTS="-Xmx512m"
 VOLUME /tmp
 
 RUN mkdir /app
-RUN wget -O /app/ $APP_DOWNLOAD_URL
+RUN wget -O /app/$APP_FILE.zip $APP_DOWNLOAD_URL
 RUN unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip
 RUN mv /app/$APP_FILE.jar /app/app.jar
 
