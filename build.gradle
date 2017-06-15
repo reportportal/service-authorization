@@ -68,7 +68,7 @@ dependencies {
 
     compile 'javax.inject:javax.inject:1'
     compile('org.hibernate:hibernate-validator')
-    compile 'io.springfox:springfox-swagger2:2.6.1'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.7.0'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-data-redis'
     compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
