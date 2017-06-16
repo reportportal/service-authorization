@@ -36,6 +36,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.servlet.ServletContext;
 import java.security.Principal;
+import java.util.Collections;
 
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.or;
@@ -57,7 +58,7 @@ public class Swagger2Configuration {
     public Docket docket(){
         ApiInfo rpInfo = new ApiInfo("Report Portal", "Report Portal UAT documentation", buildVersion, "urn:tos",
                 new Contact("EPAM Systems", "https://www.epam.com", ""),
-                "GPLv3", "https://www.gnu.org/licenses/licenses.html#GPL");
+                "GPLv3", "https://www.gnu.org/licenses/licenses.html#GPL", Collections.emptyList());
 
         Docket rpDocket = new Docket(DocumentationType.SWAGGER_2)
                 .ignoredParameterTypes(Principal.class)
