@@ -24,8 +24,15 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorHandler;
+import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
+import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -41,6 +48,12 @@ public class GitHubClient {
 
 	private GitHubClient(String accessToken) {
 		this.restTemplate = new RestTemplate();
+		this.restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
+			@Override
+			public void handleError(ClientHttpResponse response) throws IOException {
+				throw new AuthenticationServiceException("Unable to load Github Data");
+			}
+		});
 		this.restTemplate.getInterceptors().add((request, body, execution) -> {
 			request.getHeaders().add("Authorization", "bearer " + accessToken);
 			return execution.execute(request, body);
