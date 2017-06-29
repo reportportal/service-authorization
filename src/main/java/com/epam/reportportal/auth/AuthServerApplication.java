@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.config.Swagger2Configuration;
 import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
@@ -58,7 +59,7 @@ import java.util.Map;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @SpringBootApplication
-@Import({ MongodbConfiguration.class, CacheConfiguration.class })
+@Import({ MongodbConfiguration.class, CacheConfiguration.class, Swagger2Configuration.class })
 @EnableDiscoveryClient
 @EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
