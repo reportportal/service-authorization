@@ -59,16 +59,16 @@ configurations.all {
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:3.0.0'
-        compile 'com.epam.reportportal:commons-rules:3.0.0'
+        compile 'com.epam.reportportal:commons-dao:3.0.1'
+        compile 'com.epam.reportportal:commons-rules:3.0.1'
     } else {
-        compile('com.github.reportportal:commons-dao:a02e4db')
-        compile 'com.github.reportportal:commons-rules:3.0.0'
+        compile('com.github.reportportal:commons-dao:3.0.1')
+        compile 'com.github.reportportal:commons-rules:3.0.1'
     }
 
     compile 'javax.inject:javax.inject:1'
     compile('org.hibernate:hibernate-validator')
-    compile 'io.springfox:springfox-swagger2:2.6.1'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.7.0'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-data-redis'
     compile 'org.springframework.cloud:spring-cloud-starter-oauth2'

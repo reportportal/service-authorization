@@ -31,6 +31,7 @@ import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.settings.OAuthDetailsResource;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,6 +55,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  */
 @Controller
 @RequestMapping("/settings/{profileId}/oauth")
+@Api(description = "OAuth Configuration Endpoint")
 public class OAuthConfigurationEndpoint {
 
 	private final ServerSettingsRepository repository;
@@ -76,7 +78,7 @@ public class OAuthConfigurationEndpoint {
 	@RequestMapping(value = "/{authId}", method = { POST, PUT })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates ThirdParty OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
+	@ApiOperation(value = "Updates OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
 	public Map<String, OAuthDetailsResource> updateOAuthSettings(@PathVariable String profileId,
 			@PathVariable("authId") String oauthProviderName, @RequestBody @Validated OAuthDetailsResource oauthDetails) {
 
@@ -108,7 +110,7 @@ public class OAuthConfigurationEndpoint {
 	@RequestMapping(value = "/{authId}", method = { DELETE })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Deletes ThirdParty OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
+	@ApiOperation(value = "Deletes OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
 	public OperationCompletionRS deleteOAuthSetting(@PathVariable String profileId, @PathVariable("authId") String oauthProviderName) {
 
 		ServerSettings settings = repository.findOne(profileId);

@@ -23,3 +23,11 @@
 * EPMRPP-23535 - If GitHub organization is empty, no one can log in 
 * EPMRPP-23561 - GitHub Auth: Request for update test user profile returns 404 error
 * EPMRPP-23532 - Full name should be updated for GitHub user
+
+
+## 3.0.2
+##### Released: June, 29 2017
+
+### Bugfixes
+
+* EPMRPP-26051 - Issue with two GitHub and EPAM auth enabled
