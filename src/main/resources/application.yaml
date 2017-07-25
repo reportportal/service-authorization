@@ -18,9 +18,8 @@ spring:
           - statusPageUrlPath=${server.contextPath:}/info
           - healthCheckUrlPath=${server.contextPath:}/health
         healthCheckPath: ${server.context-path:}/health
-        register: false
-      ## Disabled by default
-      enabled: false
+        register: true
+      enabled: true
   # Redis Configuration
   redis:
     host: ${reportportal.redis.host:localhost}
@@ -42,10 +41,10 @@ eureka:
     hostname: ${HOSTNAME:localhost}
     status-page-url-path: ${server.contextPath:}/info
     health-check-url-path: ${server.contextPath:}/health
-  ## Enabled by default
+  ## Disabled by default
   client:
-    register-with-eureka: true
-    enabled: true
+    register-with-eureka: false
+    enabled: false
 
 # MongoDB configuration
 rp:
@@ -116,4 +115,18 @@ eureka:
   client:
     register-with-eureka: false
     enabled: false
+
+## Eureka as service registry
+---
+spring:
+  profiles: eureka
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        register: false
+eureka:
+  client:
+    register-with-eureka: true
+    enabled: true
 ---
