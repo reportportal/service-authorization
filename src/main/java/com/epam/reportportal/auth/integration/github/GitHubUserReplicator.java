@@ -79,7 +79,7 @@ public class GitHubUserReplicator {
 	public User synchronizeUser(String accessToken) {
 		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
 		UserResource userInfo = gitHubClient.getUser();
-		User user = userRepository.findOne(EntityUtils.normalizeUsername(userInfo.login));
+		User user = userRepository.findOne(EntityUtils.normalizeId(userInfo.login));
 		BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
 		BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
 				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
@@ -115,7 +115,7 @@ public class GitHubUserReplicator {
 	 * @return Internal User representation
 	 */
 	public User replicateUser(UserResource userInfo, GitHubClient gitHubClient) {
-		String login = EntityUtils.normalizeUsername(userInfo.login);
+		String login = EntityUtils.normalizeId(userInfo.login);
 		User user = userRepository.findOne(login);
 		if (null == user) {
 			user = new User();
@@ -130,7 +130,7 @@ public class GitHubUserReplicator {
 					.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
 				throw new UserSynchronizationException("User with email '" + email + "' already exists");
 			}
-			user.setEmail(EntityUtils.normalizeEmail(email));
+			user.setEmail(EntityUtils.normalizeId(email));
 
 			if (!Strings.isNullOrEmpty(userInfo.name)) {
 				user.setFullName(userInfo.name);

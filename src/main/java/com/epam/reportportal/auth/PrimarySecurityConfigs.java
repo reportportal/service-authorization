@@ -20,22 +20,26 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.store.OAuth2MongoTokenStore;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
 import com.epam.ta.reportportal.commons.exception.rest.ReportPortalExceptionResolver;
+import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.encoding.LdapShaPasswordEncoder;
 import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -43,6 +47,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+
+import java.util.Arrays;
 
 /**
  * Set of general Security configs. This class is not supposed to be extended
@@ -73,6 +79,9 @@ class PrimarySecurityConfigs {
 	@Configuration
 	protected static class GlobalSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
 
+		@Autowired
+		private ServerSettingsRepository serverSettingsRepository;
+
 		@Bean
 		UserDetailsService userDetailsService() {
 			return new DatabaseUserDetailsService();
@@ -89,8 +98,13 @@ class PrimarySecurityConfigs {
 		@Override
 		public void init(AuthenticationManagerBuilder auth) throws Exception {
 			auth.authenticationProvider(basicPasswordAuthProvider())
-					.ldapAuthentication();
+					.authenticationProvider(new LdapAuthProvider(serverSettingsRepository));
 		}
+
+
+
+
+
 	}
 
 	@Configuration
