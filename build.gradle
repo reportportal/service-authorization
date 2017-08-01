@@ -81,6 +81,12 @@ dependencies {
     compile 'org.springframework.session:spring-session'
     compile 'org.springframework.session:spring-session-data-mongo'
 
+    //LDAP stuff
+    compile("org.springframework.ldap:spring-ldap-core")
+    compile("org.springframework.security:spring-security-ldap")
+    compile("org.springframework:spring-tx")
+    compile("com.unboundid:unboundid-ldapsdk")
+
     compile 'org.springframework.retry:spring-retry'
 
     testCompile 'org.hamcrest:hamcrest-all:1.3'

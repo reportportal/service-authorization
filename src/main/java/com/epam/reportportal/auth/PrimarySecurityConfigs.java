@@ -88,7 +88,8 @@ class PrimarySecurityConfigs {
 
 		@Override
 		public void init(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicPasswordAuthProvider());
+			auth.authenticationProvider(basicPasswordAuthProvider())
+					.ldapAuthentication();
 		}
 	}
 
