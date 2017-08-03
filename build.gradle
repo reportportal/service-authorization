@@ -62,7 +62,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-dao:3.1.0'
         compile 'com.epam.reportportal:commons-rules:3.1.0'
     } else {
-        compile('com.github.reportportal:commons-dao:ldap-support-SNAPSHOT')
+        compile('com.github.reportportal:commons-dao:ae42289')
         compile 'com.github.reportportal:commons-rules:3.1.0'
     }
 
@@ -93,6 +93,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'org.springframework:spring-test'
+    testCompile 'org.mockito:mockito-core:2.8.47'
 
 
 }
