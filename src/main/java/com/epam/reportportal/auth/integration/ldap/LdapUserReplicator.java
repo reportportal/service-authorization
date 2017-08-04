@@ -22,6 +22,7 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.auth.store.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.commons.EntityUtils;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
@@ -31,7 +32,16 @@ import com.epam.ta.reportportal.database.entity.user.UserType;
 import com.epam.ta.reportportal.database.personal.PersonalProjectService;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.DirContextOperations;
+import org.springframework.stereotype.Component;
 
+import static java.util.Optional.ofNullable;
+
+/**
+ * LDAP replicator
+ * @author Andrei Varabyeu
+ */
+@Component
 public class LdapUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
@@ -44,10 +54,13 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 	 * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for that user
 	 *
 	 * @param name  Username
-	 * @param email User's email
+	 * @param ctx LDAP context
+	 * @param attributes Synchronization Attributes
 	 * @return Internal User representation
 	 */
-	public User replicateUser(String name, String email) {
+	public User replicateUser(String name, DirContextOperations ctx, SynchronizationAttributes attributes) {
+		String email = (String) ctx.getObjectAttribute(attributes.getEmail());
+
 		String login = EntityUtils.normalizeId(name);
 		if (Strings.isNullOrEmpty(email)) {
 			throw new UserSynchronizationException("Email not provided");
@@ -55,19 +68,25 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 		User user = userRepository.findOne(login);
 		if (null == user) {
-			user = new User();
-			user.setLogin(login);
+			User newUser = new User();
+			newUser.setLogin(login);
+
+			ofNullable(ctx.getObjectAttribute(attributes.getFullName()))
+					.map(it -> (String)it)
+					.ifPresent(newUser::setFullName);
+
 
 			checkEmail(email);
-			user.setEmail(EntityUtils.normalizeId(email));
-			user.setMetaInfo(defaultMetaInfo());
+			newUser.setEmail(EntityUtils.normalizeId(email));
+			newUser.setMetaInfo(defaultMetaInfo());
 
-			user.setType(UserType.GITHUB);
-			user.setRole(UserRole.USER);
-			user.setIsExpired(false);
+			newUser.setType(UserType.GITHUB);
+			newUser.setRole(UserRole.USER);
+			newUser.setIsExpired(false);
 
-			user.setDefaultProject(generatePersonalProject(user));
-			userRepository.save(user);
+			newUser.setDefaultProject(generatePersonalProject(newUser));
+			userRepository.save(newUser);
+			user = newUser;
 
 		} else if (!UserType.LDAP.equals(user.getType())) {
 			//if user with such login exists, but it's not GitHub user than throw an exception

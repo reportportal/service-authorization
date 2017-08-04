@@ -1,10 +1,17 @@
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.store.AuthConfigRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 public abstract class EnableableAuthProvider implements AuthenticationProvider {
+
+	protected final AuthConfigRepository authConfigRepository;
+
+	protected EnableableAuthProvider(AuthConfigRepository authConfigRepository) {
+		this.authConfigRepository = authConfigRepository;
+	}
 
 	protected abstract boolean isEnabled();
 

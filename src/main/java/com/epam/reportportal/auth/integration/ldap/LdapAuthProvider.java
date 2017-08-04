@@ -22,95 +22,93 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.AuthUtils;
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.store.AuthConfigRepository;
+import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
+import com.epam.reportportal.auth.store.entity.ldap.PasswordEncoderType;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
-import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
-import com.epam.ta.reportportal.database.entity.settings.LdapConfig;
-import com.epam.ta.reportportal.database.entity.settings.PasswordEncoderType;
-import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.encoding.*;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 
-import java.util.Collection;
 import java.util.Map;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
+/**
+ * Plain LDAP auth provider
+ *
+ * @author Andrei Varabyeu
+ */
 public class LdapAuthProvider extends EnableableAuthProvider {
 
-	private final ServerSettingsRepository serverSettingsRepository;
 	private final LdapUserReplicator ldapUserReplicator;
 
-	public LdapAuthProvider(ServerSettingsRepository serverSettingsRepository, LdapUserReplicator ldapUserReplicator) {
-		this.serverSettingsRepository = serverSettingsRepository;
+	public LdapAuthProvider(AuthConfigRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
+		super(authConfigRepository);
 		this.ldapUserReplicator = ldapUserReplicator;
 	}
 
 	@Override
 	protected boolean isEnabled() {
-		return ofNullable(serverSettingsRepository.findDefault())
-				.flatMap(settings -> ofNullable(settings.getAuthConfig()))
-				.flatMap(auth -> ofNullable(auth.getLdap()))
-				.map(ldap -> isTrue(ldap.getEnabled()))
-				.orElse(false);
+		return authConfigRepository.findLdap(true).isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
-		ServerSettings settings = serverSettingsRepository.findDefault();
-		LdapConfig ldap = settings.getAuthConfig().getLdap();
+		LdapConfig ldap = authConfigRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getServer()),
 				ldap.getBaseDn());
 		contextSource.setPassword(ldap.getManagerPassword());
+		contextSource.setUserDn(ldap.getManagerDn());
+		contextSource.afterPropertiesSet();
 
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
 				.authoritiesMapper(authorities -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER))
-				.userDetailsContextMapper(new LdapUserDetailsMapper() {
-					@Override
-					public UserDetails mapUserFromContext(DirContextOperations ctx, String username,
-							Collection<? extends GrantedAuthority> authorities) {
-						UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
-						String email = (String) ctx.getObjectAttribute(ldap.getEmailAttribute());
-						ldapUserReplicator.replicateUser(userDetails.getUsername(), email);
+				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()))
+				.groupSearchBase(ldap.getGroupSearchBase()).groupSearchFilter(ldap.getGroupSearchFilter())
+				.userSearchFilter(ldap.getUserSearchFilter()).contextSource(contextSource);
 
-						return userDetails;
-					}
-				})
-				.groupSearchBase(ldap.getGroupSearchBase())
-				.groupSearchFilter(ldap.getGroupSearchFilter())
-				.userSearchFilter(ldap.getUserSearchFilter())
-				.userDnPatterns(ldap.getUserDnPattern())
-				.contextSource(contextSource).passwordCompare()
-				.passwordAttribute(ldap.getPasswordAttribute()).and();
-		builder
-				.passwordEncoder(ENCODER_MAPPING.get(ldap.getPasswordEncoderType()));
+		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>.PasswordCompareConfigurer passwordCompareConfigurer = builder
+				.passwordCompare();
+
+		if (!isNullOrEmpty(ldap.getPasswordAttribute())) {
+			passwordCompareConfigurer.passwordAttribute(ldap.getPasswordAttribute());
+
+		}
+
+		ofNullable(ldap.getPasswordEncoderType()).ifPresent(encoder -> builder.passwordEncoder(ENCODER_MAPPING.get(encoder)));
+
+		if (!isNullOrEmpty(ldap.getUserDnPattern())) {
+			builder.userDnPatterns(ldap.getUserDnPattern());
+		}
+
 		try {
-			return  (AuthenticationProvider) Accessible.on(builder).method(LdapAuthenticationProviderConfigurer.class.getDeclaredMethod("build")).invoke();
-		} catch (NoSuchMethodException e) {
-			throw new ReportPortalException("Cannot build LDAP auth provider");
+			return (AuthenticationProvider) Accessible.on(builder)
+					.method(LdapAuthenticationProviderConfigurer.class.getDeclaredMethod("build")).invoke();
+		} catch (Throwable e) {
+			throw new ReportPortalException("Cannot build LDAP auth provider", e);
 		}
 	}
 
-	private static final Map<PasswordEncoderType, PasswordEncoder> ENCODER_MAPPING = ImmutableMap
-			.<PasswordEncoderType, PasswordEncoder>builder()
+	//@formatter:off
+	@VisibleForTesting
+	static final Map<PasswordEncoderType, PasswordEncoder> ENCODER_MAPPING = ImmutableMap.<PasswordEncoderType, PasswordEncoder>builder()
 			.put(PasswordEncoderType.LDAP_SHA, new LdapShaPasswordEncoder())
 			.put(PasswordEncoderType.MD4, new Md4PasswordEncoder())
 			.put(PasswordEncoderType.MD5, new Md5PasswordEncoder())
 			.put(PasswordEncoderType.SHA, new ShaPasswordEncoder())
 			.put(PasswordEncoderType.PLAIN, new PlaintextPasswordEncoder())
 			.build();
+	//@formatter:on
 
 }
