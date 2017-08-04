@@ -20,14 +20,14 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
-import com.epam.reportportal.auth.store.entity.AuthConfig;
+import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 
 /**
  * General properties for both LDAP and AD authentication types
  *
  * @author Andrei Varabyeu
  */
-public class AbstractLdapConfig extends AuthConfig{
+public class AbstractLdapConfig extends AbstractAuthConfig {
 
 	private String url;
 	private String baseDn;

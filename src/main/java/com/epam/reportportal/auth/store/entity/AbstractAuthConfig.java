@@ -20,48 +20,18 @@
  */
 package com.epam.reportportal.auth.store.entity;
 
-import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
-import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-
 /**
  * @author Andrei Varabyeu
  */
-public class AuthConfig {
+public class AbstractAuthConfig {
 
-	private String id;
-	private boolean enabled;
-	private LdapConfig ldap;
-	private ActiveDirectoryConfig activeDirectory;
+	private Boolean enabled;
 
-	public boolean isEnabled() {
+	public Boolean isEnabled() {
 		return enabled;
 	}
 
-	public void setEnabled(boolean enabled) {
+	public void setEnabled(Boolean enabled) {
 		this.enabled = enabled;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public LdapConfig getLdap() {
-		return ldap;
-	}
-
-	public void setLdap(LdapConfig ldap) {
-		this.ldap = ldap;
-	}
-
-	public ActiveDirectoryConfig getActiveDirectory() {
-		return activeDirectory;
-	}
-
-	public void setActiveDirectory(ActiveDirectoryConfig activeDirectory) {
-		this.activeDirectory = activeDirectory;
 	}
 }

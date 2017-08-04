@@ -21,17 +21,25 @@
 package com.epam.reportportal.auth.store;
 
 import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
+import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
+
+import java.util.Optional;
 
 /**
+ * AuthConfig repository
+ *
  * @author Andrei Varabyeu
  */
-public interface AuthConfigRepository extends AuthConfigRepositoryCustom, MongoRepository<AuthConfigEntity, String> {
+public interface AuthConfigRepositoryCustom {
 
-	String DEFAULT_PROFILE = "default";
+	void updatePartially(AuthConfigEntity entity);
 
-	@Query(value = "{ 'id' : 'default'")
-	AuthConfigEntity findDefault();
+	void updateLdap(LdapConfig ldapConfig);
 
+	void updateActiveDirectory(ActiveDirectoryConfig adConfig);
+
+	Optional<LdapConfig> findLdap(boolean enabled);
+
+	Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
 }

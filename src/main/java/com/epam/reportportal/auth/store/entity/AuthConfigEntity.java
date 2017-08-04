@@ -3,7 +3,7 @@
  *
  *
  * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * https://github.com/reportportal/commons-dao
  *
  * Report Portal is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,41 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth.store;
+package com.epam.reportportal.auth.store.entity;
 
-import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
+import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 
 /**
  * @author Andrei Varabyeu
  */
-public interface AuthConfigRepository extends AuthConfigRepositoryCustom, MongoRepository<AuthConfigEntity, String> {
+public class AuthConfigEntity {
 
-	String DEFAULT_PROFILE = "default";
+	private String id;
+	private LdapConfig ldap;
+	private ActiveDirectoryConfig activeDirectory;
 
-	@Query(value = "{ 'id' : 'default'")
-	AuthConfigEntity findDefault();
+	public String getId() {
+		return id;
+	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public LdapConfig getLdap() {
+		return ldap;
+	}
+
+	public void setLdap(LdapConfig ldap) {
+		this.ldap = ldap;
+	}
+
+	public ActiveDirectoryConfig getActiveDirectory() {
+		return activeDirectory;
+	}
+
+	public void setActiveDirectory(ActiveDirectoryConfig activeDirectory) {
+		this.activeDirectory = activeDirectory;
+	}
 }

@@ -18,20 +18,47 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth.store;
+package com.epam.reportportal.auth.integration;
 
+import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Andrei Varabyeu
  */
-public interface AuthConfigRepository extends AuthConfigRepositoryCustom, MongoRepository<AuthConfigEntity, String> {
+public enum AuthIntegrationType {
 
-	String DEFAULT_PROFILE = "default";
+	ACTIVE_DIRECTORY("ad") {
+		@Override
+		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
+			return ofNullable(entity.getActiveDirectory());
+		}
+	},
+	LDAP("ldap") {
+		@Override
+		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
+			return ofNullable(entity.getLdap());
+		}
+	};
 
-	@Query(value = "{ 'id' : 'default'")
-	AuthConfigEntity findDefault();
+	private String id;
 
+	AuthIntegrationType(String id) {
+		this.id = id;
+	}
+
+	public abstract Optional<AbstractAuthConfig> get(AuthConfigEntity entity);
+
+	public String getId() {
+		return id;
+	}
+
+	public static Optional<AuthIntegrationType> fromId(String id) {
+		return Arrays.stream(values()).filter(it -> it.id.equals(id)).findAny();
+	}
 }

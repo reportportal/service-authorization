@@ -20,8 +20,6 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
-import com.epam.ta.reportportal.database.entity.settings.PasswordEncoderType;
-
 /**
  * LDAP auth config
  *
