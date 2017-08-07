@@ -66,7 +66,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 	protected AuthenticationProvider getDelegate() {
 		LdapConfig ldap = authConfigRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
-		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getServer()),
+		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn());
 		contextSource.setPassword(ldap.getManagerPassword());
 		contextSource.setUserDn(ldap.getManagerDn());

@@ -27,7 +27,6 @@ package com.epam.reportportal.auth.store.entity.ldap;
  */
 public class LdapConfig extends AbstractLdapConfig {
 
-	private String server;
 	private String baseDn;
 	private String userDnPattern;
 	private String userSearchFilter;
@@ -37,14 +36,6 @@ public class LdapConfig extends AbstractLdapConfig {
 	private String passwordAttribute;
 	private String managerDn;
 	private String managerPassword;
-
-	public String getServer() {
-		return server;
-	}
-
-	public void setServer(String server) {
-		this.server = server;
-	}
 
 	public String getBaseDn() {
 		return baseDn;
