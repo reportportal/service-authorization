@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.config.Swagger2Configuration;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
@@ -40,18 +41,30 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.session.data.mongo.AbstractMongoSessionConverter;
 import org.springframework.session.data.mongo.JdkMongoSessionConverter;
 import org.springframework.session.data.mongo.config.annotation.web.http.EnableMongoHttpSession;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.PathVariableMethodArgumentResolver;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Application entry point
@@ -102,6 +115,26 @@ public class AuthServerApplication {
             handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
             handler.setMessageConverters(messageConverters.getConverters());
             exceptionResolvers.add(handler);
+        }
+
+        @Override
+        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+            super.addArgumentResolvers(argumentResolvers);
+            argumentResolvers.add(new PathVariableMethodArgumentResolver() {
+                @Override
+                public boolean supportsParameter(MethodParameter parameter) {
+                    return AuthIntegrationType.class.equals(parameter.getParameterType());
+                }
+
+                @SuppressWarnings("unchecked")
+                protected Object resolveName(String name, MethodParameter parameter, NativeWebRequest request) throws Exception {
+                    Map<String, String> uriTemplateVars = (Map<String, String>) request.getAttribute(
+                            HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+                    return ofNullable(uriTemplateVars).flatMap(vars -> ofNullable(vars.get(name)))
+                            .flatMap(AuthIntegrationType::fromId).orElse(null);
+
+                }
+            });
         }
     }
 

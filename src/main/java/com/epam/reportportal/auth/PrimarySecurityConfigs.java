@@ -20,6 +20,10 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.OAuth2MongoTokenStore;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
@@ -73,6 +77,12 @@ class PrimarySecurityConfigs {
 	@Configuration
 	protected static class GlobalSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
 
+		@Autowired
+		private AuthConfigRepository authConfigRepository;
+
+		@Autowired
+		private LdapUserReplicator ldapUserReplicator;
+
 		@Bean
 		UserDetailsService userDetailsService() {
 			return new DatabaseUserDetailsService();
@@ -88,8 +98,15 @@ class PrimarySecurityConfigs {
 
 		@Override
 		public void init(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicPasswordAuthProvider());
+			auth.authenticationProvider(basicPasswordAuthProvider())
+					.authenticationProvider(new LdapAuthProvider(authConfigRepository, ldapUserReplicator))
+					.authenticationProvider(new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator));
 		}
+
+
+
+
+
 	}
 
 	@Configuration
