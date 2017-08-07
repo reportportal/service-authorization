@@ -31,6 +31,9 @@ import java.util.Optional;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * @author Andrei Varabyeu
+ */
 public class LdapAuthProviderTest {
 
 	@Test
