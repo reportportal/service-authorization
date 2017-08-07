@@ -22,12 +22,14 @@ package com.epam.reportportal.auth.store.entity;
 
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
+import org.springframework.data.annotation.Id;
 
 /**
  * @author Andrei Varabyeu
  */
 public class AuthConfigEntity {
 
+	@Id
 	private String id;
 	private LdapConfig ldap;
 	private ActiveDirectoryConfig activeDirectory;

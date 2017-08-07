@@ -25,10 +25,12 @@ import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -44,11 +46,12 @@ import static org.springframework.data.mongodb.core.query.Query.query;
  *
  * @author Andrei Varabyeu
  */
-public class AuthConfigRepositoryCustomImpl implements AuthConfigRepositoryCustom {
+public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
 
 	private final MongoOperations mongoOperations;
 
-	public AuthConfigRepositoryCustomImpl(MongoOperations mongoOperations) {
+	@Autowired
+	public AuthConfigRepositoryImpl(MongoOperations mongoOperations) {
 		this.mongoOperations = mongoOperations;
 	}
 

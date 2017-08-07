@@ -23,15 +23,17 @@ package com.epam.reportportal.auth.store;
 import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author Andrei Varabyeu
  */
-public interface AuthConfigRepository extends AuthConfigRepositoryCustom, MongoRepository<AuthConfigEntity, String> {
+@Repository
+public interface AuthConfigRepository extends MongoRepository<AuthConfigEntity, String>, AuthConfigRepositoryCustom {
 
 	String DEFAULT_PROFILE = "default";
 
-	@Query(value = "{ 'id' : 'default'")
+	@Query(value = "{ '_id' : 'default'}")
 	AuthConfigEntity findDefault();
 
 }

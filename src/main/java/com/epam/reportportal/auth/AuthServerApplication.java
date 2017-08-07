@@ -22,7 +22,6 @@ package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.config.Swagger2Configuration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
@@ -43,18 +42,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.session.data.mongo.AbstractMongoSessionConverter;
 import org.springframework.session.data.mongo.JdkMongoSessionConverter;
 import org.springframework.session.data.mongo.config.annotation.web.http.EnableMongoHttpSession;
-import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -62,7 +57,6 @@ import org.springframework.web.servlet.mvc.method.annotation.PathVariableMethodA
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -74,7 +68,6 @@ import static java.util.Optional.ofNullable;
 @SpringBootApplication
 @Import({ MongodbConfiguration.class, CacheConfiguration.class, Swagger2Configuration.class })
 @EnableDiscoveryClient
-@EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
 
     public static void main(String[] args) {

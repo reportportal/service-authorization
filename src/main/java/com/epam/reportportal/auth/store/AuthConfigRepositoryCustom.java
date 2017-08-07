@@ -33,13 +33,13 @@ import java.util.Optional;
  */
 public interface AuthConfigRepositoryCustom {
 
-	void updatePartially(AuthConfigEntity entity);
+    void updatePartially(AuthConfigEntity entity);
 
-	void updateLdap(LdapConfig ldapConfig);
+    void updateLdap(LdapConfig ldapConfig);
 
-	void updateActiveDirectory(ActiveDirectoryConfig adConfig);
+    void updateActiveDirectory(ActiveDirectoryConfig adConfig);
 
-	Optional<LdapConfig> findLdap(boolean enabled);
+    Optional<LdapConfig> findLdap(boolean enabled);
 
-	Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
+    Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
 }
