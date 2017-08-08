@@ -20,6 +20,8 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  * Active Directory auth config
  *
@@ -27,6 +29,7 @@ package com.epam.reportportal.auth.store.entity.ldap;
  */
 public class ActiveDirectoryConfig extends AbstractLdapConfig {
 
+	@NotEmpty
 	private String domain;
 
 	public String getDomain() {

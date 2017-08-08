@@ -20,11 +20,14 @@
  */
 package com.epam.reportportal.auth.store.entity;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
  * @author Andrei Varabyeu
  */
 public class AbstractAuthConfig {
 
+	@NotEmpty
 	private Boolean enabled;
 
 	public Boolean isEnabled() {

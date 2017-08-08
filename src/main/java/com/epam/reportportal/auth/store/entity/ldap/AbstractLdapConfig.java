@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * General properties for both LDAP and AD authentication types
@@ -29,7 +30,9 @@ import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
  */
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
+	@NotEmpty
 	private String url;
+	@NotEmpty
 	private String baseDn;
 	private SynchronizationAttributes synchronizationAttributes;
 
