@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
 @Conditional(OAuthSecurityConfig.HasExtensionsCondition.class)
 public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    protected static final String SSO_LOGIN_PATH = "/sso/login";
+    public static final String SSO_LOGIN_PATH = "/sso/login";
 
     @Autowired
     private OAuth2ClientContext oauth2ClientContext;
