@@ -23,6 +23,8 @@ package com.epam.reportportal.auth.store.entity.ldap;
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.Pattern;
+
 /**
  * General properties for both LDAP and AD authentication types
  *
@@ -31,6 +33,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
 	@NotEmpty
+	@Pattern(regexp = "^ldap://")
 	private String url;
 	@NotEmpty
 	private String baseDn;
