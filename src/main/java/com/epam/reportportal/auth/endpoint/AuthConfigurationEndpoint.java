@@ -34,7 +34,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+
+import java.beans.PropertyEditorSupport;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -92,7 +95,16 @@ public class AuthConfigurationEndpoint {
 	@ApiOperation(value = "Retrieves auth settings")
 	public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
 		return authType.get(repository.findDefault())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, authType.getId()));
 	}
 
+	@InitBinder
+	public void initBinder(final WebDataBinder webdataBinder) {
+		webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport(){
+			@Override
+			public void setAsText(String text) throws IllegalArgumentException {
+				setValue(AuthIntegrationType.fromId(text).orElse(null));
+			}
+		});
+	}
 }

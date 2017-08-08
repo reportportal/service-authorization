@@ -36,13 +36,13 @@ public enum AuthIntegrationType {
 	ACTIVE_DIRECTORY("ad") {
 		@Override
 		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
-			return ofNullable(entity.getActiveDirectory());
+			return ofNullable(entity).map(AuthConfigEntity::getActiveDirectory);
 		}
 	},
 	LDAP("ldap") {
 		@Override
 		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
-			return ofNullable(entity.getLdap());
+			return ofNullable(entity).map(AuthConfigEntity::getLdap);
 		}
 	};
 
