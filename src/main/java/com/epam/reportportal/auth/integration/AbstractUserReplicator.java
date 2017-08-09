@@ -21,15 +21,23 @@
 package com.epam.reportportal.auth.integration;
 
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.ta.reportportal.database.BinaryData;
+import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
 import com.epam.ta.reportportal.database.entity.Project;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.personal.PersonalProjectService;
 import com.epam.ta.reportportal.database.search.Filter;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Optional;
@@ -46,12 +54,14 @@ public class AbstractUserReplicator {
 	protected final UserRepository userRepository;
 	protected final ProjectRepository projectRepository;
 	protected final PersonalProjectService personalProjectService;
+	protected final DataStorage dataStorage;
 
 	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService) {
+			PersonalProjectService personalProjectService, DataStorage dataStorage) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.personalProjectService = personalProjectService;
+		this.dataStorage = dataStorage;
 	}
 
 	/**
@@ -91,5 +101,20 @@ public class AbstractUserReplicator {
 		if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
 			throw new UserSynchronizationException("User with email '" + email + "' already exists");
 		}
+	}
+
+	protected String uploadPhoto(byte[] data, String content, String filename) {
+		BinaryData photo = new BinaryData(resolveContentType(data), null, new ByteArrayInputStream(data));
+		return dataStorage.saveData(photo, filename);
+	}
+
+	private String resolveContentType(byte[] data) {
+		AutoDetectParser parser = new AutoDetectParser();
+		try {
+			return parser.getDetector().detect(TikaInputStream.get(data), new Metadata().toString();
+		} catch (IOException e) {
+			return MediaType.OCTET_STREAM.toString();
+		}
+
 	}
 }

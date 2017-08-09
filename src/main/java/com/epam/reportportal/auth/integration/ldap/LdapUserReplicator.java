@@ -71,9 +71,18 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			User newUser = new User();
 			newUser.setLogin(login);
 
-			ofNullable(ctx.getObjectAttribute(attributes.getFullName()))
-					.map(it -> (String)it)
+			ofNullable(attributes.getFullName())
+					.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
 					.ifPresent(newUser::setFullName);
+
+			ofNullable(attributes.getPhoto())
+					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
+					.filter(photo -> photo instanceof byte[])
+					.map(photo -> (byte[]) photo)
+					.ifPresent(photo -> {
+						System.out.println(photo);
+					});
+
 
 
 			checkEmail(email);
