@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.ta.reportportal.database.entity.ProjectRole;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
@@ -35,12 +36,17 @@ import static java.util.Arrays.stream;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Component
-public class UserRolesInfoContributor implements InfoContributor {
+public class MetadataContributor implements InfoContributor {
 
-	@Override
-	public void contribute(Info.Builder builder) {
-		builder.withDetail("project_roles", stream(ProjectRole.values()).map(Enum::name).collect(Collectors.toList()));
-		//@formatter:on
-	}
+    @Override
+    public void contribute(Info.Builder builder) {
+        builder
+                .withDetail("metadata", ImmutableMap
+                        .builder()
+                        .put("project_roles",
+                                stream(ProjectRole.values()).map(Enum::name).collect(Collectors.toList()))
+                        .build());
+        //@formatter:on
+    }
 
 }
