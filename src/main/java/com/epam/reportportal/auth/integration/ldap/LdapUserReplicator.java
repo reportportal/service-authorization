@@ -81,7 +81,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 					.filter(photo -> photo instanceof byte[])
 					.map(photo -> (byte[]) photo)
 					.ifPresent(photo -> {
-						uploadPhoto(login, photo);
+						newUser.setPhotoId(uploadPhoto(login, photo));
 					});
 
 
