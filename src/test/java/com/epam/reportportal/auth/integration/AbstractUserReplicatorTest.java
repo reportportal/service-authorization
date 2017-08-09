@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration;
 
+import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
 import com.epam.ta.reportportal.database.entity.user.User;
@@ -67,13 +68,13 @@ public class AbstractUserReplicatorTest {
 		when(userRepoMock.exists(Mockito.any(Queryable.class))).thenReturn(false);
 
 		AbstractUserReplicator replicator = new AbstractUserReplicator(userRepoMock, mock(ProjectRepository.class),
-				new PersonalProjectService(mock(ProjectRepository.class)));
+				new PersonalProjectService(mock(ProjectRepository.class)), mock(DataStorage.class));
 		replicator.checkEmail("existing@email.com");
 	}
 
 	private AbstractUserReplicator replicator() {
 		return new AbstractUserReplicator(mock(UserRepository.class), mock(ProjectRepository.class),
-				new PersonalProjectService(mock(ProjectRepository.class)));
+				new PersonalProjectService(mock(ProjectRepository.class)), mock(DataStorage.class));
 	}
 
 }

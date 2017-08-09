@@ -24,6 +24,7 @@ import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.store.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.commons.EntityUtils;
+import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
 import com.epam.ta.reportportal.database.entity.user.User;
@@ -46,8 +47,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
 	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService) {
-		super(userRepository, projectRepository, personalProjectService);
+			PersonalProjectService personalProjectService, DataStorage dataStorage) {
+		super(userRepository, projectRepository, personalProjectService, dataStorage);
 	}
 
 	/**
@@ -80,7 +81,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 					.filter(photo -> photo instanceof byte[])
 					.map(photo -> (byte[]) photo)
 					.ifPresent(photo -> {
-						System.out.println(photo);
+						uploadPhoto(login, photo);
 					});
 
 

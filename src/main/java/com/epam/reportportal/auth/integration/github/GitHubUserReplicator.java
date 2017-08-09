@@ -53,13 +53,10 @@ import java.util.Objects;
 @Component
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
-	private final DataStorage dataStorage;
-
 	@Autowired
 	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage,
 			PersonalProjectService personalProjectService) {
-		super(userRepository, projectRepository, personalProjectService);
-		this.dataStorage = dataStorage;
+		super(userRepository, projectRepository, personalProjectService, dataStorage);
 	}
 
 	public User synchronizeUser(String accessToken) {
@@ -145,7 +142,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 			try (InputStream photoStream = photoRs.getBody().getInputStream()) {
 				BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
 						photoStream);
-				photoId = dataStorage.saveData(photo, photoRs.getBody().getFilename());
+				photoId = uploadPhoto(login, photo);
 			} catch (IOException e) {
 				LOGGER.error("Unable to load photo for user {}", login);
 			}
