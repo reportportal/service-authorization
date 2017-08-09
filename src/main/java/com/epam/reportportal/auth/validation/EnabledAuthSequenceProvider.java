@@ -21,14 +21,10 @@
 package com.epam.reportportal.auth.validation;
 
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
-import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 /**
  * Applies validations if auth is enabled
@@ -39,21 +35,19 @@ public class EnabledAuthSequenceProvider implements DefaultGroupSequenceProvider
 
     @Override
     public List<Class<?>> getValidationGroups(AbstractAuthConfig authConfig) {
+        List<Class<?>> defaultGroupSequence = new ArrayList<>();
         if (null == authConfig) {
-            return Collections.singletonList(AbstractAuthConfig.class);
+            defaultGroupSequence.add(AbstractAuthConfig.class);
+        } else {
+            defaultGroupSequence.add(authConfig.getClass());
+            defaultGroupSequence.add(AbstractAuthConfig.class);
         }
 
-        List<Class<?>> sequence = new ArrayList<>();
 
-        // Apply all validation rules from ConditionalValidation group
-        // only if someField has given value
-        if (isTrue(authConfig.isEnabled())) {
-            sequence.add(IfEnabled.class);
+        if (authConfig != null && authConfig.isEnabled()) {
+            defaultGroupSequence.add(IfEnabled.class);
         }
 
-        // Apply all validation rules from default group
-        sequence.add(authConfig.getClass());
-
-        return sequence;
+        return defaultGroupSequence;
     }
 }

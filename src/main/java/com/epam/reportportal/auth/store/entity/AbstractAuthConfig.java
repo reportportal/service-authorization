@@ -20,20 +20,22 @@
  */
 package com.epam.reportportal.auth.store.entity;
 
+import com.epam.reportportal.auth.validation.EnabledAuthSequenceProvider;
 import com.epam.reportportal.auth.validation.IfEnabled;
+import org.hibernate.validator.group.GroupSequenceProvider;
 
 import javax.validation.constraints.AssertTrue;
 
 /**
  * @author Andrei Varabyeu
  */
-//@GroupSequenceProvider(EnabledAuthSequenceProvider.class)
+@GroupSequenceProvider(EnabledAuthSequenceProvider.class)
 public class AbstractAuthConfig {
 
-    @AssertTrue(
-            message = "The car has to pass the vehicle inspection first",
-            groups = IfEnabled.class
-    )
+//    @AssertTrue(
+//            message = "Enabled LDAP validtion constraints",
+//            groups = { IfEnabled.class }
+//    )
     private Boolean enabled;
 
     public Boolean isEnabled() {

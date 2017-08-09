@@ -21,7 +21,7 @@
 package com.epam.reportportal.auth.validation;
 
 /**
- * Validation group for enableable auth settingsu
+ * Validation group for enableable auth settings
  *
  * @author Andrei Varabyeu
  */
