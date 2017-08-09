@@ -23,7 +23,6 @@ package com.epam.reportportal.auth.endpoint;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
-import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
@@ -36,77 +35,100 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.beans.PropertyEditorSupport;
 
-import static org.springframework.web.bind.annotation.RequestMethod.*;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @Controller
 @RequestMapping("/settings/auth")
 @Api(description = "Main Auth Configuration Endpoint")
 public class AuthConfigurationEndpoint {
 
-	private final AuthConfigRepository repository;
+    private final AuthConfigRepository repository;
 
-	@Autowired
-	public AuthConfigurationEndpoint(AuthConfigRepository repository) {
-		this.repository = repository;
-		this.repository.createDefaultProfileIfAbsent();
-	}
+    @Autowired
+    public AuthConfigurationEndpoint(AuthConfigRepository repository) {
+        this.repository = repository;
+        this.repository.createDefaultProfileIfAbsent();
+    }
 
-	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param ldapConfig LDAP configuration
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/ldap", method = { POST, PUT })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates LDAP auth settings")
-	public OperationCompletionRS updateLdapSettings(@RequestBody @Validated LdapConfig ldapConfig) {
-		repository.updateLdap(ldapConfig);
-		return new OperationCompletionRS("LDAP settings successfully updated");
-	}
+    /**
+     * Updates LDAP auth settings
+     *
+     * @param ldapConfig LDAP configuration
+     * @return Successful message or an error
+     */
+    @RequestMapping(value = "/ldap", method = { POST, PUT })
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Updates LDAP auth settings")
+    public LdapConfig updateLdapSettings(@RequestBody @Validated LdapConfig ldapConfig) {
+        repository.updateLdap(ldapConfig);
+        return repository.findDefault().getLdap();
+    }
 
-	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param adConfig Active Directory configuration
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/ad", method = { POST, PUT })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates LDAP auth settings")
-	public OperationCompletionRS updateADSettings(@RequestBody @Validated ActiveDirectoryConfig adConfig) {
-		repository.updateActiveDirectory(adConfig);
-		return new OperationCompletionRS("Active Directory settings successfully updated");
-	}
+    /**
+     * Updates LDAP auth settings
+     *
+     * @param adConfig Active Directory configuration
+     * @return Successful message or an error
+     */
+    @RequestMapping(value = "/ad", method = { POST, PUT })
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Updates LDAP auth settings")
+    public ActiveDirectoryConfig updateADSettings(@RequestBody @Validated ActiveDirectoryConfig adConfig) {
+        repository.updateActiveDirectory(adConfig);
+        return repository.findDefault().getActiveDirectory();
+    }
 
-	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param authType Type of Auth
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/{authType}", method = { GET })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Retrieves auth settings")
-	public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
-		return authType.get(repository.findDefault())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, authType.getId()));
-	}
+    /**
+     * Updates LDAP auth settings
+     *
+     * @param authType Type of Auth
+     * @return Successful message or an error
+     */
+    @RequestMapping(value = "/{authType}", method = { GET })
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Retrieves auth settings")
+    public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
+        return authType.get(repository.findDefault())
+                .orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, authType.getId()));
+    }
 
-	@InitBinder
-	public void initBinder(final WebDataBinder webdataBinder) {
-		webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport(){
-			@Override
-			public void setAsText(String text) throws IllegalArgumentException {
-				setValue(AuthIntegrationType.fromId(text).orElse(null));
-			}
-		});
-	}
+    /**
+     * Deletes LDAP auth settings
+     *
+     * @param authType Type of Auth
+     * @return Successful message or an error
+     */
+    @RequestMapping(value = "/{authType}", method = { DELETE })
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Retrieves auth settings")
+    public OperationCompletionRS deleteSettings(@PathVariable AuthIntegrationType authType) {
+        repository.deleteSettings(authType);
+        return new OperationCompletionRS(String.format("Auth config %s successfully deleted",authType));
+    }
+
+    @InitBinder
+    public void initBinder(final WebDataBinder webdataBinder) {
+        webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                setValue(AuthIntegrationType.fromId(text).orElse(null));
+            }
+        });
+    }
 }

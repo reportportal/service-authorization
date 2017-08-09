@@ -33,13 +33,13 @@ import static java.util.Optional.ofNullable;
  */
 public enum AuthIntegrationType {
 
-	ACTIVE_DIRECTORY("ad") {
+	ACTIVE_DIRECTORY("ad", "activeDirectory") {
 		@Override
 		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
 			return ofNullable(entity).map(AuthConfigEntity::getActiveDirectory);
 		}
 	},
-	LDAP("ldap") {
+	LDAP("ldap", "ldap") {
 		@Override
 		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
 			return ofNullable(entity).map(AuthConfigEntity::getLdap);
@@ -47,15 +47,21 @@ public enum AuthIntegrationType {
 	};
 
 	private String id;
+	private String dbField;
 
-	AuthIntegrationType(String id) {
+	AuthIntegrationType(String id, String dbField) {
 		this.id = id;
+		this.dbField = dbField;
 	}
 
 	public abstract Optional<AbstractAuthConfig> get(AuthConfigEntity entity);
 
 	public String getId() {
 		return id;
+	}
+
+	public String getDbField() {
+		return dbField;
 	}
 
 	public static Optional<AuthIntegrationType> fromId(String id) {

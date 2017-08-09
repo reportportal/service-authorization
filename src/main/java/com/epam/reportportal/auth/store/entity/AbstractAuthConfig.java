@@ -32,10 +32,10 @@ import javax.validation.constraints.AssertTrue;
 @GroupSequenceProvider(EnabledAuthSequenceProvider.class)
 public class AbstractAuthConfig {
 
-//    @AssertTrue(
-//            message = "Enabled LDAP validtion constraints",
-//            groups = { IfEnabled.class }
-//    )
+    @AssertTrue(
+            message = "Enabled LDAP validation constraints",
+            groups = { IfEnabled.class }
+    )
     private Boolean enabled;
 
     public Boolean isEnabled() {
