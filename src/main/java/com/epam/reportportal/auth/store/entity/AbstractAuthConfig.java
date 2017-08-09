@@ -20,16 +20,13 @@
  */
 package com.epam.reportportal.auth.store.entity;
 
-import com.epam.reportportal.auth.validation.EnabledAuthSequenceProvider;
 import com.epam.reportportal.auth.validation.IfEnabled;
-import org.hibernate.validator.group.GroupSequenceProvider;
 
 import javax.validation.constraints.AssertTrue;
 
 /**
  * @author Andrei Varabyeu
  */
-@GroupSequenceProvider(EnabledAuthSequenceProvider.class)
 public class AbstractAuthConfig {
 
     @AssertTrue(
