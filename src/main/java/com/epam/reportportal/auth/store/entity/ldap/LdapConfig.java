@@ -20,11 +20,16 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
+import com.epam.reportportal.auth.validation.LdapSequenceProvider;
+import org.hibernate.validator.group.GroupSequenceProvider;
+
 /**
  * LDAP auth config
  *
  * @author Andrei Varabyeu
  */
+
+@GroupSequenceProvider(LdapSequenceProvider.class)
 public class LdapConfig extends AbstractLdapConfig {
 
 	private String userDnPattern;

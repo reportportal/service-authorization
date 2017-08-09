@@ -3,7 +3,7 @@
  *
  *
  * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/commons-dao
+ * https://github.com/reportportal/service-authorization
  *
  * Report Portal is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,18 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth.store.entity;
+package com.epam.reportportal.auth.validation;
 
-import javax.validation.constraints.NotNull;
+import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 
 /**
+ * Applies validations if auth is enabled
+ *
  * @author Andrei Varabyeu
  */
-public class AbstractAuthConfig {
+public class LdapSequenceProvider extends AbstractAuthSequenceProvider<LdapConfig> {
 
-	@NotNull
-	private Boolean enabled;
-
-	public Boolean isEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
+	public LdapSequenceProvider() {
+		super(LdapConfig.class);
 	}
 }

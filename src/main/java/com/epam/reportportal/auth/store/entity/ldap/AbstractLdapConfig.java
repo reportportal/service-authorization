@@ -34,37 +34,36 @@ import javax.validation.constraints.Pattern;
  */
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
-    @Pattern(regexp = "^ldap://", groups = { IfEnabled.class })
-    @NotNull(groups = { IfEnabled.class })
-    private String url;
+	@Pattern(regexp = "^ldap://.*")
+	@NotEmpty(groups = { IfEnabled.class })
+	private String url;
 
-    @NotNull(groups = { IfEnabled.class })
-    @NotEmpty(groups = { IfEnabled.class })
-    private String baseDn;
+	@NotNull(groups = { IfEnabled.class })
+	private String baseDn;
 
-    private SynchronizationAttributes synchronizationAttributes;
+	private SynchronizationAttributes synchronizationAttributes;
 
-    public String getUrl() {
-        return url;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    public String getBaseDn() {
-        return baseDn;
-    }
+	public String getBaseDn() {
+		return baseDn;
+	}
 
-    public void setBaseDn(String baseDn) {
-        this.baseDn = baseDn;
-    }
+	public void setBaseDn(String baseDn) {
+		this.baseDn = baseDn;
+	}
 
-    public SynchronizationAttributes getSynchronizationAttributes() {
-        return synchronizationAttributes;
-    }
+	public SynchronizationAttributes getSynchronizationAttributes() {
+		return synchronizationAttributes;
+	}
 
-    public void setSynchronizationAttributes(SynchronizationAttributes synchronizationAttributes) {
-        this.synchronizationAttributes = synchronizationAttributes;
-    }
+	public void setSynchronizationAttributes(SynchronizationAttributes synchronizationAttributes) {
+		this.synchronizationAttributes = synchronizationAttributes;
+	}
 }

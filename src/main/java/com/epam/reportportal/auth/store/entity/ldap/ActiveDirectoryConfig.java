@@ -20,8 +20,9 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
+import com.epam.reportportal.auth.validation.AdSequenceProvider;
 import com.epam.reportportal.auth.validation.IfEnabled;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.group.GroupSequenceProvider;
 
 import javax.validation.constraints.NotNull;
 
@@ -30,18 +31,18 @@ import javax.validation.constraints.NotNull;
  *
  * @author Andrei Varabyeu
  */
+@GroupSequenceProvider(AdSequenceProvider.class)
 public class ActiveDirectoryConfig extends AbstractLdapConfig {
 
-    @NotEmpty(groups = { IfEnabled.class })
-    @NotNull(groups = { IfEnabled.class })
-    private String domain;
+	@NotNull(groups = { IfEnabled.class })
+	private String domain;
 
-    public String getDomain() {
-        return domain;
-    }
+	public String getDomain() {
+		return domain;
+	}
 
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
 
 }

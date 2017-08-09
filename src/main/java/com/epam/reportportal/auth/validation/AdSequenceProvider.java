@@ -20,34 +20,16 @@
  */
 package com.epam.reportportal.auth.validation;
 
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
-import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 
 /**
  * Applies validations if auth is enabled
  *
  * @author Andrei Varabyeu
  */
-public class EnabledAuthSequenceProvider implements DefaultGroupSequenceProvider<AbstractAuthConfig> {
+public class AdSequenceProvider extends AbstractAuthSequenceProvider<ActiveDirectoryConfig> {
 
-    @Override
-    public List<Class<?>> getValidationGroups(AbstractAuthConfig authConfig) {
-        List<Class<?>> defaultGroupSequence = new ArrayList<>();
-        if (null == authConfig) {
-            defaultGroupSequence.add(AbstractAuthConfig.class);
-        } else {
-            defaultGroupSequence.add(authConfig.getClass());
-            defaultGroupSequence.add(AbstractAuthConfig.class);
-        }
-
-
-        if (authConfig != null && authConfig.isEnabled()) {
-            defaultGroupSequence.add(IfEnabled.class);
-        }
-
-        return defaultGroupSequence;
-    }
+	public AdSequenceProvider() {
+		super(ActiveDirectoryConfig.class);
+	}
 }

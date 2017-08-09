@@ -20,6 +20,11 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
+import com.epam.reportportal.auth.validation.IfEnabled;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotNull;
+
 /**
  * Attributes to retrieve from LDAP tree
  *
@@ -27,6 +32,8 @@ package com.epam.reportportal.auth.store.entity.ldap;
  */
 public class SynchronizationAttributes {
 
+	@NotEmpty(groups = { IfEnabled.class })
+	@NotNull(groups = { IfEnabled.class })
 	private String email;
 	private String fullName;
 	private String photo;
