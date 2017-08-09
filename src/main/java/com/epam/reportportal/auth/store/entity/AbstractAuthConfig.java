@@ -20,14 +20,20 @@
  */
 package com.epam.reportportal.auth.store.entity;
 
-import javax.validation.constraints.NotNull;
+import com.epam.reportportal.auth.validation.IfEnabled;
+
+import javax.validation.constraints.AssertTrue;
 
 /**
  * @author Andrei Varabyeu
  */
+//@GroupSequenceProvider(EnabledAuthSequenceProvider.class)
 public class AbstractAuthConfig {
 
-    @NotNull
+    @AssertTrue(
+            message = "The car has to pass the vehicle inspection first",
+            groups = IfEnabled.class
+    )
     private Boolean enabled;
 
     public Boolean isEnabled() {

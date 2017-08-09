@@ -35,11 +35,13 @@ import javax.validation.constraints.Pattern;
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
     @Pattern(regexp = "^ldap://", groups = { IfEnabled.class })
+    @NotNull(groups = { IfEnabled.class })
     private String url;
 
     @NotNull(groups = { IfEnabled.class })
     @NotEmpty(groups = { IfEnabled.class })
     private String baseDn;
+
     private SynchronizationAttributes synchronizationAttributes;
 
     public String getUrl() {

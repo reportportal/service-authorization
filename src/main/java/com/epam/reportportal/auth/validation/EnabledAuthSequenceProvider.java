@@ -20,32 +20,39 @@
  */
 package com.epam.reportportal.auth.validation;
 
-import com.epam.reportportal.auth.store.entity.ldap.AbstractLdapConfig;
+import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
+import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 /**
  * Applies validations if auth is enabled
  *
  * @author Andrei Varabyeu
  */
-public class EnabledAuthSequenceProvider implements DefaultGroupSequenceProvider<AbstractLdapConfig> {
+public class EnabledAuthSequenceProvider implements DefaultGroupSequenceProvider<AbstractAuthConfig> {
 
     @Override
-    public List<Class<?>> getValidationGroups(AbstractLdapConfig myCustomForm) {
+    public List<Class<?>> getValidationGroups(AbstractAuthConfig authConfig) {
+        if (null == authConfig) {
+            return Collections.singletonList(AbstractAuthConfig.class);
+        }
 
         List<Class<?>> sequence = new ArrayList<>();
 
         // Apply all validation rules from ConditionalValidation group
         // only if someField has given value
-        if (myCustomForm.isEnabled()) {
+        if (isTrue(authConfig.isEnabled())) {
             sequence.add(IfEnabled.class);
         }
 
         // Apply all validation rules from default group
-        sequence.add(myCustomForm.getClass());
+        sequence.add(authConfig.getClass());
 
         return sequence;
     }
