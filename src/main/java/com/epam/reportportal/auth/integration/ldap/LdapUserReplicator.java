@@ -90,7 +90,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			newUser.setEmail(EntityUtils.normalizeId(email));
 			newUser.setMetaInfo(defaultMetaInfo());
 
-			newUser.setType(UserType.GITHUB);
+			newUser.setType(UserType.LDAP);
 			newUser.setRole(UserRole.USER);
 			newUser.setIsExpired(false);
 
