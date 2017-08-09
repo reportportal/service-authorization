@@ -3,7 +3,7 @@
  *
  *
  * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/commons-dao
+ * https://github.com/reportportal/service-authorization
  *
  * Report Portal is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth.store.entity;
-
-import javax.validation.constraints.NotNull;
+package com.epam.reportportal.auth.validation;
 
 /**
+ * Validation group for enableable auth settingsu
+ *
  * @author Andrei Varabyeu
  */
-public class AbstractAuthConfig {
-
-    @NotNull
-    private Boolean enabled;
-
-    public Boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
+public interface IfEnabled {
 }

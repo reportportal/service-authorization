@@ -21,8 +21,10 @@
 package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
+import com.epam.reportportal.auth.validation.IfEnabled;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 /**
@@ -32,34 +34,35 @@ import javax.validation.constraints.Pattern;
  */
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
-//	@NotEmpty
-//	@Pattern(regexp = "^ldap://")
-	private String url;
-//	@NotEmpty
-	private String baseDn;
-	private SynchronizationAttributes synchronizationAttributes;
+    @Pattern(regexp = "^ldap://", groups = { IfEnabled.class })
+    private String url;
 
-	public String getUrl() {
-		return url;
-	}
+    @NotNull(groups = { IfEnabled.class })
+    @NotEmpty(groups = { IfEnabled.class })
+    private String baseDn;
+    private SynchronizationAttributes synchronizationAttributes;
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
+    public String getUrl() {
+        return url;
+    }
 
-	public String getBaseDn() {
-		return baseDn;
-	}
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
-	public void setBaseDn(String baseDn) {
-		this.baseDn = baseDn;
-	}
+    public String getBaseDn() {
+        return baseDn;
+    }
 
-	public SynchronizationAttributes getSynchronizationAttributes() {
-		return synchronizationAttributes;
-	}
+    public void setBaseDn(String baseDn) {
+        this.baseDn = baseDn;
+    }
 
-	public void setSynchronizationAttributes(SynchronizationAttributes synchronizationAttributes) {
-		this.synchronizationAttributes = synchronizationAttributes;
-	}
+    public SynchronizationAttributes getSynchronizationAttributes() {
+        return synchronizationAttributes;
+    }
+
+    public void setSynchronizationAttributes(SynchronizationAttributes synchronizationAttributes) {
+        this.synchronizationAttributes = synchronizationAttributes;
+    }
 }

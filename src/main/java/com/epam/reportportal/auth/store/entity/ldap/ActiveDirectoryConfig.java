@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
+import com.epam.reportportal.auth.validation.IfEnabled;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
@@ -29,15 +30,15 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 public class ActiveDirectoryConfig extends AbstractLdapConfig {
 
-	@NotEmpty
-	private String domain;
+    @NotEmpty(groups = { IfEnabled.class })
+    private String domain;
 
-	public String getDomain() {
-		return domain;
-	}
+    public String getDomain() {
+        return domain;
+    }
 
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
 
 }
