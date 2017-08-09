@@ -56,6 +56,15 @@ public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
 	}
 
 	@Override
+	public void createDefaultProfileIfAbsent() {
+		if (null == mongoOperations.findOne(findDefaultQuery(), AuthConfigEntity.class)) {
+			AuthConfigEntity entity = new AuthConfigEntity();
+			entity.setId(AuthConfigRepository.DEFAULT_PROFILE);
+			mongoOperations.save(entity);
+		}
+	}
+
+	@Override
 	public void updatePartially(AuthConfigEntity entity) {
 		mongoOperations.updateFirst(findDefaultQuery(),  updateExisting(entity), AuthConfigEntity.class);
 	}

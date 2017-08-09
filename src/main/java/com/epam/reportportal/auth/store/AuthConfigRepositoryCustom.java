@@ -33,6 +33,8 @@ import java.util.Optional;
  */
 public interface AuthConfigRepositoryCustom {
 
+    void createDefaultProfileIfAbsent();
+
     void updatePartially(AuthConfigEntity entity);
 
     void updateLdap(LdapConfig ldapConfig);
