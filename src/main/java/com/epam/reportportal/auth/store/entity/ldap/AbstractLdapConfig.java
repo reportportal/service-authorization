@@ -32,10 +32,10 @@ import javax.validation.constraints.Pattern;
  */
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
-	@NotEmpty
-	@Pattern(regexp = "^ldap://")
+//	@NotEmpty
+//	@Pattern(regexp = "^ldap://")
 	private String url;
-	@NotEmpty
+//	@NotEmpty
 	private String baseDn;
 	private SynchronizationAttributes synchronizationAttributes;
 
