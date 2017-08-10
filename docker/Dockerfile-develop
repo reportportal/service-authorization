@@ -5,7 +5,7 @@ LABEL version="@version@"
 LABEL description="@description@"
 
 ENV JAVA_OPTS="-Xmx512m"
-ENV JAVA_EXECUTABLE_JAR=/app/app.jar
+ENV JAVA_EXECUTABLE_JAR=/app.jar
 
 RUN sh -c "echo '#!/bin/bash \n\
 exec java $JAVA_OPTS -jar JAVA_EXECUTABLE_JAR' > /start.sh && chmod +x /start.sh"
