@@ -41,6 +41,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.session.data.mongo.AbstractMongoSessionConverter;
 import org.springframework.session.data.mongo.JdkMongoSessionConverter;
@@ -89,9 +90,14 @@ public class AuthServerApplication {
 			RestExceptionHandler handler = new RestExceptionHandler();
 			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
+			RestErrorDefinition<Exception> authErrorDefinition = new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
+					new DefaultExceptionMessageBuilder());
 			Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
-					.put(OAuth2Exception.class, new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
-							new DefaultExceptionMessageBuilder())).putAll(ExceptionMappings.DEFAULT_MAPPING).build();
+					.put(OAuth2Exception.class, authErrorDefinition)
+					.put(AuthenticationException.class, authErrorDefinition)
+					.putAll(ExceptionMappings.DEFAULT_MAPPING)
+
+					.build();
 
 			DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(errorMappings);
 			handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
