@@ -11,11 +11,14 @@ RUN wget -O /start.sh https://raw.githubusercontent.com/reportportal/reportporta
     chmod +x /start.sh
 
 VOLUME /tmp
-ADD lib /lib
+ADD build/libs/lib /lib
 
-ADD @name@-@version@.jar /app.jar
+ADD build/libs/service-authorization-3.0.2-SNAPSHOT.jar /app.jar
 
 RUN sh -c 'touch /app.jar'
 EXPOSE 8080
+
+RUN ls -la
+RUN cat /start.sh
 
 ENTRYPOINT ["/start.sh"]
