@@ -12,14 +12,14 @@ ENV JAVA_OPTS="-Xmx512m -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_EXECUTABLE_JAR=/app/app.jar
 
 RUN sh -c "echo '#!/bin/bash\n\
-exec java $JAVA_OPTS -jar JAVA_EXECUTABLE_JAR' > /start.sh && chmod +x /start.sh"
+exec java $JAVA_OPTS -jar $JAVA_EXECUTABLE_JAR' > /start.sh && chmod +x /start.sh"
 
 VOLUME /tmp
 
 RUN mkdir /app
 RUN wget -O /app/$APP_FILE.zip $APP_DOWNLOAD_URL
 RUN unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip
-RUN mv /app/$APP_FILE.jar JAVA_EXECUTABLE_JAR
+RUN mv /app/$APP_FILE.jar $JAVA_EXECUTABLE_JAR
 
 EXPOSE 8080
 ENTRYPOINT ["/start.sh"]
