@@ -53,7 +53,7 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 	protected AuthenticationProvider getDelegate() {
 
 		ActiveDirectoryConfig adConfig = authConfigRepository.findActiveDirectory(true)
-				.orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
+				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
 		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
 				adConfig.getUrl(), adConfig.getBaseDn());
@@ -62,28 +62,4 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 		adAuth.setUserDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, adConfig.getSynchronizationAttributes()));
 		return adAuth;
 	}
-
-	//	public class CustomLdapProvider implements AuthenticationProvider {
-	//
-	//		private final ActiveDirectoryLdapAuthenticationProvider delegate;
-	//
-	//		public CustomLdapProvider(ActiveDirectoryLdapAuthenticationProvider delegate) {
-	//			this.delegate = delegate;
-	//		}
-	//
-	//		@Override
-	//		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-	//			Authentication auth = this.delegate.authenticate(authentication);
-	//			if (null == auth) {
-	//				return null;
-	//			}
-	//			return new UsernamePasswordAuthenticationToken(auth.getPrincipal(), auth.getCredentials(),
-	//					AuthUtils.AS_AUTHORITIES.apply(UserRole.USER));
-	//		}
-	//
-	//		@Override
-	//		public boolean supports(C    lass<?> authentication) {
-	//			return this.delegate.supports(authentication);
-	//		}
-	//	}
 }
