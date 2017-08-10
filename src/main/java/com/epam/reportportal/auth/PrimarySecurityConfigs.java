@@ -99,8 +99,8 @@ class PrimarySecurityConfigs {
 		@Override
 		public void init(AuthenticationManagerBuilder auth) throws Exception {
 			auth.authenticationProvider(basicPasswordAuthProvider())
-					.authenticationProvider(new LdapAuthProvider(authConfigRepository, ldapUserReplicator))
-					.authenticationProvider(new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator));
+					.authenticationProvider(new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator))
+					.authenticationProvider(new LdapAuthProvider(authConfigRepository, ldapUserReplicator));
 		}
 
 
