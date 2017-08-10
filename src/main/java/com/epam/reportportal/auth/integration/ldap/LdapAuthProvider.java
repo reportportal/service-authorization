@@ -68,25 +68,30 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn());
-		contextSource.setPassword(ldap.getManagerPassword());
-		contextSource.setUserDn(ldap.getManagerDn());
+		ofNullable(ldap.getManagerPassword()).ifPresent(contextSource::setPassword);
+		ofNullable(ldap.getManagerDn()).ifPresent(contextSource::setUserDn);
 		contextSource.afterPropertiesSet();
 
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
+				.contextSource(contextSource)
 				.authoritiesMapper(authorities -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER))
-				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()))
-				.groupSearchBase(ldap.getGroupSearchBase()).groupSearchFilter(ldap.getGroupSearchFilter())
-				.userSearchFilter(ldap.getUserSearchFilter()).contextSource(contextSource);
+				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()));
 
-		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>.PasswordCompareConfigurer passwordCompareConfigurer = builder
-				.passwordCompare();
+		ofNullable(ldap.getGroupSearchFilter()).ifPresent(builder::groupSearchFilter);
+		ofNullable(ldap.getGroupSearchBase()).ifPresent(builder::groupSearchBase);
+		ofNullable(ldap.getUserSearchFilter()).ifPresent(builder::userSearchFilter);
 
-		if (!isNullOrEmpty(ldap.getPasswordAttribute())) {
-			passwordCompareConfigurer.passwordAttribute(ldap.getPasswordAttribute());
 
-		}
 
-		ofNullable(ldap.getPasswordEncoderType()).ifPresent(encoder -> builder.passwordEncoder(ENCODER_MAPPING.get(encoder)));
+		ofNullable(ldap.getPasswordEncoderType()).ifPresent(it -> {
+			LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>.PasswordCompareConfigurer passwordCompareConfigurer = builder
+					.passwordCompare();
+			if (!isNullOrEmpty(ldap.getPasswordAttribute())) {
+				passwordCompareConfigurer.passwordAttribute(ldap.getPasswordAttribute());
+			}
+			builder.passwordEncoder(ENCODER_MAPPING.get(ldap.getPasswordEncoderType()));
+
+		});
 
 		if (!isNullOrEmpty(ldap.getUserDnPattern())) {
 			builder.userDnPatterns(ldap.getUserDnPattern());

@@ -89,6 +89,8 @@ dependencies {
     compile("org.springframework.security:spring-security-ldap")
     compile("org.springframework:spring-tx")
     compile("com.unboundid:unboundid-ldapsdk")
+    compile("org.apache.directory.server:apacheds-core:1.5.5")
+    compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
 
     compile 'org.springframework.retry:spring-retry'
 
