@@ -21,7 +21,6 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.config.Swagger2Configuration;
-import com.epam.reportportal.auth.store.entity.OAuth2AccessTokenEntity;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
@@ -41,8 +40,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.session.data.mongo.AbstractMongoSessionConverter;
 import org.springframework.session.data.mongo.JdkMongoSessionConverter;
@@ -61,48 +60,51 @@ import java.util.Map;
 @SpringBootApplication
 @Import({ MongodbConfiguration.class, CacheConfiguration.class, Swagger2Configuration.class })
 @EnableDiscoveryClient
-@EnableMongoRepositories(basePackageClasses = OAuth2AccessTokenEntity.class)
 public class AuthServerApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(AuthServerApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(AuthServerApplication.class, args);
+	}
 
-    /*
-     * Mongo HTTP session is used to share session between several instances
-     * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
-     * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
-     * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
-     * execution
-     */
-    @Configuration
-    @EnableMongoHttpSession
-    public static class MvcConfig extends WebMvcConfigurerAdapter {
+	/*
+	 * Mongo HTTP session is used to share session between several instances
+	 * Actually, authentication is stateless, but we need session storage to handle Authorization Flow
+	 * of GitHub OAuth. This is alse the reason why there is requestContextListener - just to make
+	 * request scope beans available for session commit during {@link org.springframework.session.web.http.SessionRepositoryFilter}
+	 * execution
+	 */
+	@Configuration
+	@EnableMongoHttpSession
+	public static class MvcConfig extends WebMvcConfigurerAdapter {
 
-        @Autowired
-        private HttpMessageConverters messageConverters;
+		@Autowired
+		private HttpMessageConverters messageConverters;
 
-        @Bean
-        public AbstractMongoSessionConverter mongoSessionConverter() {
-            return new JdkMongoSessionConverter();
-        }
+		@Bean
+		public AbstractMongoSessionConverter mongoSessionConverter() {
+			return new JdkMongoSessionConverter();
+		}
 
-        @Override
-        public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
-            RestExceptionHandler handler = new RestExceptionHandler();
-            handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+		@Override
+		public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
+			RestExceptionHandler handler = new RestExceptionHandler();
+			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
-            Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
-                    .put(OAuth2Exception.class,
-                            new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
-                                    new DefaultExceptionMessageBuilder()))
-                    .putAll(ExceptionMappings.DEFAULT_MAPPING).build();
+			RestErrorDefinition<Exception> authErrorDefinition = new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
+					new DefaultExceptionMessageBuilder());
+			Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
+					.put(OAuth2Exception.class, authErrorDefinition)
+					.put(AuthenticationException.class, authErrorDefinition)
+					.putAll(ExceptionMappings.DEFAULT_MAPPING)
 
-            DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(errorMappings);
-            handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
-            handler.setMessageConverters(messageConverters.getConverters());
-            exceptionResolvers.add(handler);
-        }
-    }
+					.build();
+
+			DefaultErrorResolver defaultErrorResolver = new DefaultErrorResolver(errorMappings);
+			handler.setErrorResolver(new ReportPortalExceptionResolver(defaultErrorResolver));
+			handler.setMessageConverters(messageConverters.getConverters());
+			exceptionResolvers.add(handler);
+		}
+
+	}
 
 }

@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
+import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.commons.EntityUtils;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
@@ -27,16 +28,12 @@ import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
-import com.epam.ta.reportportal.database.entity.Project;
 import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.database.entity.user.UserType;
 import com.epam.ta.reportportal.database.personal.PersonalProjectService;
-import com.epam.ta.reportportal.database.search.Filter;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +44,6 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
-
-import static com.epam.ta.reportportal.database.search.FilterCondition.builder;
 
 /**
  * Replicates GitHub account info with internal ReportPortal's database
@@ -57,29 +51,18 @@ import static com.epam.ta.reportportal.database.search.FilterCondition.builder;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Component
-public class GitHubUserReplicator {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(GitHubUserReplicator.class);
-
-	private final UserRepository userRepository;
-	private final ProjectRepository projectRepository;
-	private final DataStorage dataStorage;
-	private final PersonalProjectService personalProjectService;
+public class GitHubUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
-	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			DataStorage dataStorage,
+	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage,
 			PersonalProjectService personalProjectService) {
-		this.userRepository = userRepository;
-		this.projectRepository = projectRepository;
-		this.dataStorage = dataStorage;
-		this.personalProjectService = personalProjectService;
+		super(userRepository, projectRepository, personalProjectService, dataStorage);
 	}
 
 	public User synchronizeUser(String accessToken) {
 		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
 		UserResource userInfo = gitHubClient.getUser();
-		User user = userRepository.findOne(EntityUtils.normalizeUsername(userInfo.login));
+		User user = userRepository.findOne(EntityUtils.normalizeId(userInfo.login));
 		BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
 		BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
 				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
@@ -115,7 +98,7 @@ public class GitHubUserReplicator {
 	 * @return Internal User representation
 	 */
 	public User replicateUser(UserResource userInfo, GitHubClient gitHubClient) {
-		String login = EntityUtils.normalizeUsername(userInfo.login);
+		String login = EntityUtils.normalizeId(userInfo.login);
 		User user = userRepository.findOne(login);
 		if (null == user) {
 			user = new User();
@@ -126,21 +109,14 @@ public class GitHubUserReplicator {
 				email = gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
 						.get().getEmail();
 			}
-			if (userRepository
-					.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
-				throw new UserSynchronizationException("User with email '" + email + "' already exists");
-			}
-			user.setEmail(EntityUtils.normalizeEmail(email));
+			checkEmail(email);
+			user.setEmail(EntityUtils.normalizeId(email));
 
 			if (!Strings.isNullOrEmpty(userInfo.name)) {
 				user.setFullName(userInfo.name);
 			}
 
-			User.MetaInfo metaInfo = new User.MetaInfo();
-			Date now = Date.from(ZonedDateTime.now().toInstant());
-			metaInfo.setLastLogin(now);
-			metaInfo.setSynchronizationDate(now);
-			user.setMetaInfo(metaInfo);
+			user.setMetaInfo(defaultMetaInfo());
 
 			user.setType(UserType.GITHUB);
 			user.setRole(UserRole.USER);
@@ -166,7 +142,7 @@ public class GitHubUserReplicator {
 			try (InputStream photoStream = photoRs.getBody().getInputStream()) {
 				BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
 						photoStream);
-				photoId = dataStorage.saveData(photo, photoRs.getBody().getFilename());
+				photoId = uploadPhoto(login, photo);
 			} catch (IOException e) {
 				LOGGER.error("Unable to load photo for user {}", login);
 			}
@@ -174,18 +150,4 @@ public class GitHubUserReplicator {
 		return photoId;
 	}
 
-	/**
-	 * Generates personal project if does NOT exists
-	 *
-	 * @param user Owner of personal project
-	 * @return Created project name
-	 */
-	private String generatePersonalProject(User user) {
-		Optional<String> projectName = projectRepository.findPersonalProjectName(user.getLogin());
-		return projectName.orElseGet(() -> {
-			Project personalProject = personalProjectService.generatePersonalProject(user);
-			projectRepository.save(personalProject);
-			return personalProject.getId();
-		});
-	}
 }
