@@ -5,17 +5,13 @@ LABEL version="@version@"
 LABEL description="@description@"
 
 ENV JAVA_OPTS="-Xmx512m"
-ENV JAVA_APP=/app.jar
-
-RUN sh -c "echo $'#!/bin/bash\n\
-exec java $JAVA_OPTS -jar JAVA_APP' > /start.sh && chmod +x /start.sh"
 
 VOLUME /tmp
 ADD lib /lib
 
-ADD @name@-@version@.jar /app.jar
+ADD @name@-@version@.jar app.jar
 
 RUN sh -c 'touch /app.jar'
 EXPOSE 8080
 
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar"]

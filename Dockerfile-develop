@@ -8,7 +8,7 @@ ENV JAVA_OPTS="-Xmx512m"
 ENV JAVA_EXECUTABLE_JAR=/app.jar
 
 RUN sh -c "echo $'#!/bin/bash\n\
-exec java $JAVA_OPTS -jar $JAVA_EXECUTABLE_JAR' > /start.sh && chmod +x /start.sh"
+exec \"java $JAVA_OPTS -jar $JAVA_EXECUTABLE_JAR\"' > /start.sh && chmod +x /start.sh"
 
 VOLUME /tmp
 ADD build/libs/lib /lib
@@ -19,7 +19,6 @@ RUN sh -c 'touch /app.jar'
 EXPOSE 8080
 
 RUN ls -la
-RUN cat /start.sh
 RUN cat /start.sh
 
 ENTRYPOINT ["/start.sh"]
