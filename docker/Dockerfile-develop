@@ -13,7 +13,7 @@ exec java $JAVA_OPTS -jar $JAVA_EXECUTABLE_JAR' > /start.sh && chmod +x /start.s
 VOLUME /tmp
 ADD lib /lib
 
-ADD @name@-@version@.jar app.jar
+ADD @name@-@version@.jar /app.jar
 
 RUN sh -c 'touch /app.jar'
 EXPOSE 8080
