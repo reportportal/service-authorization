@@ -78,6 +78,9 @@ rp:
         user:
           size: 1000
           expiration: 60
+   auth:
+        encryptor:
+          password: reportportal
 
 # GitHUB Oauth Configuration
 github:

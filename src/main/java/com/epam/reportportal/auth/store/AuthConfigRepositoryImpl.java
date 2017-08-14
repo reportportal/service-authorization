@@ -51,6 +51,7 @@ public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
     @Autowired
     public AuthConfigRepositoryImpl(MongoOperations mongoOperations) {
         this.mongoOperations = mongoOperations;
+        createDefaultProfileIfAbsent();
     }
 
     @Override
