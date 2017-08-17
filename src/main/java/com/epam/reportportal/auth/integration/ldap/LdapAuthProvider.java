@@ -32,7 +32,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.encoding.*;
+import org.springframework.security.authentication.encoding.LdapShaPasswordEncoder;
+import org.springframework.security.authentication.encoding.Md4PasswordEncoder;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
@@ -75,8 +80,12 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
 				.contextSource(contextSource)
 				.authoritiesMapper(authorities -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER))
+				.ldapAuthoritiesPopulator((userData, username) -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER))
 				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()));
 
+		/*
+		 * Basically, groups are not used
+		 */
 		ofNullable(ldap.getGroupSearchFilter()).ifPresent(builder::groupSearchFilter);
 		ofNullable(ldap.getGroupSearchBase()).ifPresent(builder::groupSearchBase);
 		ofNullable(ldap.getUserSearchFilter()).ifPresent(builder::userSearchFilter);
@@ -89,7 +98,27 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 			if (!isNullOrEmpty(ldap.getPasswordAttribute())) {
 				passwordCompareConfigurer.passwordAttribute(ldap.getPasswordAttribute());
 			}
-			builder.passwordEncoder(ENCODER_MAPPING.get(ldap.getPasswordEncoderType()));
+
+			/*
+			 * DIRTY HACK. If LDAP's password has solt, ldaptemplate.compare operation does not work
+			 * since we don't know server's salt.
+			 * To enable local password comparison, we need to provide password encoder from crypto's package
+			 * This is why we just wrap old encoder with new one interface
+			 * New encoder cannot be used everywhere since it does not have implementation for LDAP
+			 */
+			final PasswordEncoder delegate = ENCODER_MAPPING.get(ldap.getPasswordEncoderType());
+			builder.passwordEncoder(new org.springframework.security.crypto.password.PasswordEncoder() {
+
+				@Override
+				public String encode(CharSequence rawPassword) {
+					return delegate.encodePassword(rawPassword.toString(), null);
+				}
+
+				@Override
+				public boolean matches(CharSequence rawPassword, String encodedPassword) {
+					return delegate.isPasswordValid(encodedPassword, rawPassword.toString(), null);
+				}
+			});
 
 		});
 
