@@ -69,7 +69,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		user.setFullName(userInfo.name);
 		user.getMetaInfo().setSynchronizationDate(Date.from(ZonedDateTime.now().toInstant()));
 
-		String newPhotoId = uploadAvatar(gitHubClient, userInfo.name, userInfo.avatarUrl);
+		String newPhotoId = uploadAvatar(gitHubClient, userInfo.login, userInfo.avatarUrl);
 		if (!Strings.isNullOrEmpty(newPhotoId)) {
 			dataStorage.deleteData(user.getPhotoId());
 			user.setPhotoId(newPhotoId);
