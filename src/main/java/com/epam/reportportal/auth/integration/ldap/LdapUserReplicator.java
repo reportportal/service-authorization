@@ -36,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
 
+import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -61,12 +63,12 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 	 */
 	public User replicateUser(String name, DirContextOperations ctx, SynchronizationAttributes attributes) {
 		String email = (String) ctx.getObjectAttribute(attributes.getEmail());
-
-		String login = EntityUtils.normalizeId(name);
-		if (Strings.isNullOrEmpty(email)) {
+		if (isNullOrEmpty(email)) {
 			throw new UserSynchronizationException("Email not provided");
 		}
+		email = normalizeId(email);
 
+		String login = normalizeId(name);
 		User user = userRepository.findOne(login);
 		if (null == user) {
 			User newUser = new User();
@@ -80,14 +82,12 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
 					.filter(photo -> photo instanceof byte[])
 					.map(photo -> (byte[]) photo)
-					.ifPresent(photo -> {
-						newUser.setPhotoId(uploadPhoto(login, photo));
-					});
+					.ifPresent(photo -> newUser.setPhotoId(uploadPhoto(login, photo)));
 
 
 
 			checkEmail(email);
-			newUser.setEmail(EntityUtils.normalizeId(email));
+			newUser.setEmail(email);
 			newUser.setMetaInfo(defaultMetaInfo());
 
 			newUser.setType(UserType.LDAP);
