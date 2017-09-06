@@ -18,8 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth;
+package com.epam.reportportal.auth.endpoint;
 
+import com.epam.reportportal.auth.OAuthSecurityConfig;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
 import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
