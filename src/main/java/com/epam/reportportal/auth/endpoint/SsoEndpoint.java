@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.ReportPortalClient;
+import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.TokenServicesFacade;
 import com.epam.ta.reportportal.commons.Preconditions;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
