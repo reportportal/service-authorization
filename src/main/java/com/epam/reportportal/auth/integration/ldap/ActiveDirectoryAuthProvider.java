@@ -25,9 +25,16 @@ import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
+import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+
+import java.util.Collection;
+import java.util.Collections;
 
 import static java.util.Optional.ofNullable;
 
@@ -58,7 +65,7 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
 				adConfig.getUrl(), adConfig.getBaseDn());
 
-		adAuth.setAuthoritiesMapper(authorities -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER));
+		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
 		adAuth.setUserDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, adConfig.getSynchronizationAttributes()));
 		return adAuth;
 	}

@@ -30,6 +30,7 @@ import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.encoding.LdapShaPasswordEncoder;
@@ -40,8 +41,13 @@ import org.springframework.security.authentication.encoding.PlaintextPasswordEnc
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
+import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
+import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 
+import java.util.Collection;
 import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -79,8 +85,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
 				.contextSource(contextSource)
-				.authoritiesMapper(authorities -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER))
-				.ldapAuthoritiesPopulator((userData, username) -> AuthUtils.AS_AUTHORITIES.apply(UserRole.USER))
+				.ldapAuthoritiesPopulator(new NullLdapAuthoritiesPopulator())
 				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()));
 
 		/*

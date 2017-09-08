@@ -20,7 +20,9 @@
  */
 package com.epam.reportportal.auth.integration.ldap;
 
+import com.epam.reportportal.auth.AuthUtils;
 import com.epam.reportportal.auth.store.entity.ldap.SynchronizationAttributes;
+import com.epam.ta.reportportal.database.entity.user.User;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -45,8 +47,9 @@ class DetailsContextMapper extends LdapUserDetailsMapper {
 	public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
 		UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
 
-		ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes);
+		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes);
 
-		return userDetails;
+		return new org.springframework.security.core.userdetails.User(user.getId(), "", true, true, true, true,
+				AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
 	}
 }
