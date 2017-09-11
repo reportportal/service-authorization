@@ -62,7 +62,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-dao:3.2.1'
         compile 'com.epam.reportportal:commons-rules:3.2.0'
     } else {
-        compile('com.github.reportportal:commons-dao:3.2.1')
+        compile('com.github.reportportal:commons-dao:00353dc')
         compile 'com.github.reportportal:commons-rules:3.2.0'
     }
 
