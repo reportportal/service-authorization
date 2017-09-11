@@ -1,12 +1,19 @@
 # Changelog
 
-## 2.6.0
-##### Released: October, 2016
+## 3.2.1
+##### Released: September, 8 2017
 
-### New Features
+### Bugfixes
 
-* Initial release to Public Maven Repositories
-* DockerHub Release 
+* reportportal/reportportal#234
+
+
+## 3.0.2
+##### Released: June, 29 2017
+
+### Bugfixes
+
+* EPMRPP-26051 - Issue with two GitHub and EPAM auth enabled
 
 
 ## 2.7.0
@@ -25,9 +32,10 @@
 * EPMRPP-23532 - Full name should be updated for GitHub user
 
 
-## 3.0.2
-##### Released: June, 29 2017
+## 2.6.0
+##### Released: October, 2016
 
-### Bugfixes
+### New Features
 
-* EPMRPP-26051 - Issue with two GitHub and EPAM auth enabled
+* Initial release to Public Maven Repositories
+* DockerHub Release 
