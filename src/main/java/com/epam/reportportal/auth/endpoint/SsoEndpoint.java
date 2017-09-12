@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.ReportPortalClient;
+import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.TokenServicesFacade;
 import com.epam.ta.reportportal.commons.Preconditions;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
@@ -69,10 +70,14 @@ public class SsoEndpoint {
 
     @RequestMapping({ "/sso/me", "/sso/user" })
     public Map<String, Object> user(Authentication user) {
-        return ImmutableMap.<String, Object>builder().put("user", user.getName())
-                .put("authorities",
-                        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                .build();
+
+        ImmutableMap.Builder<String, Object> details = ImmutableMap.<String, Object>builder().put("user", user.getName())
+                .put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+
+        if (user.getPrincipal() instanceof ReportPortalUser){
+            details.put("projects", ((ReportPortalUser) user.getPrincipal()).getProjectRoles());
+        }
+        return details.build();
     }
 
     @RequestMapping(value = { "/sso/me" }, method = RequestMethod.DELETE)

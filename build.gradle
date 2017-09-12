@@ -62,7 +62,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-dao:3.2.1'
         compile 'com.epam.reportportal:commons-rules:3.2.0'
     } else {
-        compile('com.github.reportportal:commons-dao:3.2.1')
+        compile('com.github.reportportal:commons-dao:3e17997')
         compile 'com.github.reportportal:commons-rules:3.2.0'
     }
 
@@ -70,7 +70,6 @@ dependencies {
     compile('org.hibernate:hibernate-validator')
     compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.7.0'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
-    compile 'org.springframework.boot:spring-boot-starter-data-redis'
     compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
     compile 'org.springframework.cloud:spring-cloud-starter-security'
     compile 'org.springframework.cloud:spring-cloud-starter-eureka'
