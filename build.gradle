@@ -53,10 +53,6 @@ dependencyManagement {
     }
 }
 
-configurations.all {
-    resolutionSёtrategy.cacheChangingModulesFor 0, 'seconds'
-}
-
 dependencies {
     if (releaseMode) {
         compile 'com.epam.reportportal:commons-dao:3.2.1'
