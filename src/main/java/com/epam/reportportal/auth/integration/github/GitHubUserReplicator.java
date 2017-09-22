@@ -22,7 +22,6 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.ta.reportportal.commons.EntityUtils;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.database.BinaryData;
 import com.epam.ta.reportportal.database.DataStorage;
@@ -45,6 +44,8 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
 
+import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+
 /**
  * Replicates GitHub account info with internal ReportPortal's database
  *
@@ -53,101 +54,102 @@ import java.util.Objects;
 @Component
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
-	@Autowired
-	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage,
-			PersonalProjectService personalProjectService) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage);
-	}
+    @Autowired
+    public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage,
+                                PersonalProjectService personalProjectService) {
+        super(userRepository, projectRepository, personalProjectService, dataStorage);
+    }
 
-	public User synchronizeUser(String accessToken) {
-		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
-		UserResource userInfo = gitHubClient.getUser();
-		User user = userRepository.findOne(EntityUtils.normalizeId(userInfo.login));
-		BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
-		BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
-				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
-		user.setFullName(userInfo.name);
-		user.getMetaInfo().setSynchronizationDate(Date.from(ZonedDateTime.now().toInstant()));
+    public User synchronizeUser(String accessToken) {
+        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+        UserResource userInfo = gitHubClient.getUser();
+        User user = userRepository.findOne(normalizeId(userInfo.login));
+        BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
+        BusinessRule.expect(user.getType(), userType -> Objects.equals(userType, UserType.GITHUB))
+                .verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userInfo.login + "' is not GitHUB user");
+        user.setFullName(userInfo.name);
+        user.getMetaInfo().setSynchronizationDate(Date.from(ZonedDateTime.now().toInstant()));
 
-		String newPhotoId = uploadAvatar(gitHubClient, userInfo.login, userInfo.avatarUrl);
-		if (!Strings.isNullOrEmpty(newPhotoId)) {
-			dataStorage.deleteData(user.getPhotoId());
-			user.setPhotoId(newPhotoId);
-		}
-		userRepository.save(user);
-		return user;
-	}
+        String newPhotoId = uploadAvatar(gitHubClient, userInfo.login, userInfo.avatarUrl);
+        if (!Strings.isNullOrEmpty(newPhotoId)) {
+            dataStorage.deleteData(user.getPhotoId());
+            user.setPhotoId(newPhotoId);
+        }
+        userRepository.save(user);
+        return user;
+    }
 
-	/**
-	 * Replicates GitHub user to internal database (if does NOT exist). Creates personal project for that user
-	 *
-	 * @param accessToken Access token to access GitHub
-	 * @return Internal User representation
-	 */
-	public User replicateUser(String accessToken) {
-		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
-		UserResource userInfo = gitHubClient.getUser();
-		return replicateUser(userInfo, gitHubClient);
-	}
+    /**
+     * Replicates GitHub user to internal database (if does NOT exist). Creates personal project for that user
+     *
+     * @param accessToken Access token to access GitHub
+     * @return Internal User representation
+     */
+    public User replicateUser(String accessToken) {
+        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+        UserResource userInfo = gitHubClient.getUser();
+        return replicateUser(userInfo, gitHubClient);
+    }
 
-	/**
-	 * Replicates GitHub user to internal database (if does NOT exist). Creates personal project for that user
-	 *
-	 * @param userInfo     GitHub user to be replicated
-	 * @param gitHubClient Configured github client
-	 * @return Internal User representation
-	 */
-	public User replicateUser(UserResource userInfo, GitHubClient gitHubClient) {
-		String login = EntityUtils.normalizeId(userInfo.login);
-		User user = userRepository.findOne(login);
-		if (null == user) {
-			user = new User();
-			user.setLogin(login);
+    /**
+     * Replicates GitHub user to internal database (if does NOT exist). Creates personal project for that user
+     *
+     * @param userInfo     GitHub user to be replicated
+     * @param gitHubClient Configured github client
+     * @return Internal User representation
+     */
+    public User replicateUser(UserResource userInfo, GitHubClient gitHubClient) {
+        String login = normalizeId(userInfo.login);
+        User user = userRepository.findOne(login);
+        if (null == user) {
+            user = new User();
+            user.setLogin(login);
 
-			String email = userInfo.email;
-			if (Strings.isNullOrEmpty(email)) {
-				email = gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
-						.get().getEmail();
-			}
-			checkEmail(email);
-			user.setEmail(EntityUtils.normalizeId(email));
+            String email = userInfo.email;
+            if (Strings.isNullOrEmpty(email)) {
+                email = gitHubClient.getUserEmails().stream().filter(EmailResource::isVerified).filter(EmailResource::isPrimary).findAny()
+                        .get().getEmail();
+            }
+            email = normalizeId(email);
+            checkEmail(email);
+            user.setEmail(email);
 
-			if (!Strings.isNullOrEmpty(userInfo.name)) {
-				user.setFullName(userInfo.name);
-			}
+            if (!Strings.isNullOrEmpty(userInfo.name)) {
+                user.setFullName(userInfo.name);
+            }
 
-			user.setMetaInfo(defaultMetaInfo());
+            user.setMetaInfo(defaultMetaInfo());
 
-			user.setType(UserType.GITHUB);
-			user.setRole(UserRole.USER);
-			Object avatarUrl = userInfo.avatarUrl;
-			user.setPhotoId(uploadAvatar(gitHubClient, login, avatarUrl));
+            user.setType(UserType.GITHUB);
+            user.setRole(UserRole.USER);
+            Object avatarUrl = userInfo.avatarUrl;
+            user.setPhotoId(uploadAvatar(gitHubClient, login, avatarUrl));
 
-			user.setIsExpired(false);
+            user.setIsExpired(false);
 
-			user.setDefaultProject(generatePersonalProject(user));
-			userRepository.save(user);
+            user.setDefaultProject(generatePersonalProject(user));
+            userRepository.save(user);
 
-		} else if (!UserType.GITHUB.equals(user.getType())) {
-			//if user with such login exists, but it's not GitHub user than throw an exception
-			throw new UserSynchronizationException("User with login '" + user.getId() + "' already exists");
-		}
-		return user;
-	}
+        } else if (!UserType.GITHUB.equals(user.getType())) {
+            //if user with such login exists, but it's not GitHub user than throw an exception
+            throw new UserSynchronizationException("User with login '" + user.getId() + "' already exists");
+        }
+        return user;
+    }
 
-	private String uploadAvatar(GitHubClient gitHubClient, String login, Object avatarUrl) {
-		String photoId = null;
-		if (null != avatarUrl) {
-			ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl.toString());
-			try (InputStream photoStream = photoRs.getBody().getInputStream()) {
-				BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
-						photoStream);
-				photoId = uploadPhoto(login, photo);
-			} catch (IOException e) {
-				LOGGER.error("Unable to load photo for user {}", login);
-			}
-		}
-		return photoId;
-	}
+    private String uploadAvatar(GitHubClient gitHubClient, String login, Object avatarUrl) {
+        String photoId = null;
+        if (null != avatarUrl) {
+            ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl.toString());
+            try (InputStream photoStream = photoRs.getBody().getInputStream()) {
+                BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(), photoRs.getBody().contentLength(),
+                        photoStream);
+                photoId = uploadPhoto(login, photo);
+            } catch (IOException e) {
+                LOGGER.error("Unable to load photo for user {}", login);
+            }
+        }
+        return photoId;
+    }
 
 }
