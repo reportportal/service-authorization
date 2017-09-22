@@ -77,7 +77,7 @@ rp:
           expiration: 5
         user:
           size: 1000
-          expiration: 60
+          expiration: 1
    auth:
         encryptor:
           password: reportportal
