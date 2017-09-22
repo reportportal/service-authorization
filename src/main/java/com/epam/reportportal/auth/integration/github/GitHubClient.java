@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
+import com.google.common.base.Charsets;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
@@ -51,7 +52,7 @@ public class GitHubClient {
 		this.restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
 			@Override
 			public void handleError(ClientHttpResponse response) throws IOException {
-				throw new AuthenticationServiceException("Unable to load Github Data");
+				throw new AuthenticationServiceException("Unable to load Github Data:" + new String(getResponseBody(response), Charsets.UTF_8));
 			}
 		});
 		this.restTemplate.getInterceptors().add((request, body, execution) -> {
