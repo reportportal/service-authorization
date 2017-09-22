@@ -58,7 +58,7 @@ public class AbstractUserReplicator {
     protected final DataStorage dataStorage;
 
     public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-            PersonalProjectService personalProjectService, DataStorage dataStorage) {
+                                  PersonalProjectService personalProjectService, DataStorage dataStorage) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.personalProjectService = personalProjectService;

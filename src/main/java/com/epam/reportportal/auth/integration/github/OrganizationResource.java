@@ -33,21 +33,21 @@ import java.util.Map;
  */
 public class OrganizationResource {
 
-	public String login;
-	public Long id;
-	public String url;
-	public String description;
+    public String login;
+    public Long id;
+    public String url;
+    public String description;
 
-	public Map<String, Object> details = new HashMap<>();
+    public Map<String, Object> details = new HashMap<>();
 
-	@JsonAnyGetter
-	public Map<String, Object> any() {
-		return details;
-	}
+    @JsonAnyGetter
+    public Map<String, Object> any() {
+        return details;
+    }
 
-	@JsonAnySetter
-	public void setUnknown(String name, Object value) {
-		details.put(name, value);
-	}
+    @JsonAnySetter
+    public void setUnknown(String name, Object value) {
+        details.put(name, value);
+    }
 
 }

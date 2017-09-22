@@ -23,7 +23,6 @@ package com.epam.reportportal.auth.integration.ldap;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.store.entity.ldap.SynchronizationAttributes;
-import com.epam.ta.reportportal.commons.EntityUtils;
 import com.epam.ta.reportportal.database.DataStorage;
 import com.epam.ta.reportportal.database.dao.ProjectRepository;
 import com.epam.ta.reportportal.database.dao.UserRepository;
@@ -31,7 +30,6 @@ import com.epam.ta.reportportal.database.entity.user.User;
 import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.database.entity.user.UserType;
 import com.epam.ta.reportportal.database.personal.PersonalProjectService;
-import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
@@ -42,67 +40,67 @@ import static java.util.Optional.ofNullable;
 
 /**
  * LDAP replicator
+ *
  * @author Andrei Varabyeu
  */
 @Component
 public class LdapUserReplicator extends AbstractUserReplicator {
 
-	@Autowired
-	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStorage dataStorage) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage);
-	}
+    @Autowired
+    public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
+                              PersonalProjectService personalProjectService, DataStorage dataStorage) {
+        super(userRepository, projectRepository, personalProjectService, dataStorage);
+    }
 
-	/**
-	 * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for that user
-	 *
-	 * @param name  Username
-	 * @param ctx LDAP context
-	 * @param attributes Synchronization Attributes
-	 * @return Internal User representation
-	 */
-	public User replicateUser(String name, DirContextOperations ctx, SynchronizationAttributes attributes) {
-		String email = (String) ctx.getObjectAttribute(attributes.getEmail());
-		if (isNullOrEmpty(email)) {
-			throw new UserSynchronizationException("Email not provided");
-		}
-		email = normalizeId(email);
+    /**
+     * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for that user
+     *
+     * @param name       Username
+     * @param ctx        LDAP context
+     * @param attributes Synchronization Attributes
+     * @return Internal User representation
+     */
+    public User replicateUser(String name, DirContextOperations ctx, SynchronizationAttributes attributes) {
+        String email = (String) ctx.getObjectAttribute(attributes.getEmail());
+        if (isNullOrEmpty(email)) {
+            throw new UserSynchronizationException("Email not provided");
+        }
+        email = normalizeId(email);
 
-		String login = normalizeId(name);
-		User user = userRepository.findOne(login);
-		if (null == user) {
-			User newUser = new User();
-			newUser.setLogin(login);
+        String login = normalizeId(name);
+        User user = userRepository.findOne(login);
+        if (null == user) {
+            User newUser = new User();
+            newUser.setLogin(login);
 
-			ofNullable(attributes.getFullName())
-					.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
-					.ifPresent(newUser::setFullName);
+            ofNullable(attributes.getFullName())
+                    .flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
+                    .ifPresent(newUser::setFullName);
 
-			ofNullable(attributes.getPhoto())
-					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
-					.filter(photo -> photo instanceof byte[])
-					.map(photo -> (byte[]) photo)
-					.ifPresent(photo -> newUser.setPhotoId(uploadPhoto(login, photo)));
+            ofNullable(attributes.getPhoto())
+                    .flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
+                    .filter(photo -> photo instanceof byte[])
+                    .map(photo -> (byte[]) photo)
+                    .ifPresent(photo -> newUser.setPhotoId(uploadPhoto(login, photo)));
 
 
+            checkEmail(email);
+            newUser.setEmail(email);
+            newUser.setMetaInfo(defaultMetaInfo());
 
-			checkEmail(email);
-			newUser.setEmail(email);
-			newUser.setMetaInfo(defaultMetaInfo());
+            newUser.setType(UserType.LDAP);
+            newUser.setRole(UserRole.USER);
+            newUser.setIsExpired(false);
 
-			newUser.setType(UserType.LDAP);
-			newUser.setRole(UserRole.USER);
-			newUser.setIsExpired(false);
+            newUser.setDefaultProject(generatePersonalProject(newUser));
+            userRepository.save(newUser);
+            user = newUser;
 
-			newUser.setDefaultProject(generatePersonalProject(newUser));
-			userRepository.save(newUser);
-			user = newUser;
-
-		} else if (!UserType.LDAP.equals(user.getType())) {
-			//if user with such login exists, but it's not GitHub user than throw an exception
-			throw new UserSynchronizationException("User with login '" + user.getId() + "' already exists");
-		}
-		return user;
-	}
+        } else if (!UserType.LDAP.equals(user.getType())) {
+            //if user with such login exists, but it's not GitHub user than throw an exception
+            throw new UserSynchronizationException("User with login '" + user.getId() + "' already exists");
+        }
+        return user;
+    }
 
 }

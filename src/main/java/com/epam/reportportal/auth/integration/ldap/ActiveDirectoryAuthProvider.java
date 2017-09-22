@@ -20,53 +20,44 @@
  */
 package com.epam.reportportal.auth.integration.ldap;
 
-import com.epam.reportportal.auth.AuthUtils;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
-import com.epam.ta.reportportal.database.entity.user.UserRole;
-import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import static java.util.Optional.ofNullable;
-
 /**
  * Active Directory provider
+ *
  * @author Andrei Varabyeu
  */
 public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
-	private final LdapUserReplicator ldapUserReplicator;
+    private final LdapUserReplicator ldapUserReplicator;
 
-	public ActiveDirectoryAuthProvider(AuthConfigRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
-		super(authConfigRepository);
-		this.ldapUserReplicator = ldapUserReplicator;
-	}
+    public ActiveDirectoryAuthProvider(AuthConfigRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
+        super(authConfigRepository);
+        this.ldapUserReplicator = ldapUserReplicator;
+    }
 
-	@Override
-	protected boolean isEnabled() {
-		return authConfigRepository.findActiveDirectory(true).isPresent();
-	}
+    @Override
+    protected boolean isEnabled() {
+        return authConfigRepository.findActiveDirectory(true).isPresent();
+    }
 
-	@Override
-	protected AuthenticationProvider getDelegate() {
+    @Override
+    protected AuthenticationProvider getDelegate() {
 
-		ActiveDirectoryConfig adConfig = authConfigRepository.findActiveDirectory(true)
-				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
+        ActiveDirectoryConfig adConfig = authConfigRepository.findActiveDirectory(true)
+                .orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
-		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
-				adConfig.getUrl(), adConfig.getBaseDn());
+        ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
+                adConfig.getUrl(), adConfig.getBaseDn());
 
-		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
-		adAuth.setUserDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, adConfig.getSynchronizationAttributes()));
-		return adAuth;
-	}
+        adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
+        adAuth.setUserDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, adConfig.getSynchronizationAttributes()));
+        return adAuth;
+    }
 }

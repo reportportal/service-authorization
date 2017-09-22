@@ -35,21 +35,21 @@ import java.util.Collection;
  */
 class DetailsContextMapper extends LdapUserDetailsMapper {
 
-	private final LdapUserReplicator ldapUserReplicator;
-	private final SynchronizationAttributes attributes;
+    private final LdapUserReplicator ldapUserReplicator;
+    private final SynchronizationAttributes attributes;
 
-	DetailsContextMapper(LdapUserReplicator ldapUserReplicator, SynchronizationAttributes attributes) {
-		this.ldapUserReplicator = ldapUserReplicator;
-		this.attributes = attributes;
-	}
+    DetailsContextMapper(LdapUserReplicator ldapUserReplicator, SynchronizationAttributes attributes) {
+        this.ldapUserReplicator = ldapUserReplicator;
+        this.attributes = attributes;
+    }
 
-	@Override
-	public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
-		UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
+    @Override
+    public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
+        UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
 
-		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes);
+        User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes);
 
-		return new org.springframework.security.core.userdetails.User(user.getId(), "", true, true, true, true,
-				AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
-	}
+        return new org.springframework.security.core.userdetails.User(user.getId(), "", true, true, true, true,
+                AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
+    }
 }

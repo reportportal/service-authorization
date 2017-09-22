@@ -45,7 +45,7 @@ public class GithubOAuthProvider extends com.epam.reportportal.auth.oauth.OAuthP
     private final AuthConfigService authConfigService;
 
     public GithubOAuthProvider(GitHubUserReplicator githubReplicator,
-            AuthConfigService authConfigService) {
+                               AuthConfigService authConfigService) {
         super("github", BUTTON, true);
         this.githubReplicator = githubReplicator;
         this.authConfigService = authConfigService;

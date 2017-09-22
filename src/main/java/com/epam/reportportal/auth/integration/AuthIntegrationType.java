@@ -33,38 +33,38 @@ import static java.util.Optional.ofNullable;
  */
 public enum AuthIntegrationType {
 
-	ACTIVE_DIRECTORY("ad", "activeDirectory") {
-		@Override
-		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
-			return ofNullable(entity).map(AuthConfigEntity::getActiveDirectory);
-		}
-	},
-	LDAP("ldap", "ldap") {
-		@Override
-		public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
-			return ofNullable(entity).map(AuthConfigEntity::getLdap);
-		}
-	};
+    ACTIVE_DIRECTORY("ad", "activeDirectory") {
+        @Override
+        public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
+            return ofNullable(entity).map(AuthConfigEntity::getActiveDirectory);
+        }
+    },
+    LDAP("ldap", "ldap") {
+        @Override
+        public Optional<AbstractAuthConfig> get(AuthConfigEntity entity) {
+            return ofNullable(entity).map(AuthConfigEntity::getLdap);
+        }
+    };
 
-	private String id;
-	private String dbField;
+    private String id;
+    private String dbField;
 
-	AuthIntegrationType(String id, String dbField) {
-		this.id = id;
-		this.dbField = dbField;
-	}
+    AuthIntegrationType(String id, String dbField) {
+        this.id = id;
+        this.dbField = dbField;
+    }
 
-	public abstract Optional<AbstractAuthConfig> get(AuthConfigEntity entity);
+    public abstract Optional<AbstractAuthConfig> get(AuthConfigEntity entity);
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public String getDbField() {
-		return dbField;
-	}
+    public String getDbField() {
+        return dbField;
+    }
 
-	public static Optional<AuthIntegrationType> fromId(String id) {
-		return Arrays.stream(values()).filter(it -> it.id.equalsIgnoreCase(id)).findAny();
-	}
+    public static Optional<AuthIntegrationType> fromId(String id) {
+        return Arrays.stream(values()).filter(it -> it.id.equalsIgnoreCase(id)).findAny();
+    }
 }

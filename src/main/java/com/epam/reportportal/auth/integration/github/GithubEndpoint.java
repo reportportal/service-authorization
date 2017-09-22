@@ -42,19 +42,19 @@ import java.util.Objects;
 @RestController
 public class GithubEndpoint {
 
-	private final GitHubUserReplicator replicator;
+    private final GitHubUserReplicator replicator;
 
-	@Autowired
-	public GithubEndpoint(GitHubUserReplicator replicator) {
-		this.replicator = replicator;
-	}
+    @Autowired
+    public GithubEndpoint(GitHubUserReplicator replicator) {
+        this.replicator = replicator;
+    }
 
-	@ApiOperation(value = "Synchronizes logged-in GitHub user")
-	@RequestMapping(value = { "/sso/me/github/synchronize" }, method = RequestMethod.POST)
-	public OperationCompletionRS synchronize(@ApiIgnore OAuth2Authentication user) {
-		Serializable upstreamToken = user.getOAuth2Request().getExtensions().get("upstream_token");
-		BusinessRule.expect(upstreamToken, Objects::nonNull).verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "Cannot synchronize GitHub User");
-		this.replicator.synchronizeUser(upstreamToken.toString());
-		return new OperationCompletionRS("User info successfully synchronized");
-	}
+    @ApiOperation(value = "Synchronizes logged-in GitHub user")
+    @RequestMapping(value = {"/sso/me/github/synchronize"}, method = RequestMethod.POST)
+    public OperationCompletionRS synchronize(@ApiIgnore OAuth2Authentication user) {
+        Serializable upstreamToken = user.getOAuth2Request().getExtensions().get("upstream_token");
+        BusinessRule.expect(upstreamToken, Objects::nonNull).verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "Cannot synchronize GitHub User");
+        this.replicator.synchronizeUser(upstreamToken.toString());
+        return new OperationCompletionRS("User info successfully synchronized");
+    }
 }

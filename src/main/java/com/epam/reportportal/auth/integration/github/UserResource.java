@@ -34,24 +34,24 @@ import java.util.Map;
  */
 class UserResource {
 
-	public String login;
-	public String email;
-	public String name;
-	@JsonProperty("avatar_url")
-	public String avatarUrl;
-	@JsonProperty("organizations_url")
-	public String organizationsUrl;
+    public String login;
+    public String email;
+    public String name;
+    @JsonProperty("avatar_url")
+    public String avatarUrl;
+    @JsonProperty("organizations_url")
+    public String organizationsUrl;
 
-	public Map<String, Object> details = new HashMap<>();
+    public Map<String, Object> details = new HashMap<>();
 
-	@JsonAnyGetter
-	public Map<String, Object> any() {
-		return details;
-	}
+    @JsonAnyGetter
+    public Map<String, Object> any() {
+        return details;
+    }
 
-	@JsonAnySetter
-	public void setUnknown(String name, Object value) {
-		details.put(name, value);
-	}
+    @JsonAnySetter
+    public void setUnknown(String name, Object value) {
+        details.put(name, value);
+    }
 
 }
