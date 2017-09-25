@@ -56,10 +56,10 @@ dependencyManagement {
 dependencies {
     if (releaseMode) {
         compile 'com.epam.reportportal:commons-dao:3.3.1'
-        compile 'com.epam.reportportal:commons-rules:3.2.0'
+        compile 'com.epam.reportportal:commons-rules:3.3.0'
     } else {
         compile('com.github.reportportal:commons-dao:3.3.1')
-        compile 'com.github.reportportal:commons-rules:3.2.0'
+        compile 'com.github.reportportal:commons-rules:3.3.0'
     }
 
     compile 'javax.inject:javax.inject:1'
@@ -95,8 +95,6 @@ dependencies {
     testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'org.springframework:spring-test'
     testCompile 'org.mockito:mockito-core:2.8.47'
-
-    testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'com.github.fakemongo:fongo:2.1.0'
 
 
