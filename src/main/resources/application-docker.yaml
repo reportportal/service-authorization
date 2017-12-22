@@ -23,7 +23,7 @@ eureka:
 # MongoDB configuration
 rp:
    mongo:
-     host: localhost
+     host: mongodb
      port: 27017
      dbName: reportportal
 #     user:
