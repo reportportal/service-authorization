@@ -53,7 +53,8 @@ rp:
    session:
         live: 1800
    mongo:
-        uri: mongodb://localhost:27017
+        host: ${reportportal.mongo.host:localhost}
+        port: 27017
         dbName: reportportal
 #        user: user
 #        password: 1q2w3e
