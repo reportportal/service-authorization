@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +58,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = MongoAutoConfiguration.class)
 @Import({ MongodbConfiguration.class, CacheConfiguration.class, Swagger2Configuration.class })
 @EnableDiscoveryClient
 public class AuthServerApplication {
