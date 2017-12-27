@@ -4,8 +4,7 @@ spring:
       discovery:
         hostname: docker.for.mac.localhost
       host: localhost
-  redis:
-    host: localhost
+
 rp:
   mongo:
     uri: mongodb://localhost:27017
