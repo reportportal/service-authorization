@@ -26,5 +26,5 @@ rp:
      host: mongodb
      port: 27017
      dbName: reportportal
-     user:
-     password:
+#     user:
+#     password:
