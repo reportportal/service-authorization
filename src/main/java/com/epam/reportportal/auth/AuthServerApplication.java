@@ -34,6 +34,8 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +59,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = { MongoAutoConfiguration.class, MongoDataAutoConfiguration.class })
 @Import({ MongodbConfiguration.class, CacheConfiguration.class, Swagger2Configuration.class })
 @EnableDiscoveryClient
 public class AuthServerApplication {
@@ -90,8 +92,10 @@ public class AuthServerApplication {
 			RestExceptionHandler handler = new RestExceptionHandler();
 			handler.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
-			RestErrorDefinition<Exception> authErrorDefinition = new RestErrorDefinition<>(HttpStatus.BAD_REQUEST, ErrorType.ACCESS_DENIED,
-					new DefaultExceptionMessageBuilder());
+			RestErrorDefinition<Exception> authErrorDefinition = new RestErrorDefinition<>(HttpStatus.BAD_REQUEST,
+					ErrorType.ACCESS_DENIED,
+					new DefaultExceptionMessageBuilder()
+			);
 			Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings = ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
 					.put(OAuth2Exception.class, authErrorDefinition)
 					.put(AuthenticationException.class, authErrorDefinition)

@@ -22,10 +22,6 @@ spring:
         instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
         health-check-critical-timeout: 30s
       enabled: true
-  # Redis Configuration
-  redis:
-    host: ${reportportal.redis.host:localhost}
-    port: 6379
 
   # Enable MongoDB repositories
   data:
@@ -53,11 +49,8 @@ rp:
    session:
         live: 1800
    mongo:
-        host: ${reportportal.mongo.host:localhost}
-        port: 27017
+        uri: mongodb://localhost:27017
         dbName: reportportal
-#        user: user
-#        password: 1q2w3e
         connectionsPerHost: 50
         threadsAllowedToBlockForConnectionMultiplier: 50
         connectTimeout: 20000
