@@ -52,12 +52,9 @@ eureka:
 rp:
    session:
         live: 1800
-   mongo:
-        host: ${reportportal.mongo.host:localhost}
-        port: 27017
+    mongo:
+        uri: mongodb://localhost:27017
         dbName: reportportal
-#        user: user
-#        password: 1q2w3e
         connectionsPerHost: 50
         threadsAllowedToBlockForConnectionMultiplier: 50
         connectTimeout: 20000
