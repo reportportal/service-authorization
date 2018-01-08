@@ -67,4 +67,9 @@ public enum AuthIntegrationType {
     public static Optional<AuthIntegrationType> fromId(String id) {
         return Arrays.stream(values()).filter(it -> it.id.equalsIgnoreCase(id)).findAny();
     }
+
+    @Override
+    public String toString() {
+        return this.id;
+    }
 }
