@@ -1,11 +1,20 @@
 buildscript {
+
+    ext {
+        springBootVersion = '2.0.0.RC1'
+        springCloudVersion = 'Finchley.M5'
+    }
+
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url 'https://repo.spring.io/libs-milestone'
+        }
     }
     dependencies {
         classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath 'com.bmuschko:gradle-docker-plugin:3.0.12'
         classpath 'org.ajoberstar:grgit:1.6.0-rc.1'
     }
@@ -44,12 +53,15 @@ repositories {
     }
 
     maven { url "http://dl.bintray.com/epam/reportportal" }
+    maven {
+        url 'https://repo.spring.io/libs-milestone'
+    }
 }
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.cloud:spring-cloud-starter-parent:Edgware.RELEASE"
-        mavenBom "org.springframework.boot:spring-boot-dependencies:1.5.9.RELEASE"
+        mavenBom "org.springframework.cloud:spring-cloud-starter-parent:${springCloudVersion}"
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
     }
 }
 
@@ -64,11 +76,10 @@ dependencies {
 
     compile 'javax.inject:javax.inject:1'
     compile('org.hibernate:hibernate-validator')
-    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.7.0'
+    compile('io.springfox:springfox-swagger2')
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
     compile 'org.springframework.cloud:spring-cloud-starter-security'
-    compile 'org.springframework.cloud:spring-cloud-starter-eureka'
     compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 
     //https://github.com/spring-projects/spring-security-oauth/issues/706
@@ -76,8 +87,8 @@ dependencies {
     compile 'org.springframework.session:spring-session'
     compile 'org.springframework.session:spring-session-data-mongo'
 
-    compile 'org.apache.tika:tika-core:1.16'
-    compile 'org.apache.tika:tika-parsers:1.16'
+    compile 'org.apache.tika:tika-core'
+    compile 'org.apache.tika:tika-parsers'
 
     //LDAP stuff
     compile("org.springframework.ldap:spring-ldap-core")
@@ -90,11 +101,12 @@ dependencies {
 
     compile 'org.springframework.retry:spring-retry'
 
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
-    testCompile 'junit:junit:4.12'
+    testCompile 'org.hamcrest:hamcrest-all'
+    testCompile 'junit:junit'
     testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'org.springframework:spring-test'
-    testCompile 'org.mockito:mockito-core:2.8.47'
+    testCompile 'org.mockito:mockito-core'
+
     testCompile 'com.github.fakemongo:fongo:2.1.0'
 
 
@@ -128,7 +140,7 @@ bootRepackage {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
+    gradleVersion = '4.5'
 }
 
 /* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
