@@ -23,15 +23,19 @@ package com.epam.reportportal.auth.store.entity;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * @author Andrei Varabyeu
  */
-@Document(collection = "authConfig")
+//@Entity
+//@Table(name = "authConfig")
 public class AuthConfigEntity {
 
-	@Id
+//	@Id
+//	@javax.persistence.Id
 	private String id;
 	private LdapConfig ldap;
 	private ActiveDirectoryConfig activeDirectory;

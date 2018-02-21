@@ -1,6 +1,6 @@
 package com.epam.reportportal.auth;
 
-import com.epam.ta.reportportal.database.entity.ProjectRole;
+import com.epam.ta.reportportal.jooq.enums.ProjectRoleEnum;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
@@ -14,19 +14,19 @@ import java.util.Map;
  */
 public class ReportPortalUser extends User {
 
-	private Map<String, ProjectRole> projectRoles;
+	private Map<String, ProjectRoleEnum> projectRoles;
 
 	public ReportPortalUser(String username, String password, Collection<? extends GrantedAuthority> authorities,
-			Map<String, ProjectRole> projectRoles) {
+			Map<String, ProjectRoleEnum> projectRoles) {
 		super(username, password, authorities);
 		this.projectRoles = projectRoles;
 	}
 
-	public ReportPortalUser(User user, Map<String, ProjectRole> projectRoles) {
+	public ReportPortalUser(User user, Map<String, ProjectRoleEnum> projectRoles) {
 		this(user.getUsername(), user.getPassword(), user.getAuthorities(), projectRoles);
 	}
 
-	public Map<String, ProjectRole> getProjectRoles() {
+	public Map<String, ProjectRoleEnum> getProjectRoles() {
 		return projectRoles;
 	}
 }

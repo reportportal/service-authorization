@@ -34,7 +34,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.inject.Provider;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -62,20 +61,26 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	}
 
 	@Override
-	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-			throws IOException, ServletException {
-		OAuth2Authentication oauth = (OAuth2Authentication) authentication;
-		OAuth2AccessToken accessToken = tokenServicesFacade.get()
-				.createToken(ReportPortalClient.ui, oauth.getName(), oauth.getUserAuthentication(), oauth.getOAuth2Request().getExtensions());
+	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+				OAuth2Authentication oauth = (OAuth2Authentication) authentication;
+				OAuth2AccessToken accessToken = tokenServicesFacade.get()
+						.createToken(ReportPortalClient.ui,
+								oauth.getName(),
+								oauth.getUserAuthentication(),
+								oauth.getOAuth2Request().getExtensions()
+						);
 
-		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
-		query.add("token", accessToken.getValue());
-		query.add("token_type", accessToken.getTokenType());
-		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request)).replacePath("/ui/authSuccess.html")
-				.replaceQueryParams(query).build().toUri();
+				MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
+				query.add("token", accessToken.getValue());
+				query.add("token_type", accessToken.getTokenType());
+				URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+						.replacePath("/ui/authSuccess.html")
+						.replaceQueryParams(query)
+						.build()
+						.toUri();
 
-		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
+				eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString());
+				getRedirectStrategy().sendRedirect(request, response, rqUrl.toString());
 	}
 }

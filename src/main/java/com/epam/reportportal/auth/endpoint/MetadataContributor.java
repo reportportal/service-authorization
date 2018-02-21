@@ -38,8 +38,9 @@ import static java.util.Arrays.stream;
 @Component
 public class MetadataContributor implements InfoContributor {
 
-    @Override
-    public void contribute(Info.Builder builder) {
+	@Override
+	public void contribute(Info.Builder builder) {
+		//@formatter:off
         builder
                 .withDetail("metadata", ImmutableMap
                         .builder()
@@ -47,6 +48,6 @@ public class MetadataContributor implements InfoContributor {
                                 stream(ProjectRole.values()).map(Enum::name).collect(Collectors.toList()))
                         .build());
         //@formatter:on
-    }
+	}
 
 }

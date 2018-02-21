@@ -53,53 +53,60 @@ repositories {
     }
 
     maven { url "http://dl.bintray.com/epam/reportportal" }
-    maven {
-        url 'https://repo.spring.io/libs-milestone'
-    }
+    maven { url 'https://repo.spring.io/libs-milestone' }
 }
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.cloud:spring-cloud-starter-parent:${springCloudVersion}"
-        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        mavenBom "com.github.reportportal:commons-bom:71b4af3"
     }
 }
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:4.0.3'
-        compile 'com.epam.reportportal:commons-rules:4.0.1'
+//        compile 'com.epam.reportportal:commons-dao:4.0.3'
+//        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile('com.github.reportportal:commons-dao:4.0.3')
-        compile 'com.github.reportportal:commons-rules:4.0.1'
+        compile('com.github.reportportal:commons-dao:ae82148718')
+        compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 
     compile 'javax.inject:javax.inject:1'
-    compile('org.hibernate:hibernate-validator')
-    compile('io.springfox:springfox-swagger2')
+    compile 'org.hibernate:hibernate-validator:6.0.7.Final'
+//    compile('io.springfox:springfox-swagger2')
     compile 'org.springframework.boot:spring-boot-starter-actuator'
-    compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
-    compile 'org.springframework.cloud:spring-cloud-starter-security'
-    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    compile 'org.springframework.boot:spring-boot-starter-security'
+//    compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
+//    compile 'org.springframework.cloud:spring-cloud-starter-security'
+    compile 'org.springframework.security:spring-security-oauth2-client'
+
+//    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 
     //https://github.com/spring-projects/spring-security-oauth/issues/706
     //Cannot store oauth client details without session
-    compile 'org.springframework.session:spring-session'
-    compile 'org.springframework.session:spring-session-data-mongo'
+//    compile 'org.springframework.session:spring-session-jdbc'
+//    compile 'org.springframework.session:spring-session-data-mongo'
 
     compile 'org.apache.tika:tika-core'
     compile 'org.apache.tika:tika-parsers'
 
     //LDAP stuff
-    compile("org.springframework.ldap:spring-ldap-core")
-    compile("org.springframework.security:spring-security-ldap")
-    compile("org.springframework:spring-tx")
-    compile("com.unboundid:unboundid-ldapsdk")
-    compile("org.apache.directory.server:apacheds-core:1.5.5")
-    compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
+//    compile("org.springframework.ldap:spring-ldap-core")
+//    compile("org.springframework.security:spring-security-ldap")
+//    compile("org.springframework:spring-tx")
+//    compile("com.unboundid:unboundid-ldapsdk")
+//    compile("org.apache.directory.server:apacheds-core:1.5.5")
+//    compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
     compile 'org.jasypt:jasypt:1.9.2'
 
     compile 'org.springframework.retry:spring-retry'
+
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+//    compile 'org.springframework.cloud:spring-cloud-starter-security'
+    compile 'org.postgresql:postgresql:42.2.1'
+    compile 'org.jooq:jooq:3.10.4'
+    compile 'commons-beanutils:commons-beanutils:1.9.3'
+
 
     testCompile 'org.hamcrest:hamcrest-all'
     testCompile 'junit:junit'
@@ -121,21 +128,20 @@ task copyRuntimeLibs(type: Copy) {
 
 build.dependsOn(copyRuntimeLibs)
 
+//jar {
+//    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+//    manifest {
+//        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
+//                'Implementation-Version': version,
+//                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
+//                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+//
+//    }
+//
+//}
 
-jar {
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    manifest {
-        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': version,
-                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
 
-    }
-
-}
-
-
-bootRepackage {
+bootJar {
     enabled = false
 }
 

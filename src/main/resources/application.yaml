@@ -1,10 +1,9 @@
 server:
   port: 9999
-security:
-  sessions: stateless
-  oauth2:
-    resource:
-      filter-order: 3
+#security:
+#  oauth2:
+#    resource:
+#      filter-order: 3
 
 spring:
   cloud:
@@ -22,18 +21,20 @@ spring:
         instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
         health-check-critical-timeout: 30s
       enabled: true
-
-  # Enable MongoDB repositories
-  data:
-    mongodb:
-      repositories:
-        enabled: true
   jackson:
     default-property-inclusion: non_null
   session:
-    store-type: mongo
-
-
+    store-type: jdbc
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: rpuser
+    password: rppass
+    url: jdbc:postgresql://localhost:5432/reportportal
+  jpa:
+    properties:
+      hibernate.jdbc.lob.non_contextual_creation: true
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
 eureka:
   instance:
     hostname: ${HOSTNAME:localhost}
@@ -44,38 +45,6 @@ eureka:
     register-with-eureka: false
     enabled: false
 
-# MongoDB configuration
-rp:
-   session:
-        live: 1800
-   mongo:
-        uri: mongodb://localhost:27017
-        dbName: reportportal
-        connectionsPerHost: 50
-        threadsAllowedToBlockForConnectionMultiplier: 50
-        connectTimeout: 20000
-        socketTimeout: 60000
-        maxWaitTime: 120000
-        autoConnectRetry: true
-        socketKeepAlive: true
-        slaveOk: true
-        writeTimeout: 0
-        writeNumber: 1
-        writeFsync: false
-   cache:
-        project:
-          size: 1000
-          expiration: 1
-          info: 10
-        ticket:
-          size: 10000
-          expiration: 5
-        user:
-          size: 1000
-          expiration: 1
-   auth:
-        encryptor:
-          password: reportportal
 
 # GitHUB Oauth Configuration
 github:
@@ -90,16 +59,13 @@ github:
     userInfoUri: https://api.github.com/user
 logging:
   level:
-    org.springframework.security: warn
-    org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver: warn
-    com.netflix.discovery.shared.resolver : warn
+    org.springframework.security: debug
 
 springfox:
   documentation:
     swagger:
       v2:
         path: /api-docs
-
 ## Consul as service registry
 ---
 spring:
