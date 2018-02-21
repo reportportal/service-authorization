@@ -20,54 +20,42 @@
  */
 package com.epam.reportportal.auth.store.events;
 
-import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
-import com.epam.reportportal.auth.util.Encryptor;
-import com.mongodb.DBObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
-import org.springframework.data.mongodb.core.mapping.event.AfterLoadEvent;
-import org.springframework.data.mongodb.core.mapping.event.MongoMappingEvent;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-
 /**
  * Decrypts auth config passwords if present
  *
  * @author Andrei Varabyeu
  */
-@Component
-public class AuthAttributesEventListener extends AbstractMongoEventListener<AuthConfigEntity> {
+//@Component
+//public class AuthAttributesEventListener extends AbstractMongoEventListener<AuthConfigEntity> {
+public class AuthAttributesEventListener {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AuthAttributesEventListener.class);
-	private static final String MANAGER_PASSWORD_FIELD = "managerPassword";
-
-	@Autowired
-	private Encryptor encryptor;
-
-	@Override
-	public void onApplicationEvent(MongoMappingEvent<?> event) {
-		super.onApplicationEvent(event);
-	}
-
-	@Override
-	public void onAfterLoad(AfterLoadEvent<AuthConfigEntity> event) {
-		Optional.ofNullable(event.getSource()).flatMap(dbo -> Optional.ofNullable(dbo.get("ldap"))).ifPresent(ldapDbo -> {
-			DBObject ldap = ((DBObject) ldapDbo);
-			Object managerPassword = ldap.get(MANAGER_PASSWORD_FIELD);
-			if (null != managerPassword) {
-				try {
-					String decrypted = encryptor.decrypt((String) managerPassword);
-					ldap.put(MANAGER_PASSWORD_FIELD, decrypted);
-				} catch (Exception e) {
-					LOGGER.error("Cannot decrypt password", e);
-					//do nothing
-				}
-
-			}
-		});
-	}
+//	private static final Logger LOGGER = LoggerFactory.getLogger(AuthAttributesEventListener.class);
+//	private static final String MANAGER_PASSWORD_FIELD = "managerPassword";
+//
+//	@Autowired
+//	private Encryptor encryptor;
+//
+//	@Override
+//	public void onApplicationEvent(MongoMappingEvent<?> event) {
+//		super.onApplicationEvent(event);
+//	}
+//
+//	@Override
+//	public void onAfterLoad(AfterLoadEvent<AuthConfigEntity> event) {
+//		Optional.ofNullable(event.getSource()).flatMap(dbo -> Optional.ofNullable(dbo.get("ldap"))).ifPresent(ldapDbo -> {
+//			DBObject ldap = ((DBObject) ldapDbo);
+//			Object managerPassword = ldap.get(MANAGER_PASSWORD_FIELD);
+//			if (null != managerPassword) {
+//				try {
+//					String decrypted = encryptor.decrypt((String) managerPassword);
+//					ldap.put(MANAGER_PASSWORD_FIELD, decrypted);
+//				} catch (Exception e) {
+//					LOGGER.error("Cannot decrypt password", e);
+//					//do nothing
+//				}
+//
+//			}
+//		});
+//	}
 
 }

@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth;
+package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvider {
+public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvider {
 
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;

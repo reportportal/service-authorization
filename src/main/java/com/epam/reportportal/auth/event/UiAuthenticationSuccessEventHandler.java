@@ -20,12 +20,11 @@
  */
 package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.database.dao.UserRepository;
+import com.epam.ta.reportportal.jooq.tables.Users;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 /**
  * Updates Last Login field in database User entity
@@ -35,11 +34,14 @@ import java.util.Date;
 @Component
 public class UiAuthenticationSuccessEventHandler implements ApplicationListener<UiUserSignedInEvent> {
 
-    @Autowired
-    private UserRepository userRepository;
+	//    @Autowired
+	//    private UserRepository userRepository;
+//	@Autowired
+//	private DSLContext dsl;
 
-    @Override
-    public void onApplicationEvent(UiUserSignedInEvent event) {
-        userRepository.updateLastLoginDate(event.getAuthentication().getName(), new Date(event.getTimestamp()));
-    }
+	@Override
+	public void onApplicationEvent(UiUserSignedInEvent event) {
+//		dsl.update(Users.USERS).set(Users.USERS.)
+		//        userRepository.updateLastLoginDate(event.getAuthentication().getName(), new Date(event.getTimestamp()));
+	}
 }

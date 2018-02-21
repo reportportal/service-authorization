@@ -20,11 +20,7 @@
  */
 package com.epam.reportportal.auth.oauth;
 
-import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
 import com.google.common.base.Preconditions;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,53 +30,53 @@ import javax.annotation.Nullable;
  */
 abstract public class OAuthProvider {
 
-    /**
-     * Is OAuth provider support dynamic configs
-     */
-    private final boolean configDynamic;
+	/**
+	 * Is OAuth provider support dynamic configs
+	 */
+	private final boolean configDynamic;
 
-    /**
-     * Auth provider name
-     */
-    private final String name;
+	/**
+	 * Auth provider name
+	 */
+	private final String name;
 
-    /**
-     * HTML code of button
-     */
-    private final String button;
+	/**
+	 * HTML code of button
+	 */
+	private final String button;
 
-    public OAuthProvider(@Nonnull String name, @Nullable String button, boolean configDynamic) {
-        this.name = Preconditions.checkNotNull(name, "Name should not be null");
-        this.button = button;
-        this.configDynamic = configDynamic;
-    }
+	public OAuthProvider(@Nonnull String name, @Nullable String button, boolean configDynamic) {
+		this.name = Preconditions.checkNotNull(name, "Name should not be null");
+		this.button = button;
+		this.configDynamic = configDynamic;
+	}
 
-    /**
-     * Applies default settings
-     *
-     * @param details OAuth configuration
-     */
-    public void applyDefaults(OAuth2LoginDetails details) {
-    }
+	/**
+	 * Applies default settings
+	 *
+	 * @param details OAuth configuration
+	 */
+//	public void applyDefaults(ClientDetails details) {
+//	}
+//
+//	abstract public ResourceServerTokenServices getTokenServices();
+//
+//	abstract public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext context);
 
-    abstract public ResourceServerTokenServices getTokenServices();
+	public String getName() {
+		return name;
+	}
 
-    abstract public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext context);
+	public String getButton() {
+		return button;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public boolean isConfigDynamic() {
+		return configDynamic;
+	}
 
-    public String getButton() {
-        return button;
-    }
-
-    public boolean isConfigDynamic() {
-        return configDynamic;
-    }
-
-    public String buildPath(String basePath) {
-        return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
-    }
+	public String buildPath(String basePath) {
+		return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
+	}
 
 }

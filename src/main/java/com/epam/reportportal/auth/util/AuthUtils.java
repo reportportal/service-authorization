@@ -18,17 +18,28 @@
  * You should have received a copy of the GNU General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.epam.reportportal.auth.store;
+package com.epam.reportportal.auth.util;
 
-import com.epam.reportportal.auth.store.entity.OAuth2RefreshTokenEntity;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import com.epam.ta.reportportal.database.entity.user.UserRole;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 /**
- * @author Andrei Varabyeu
+ * Authentication utils
+ *
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-@Repository
-interface OAuth2RefreshTokenRepository extends MongoRepository<OAuth2RefreshTokenEntity, String> {
+public final class AuthUtils {
 
-    OAuth2RefreshTokenEntity findByTokenId(String tokenId);
+	private AuthUtils() {
+		//statics only
+	}
+
+	public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections.singletonList(new SimpleGrantedAuthority(
+			userRole.getAuthority()));
+    
 }

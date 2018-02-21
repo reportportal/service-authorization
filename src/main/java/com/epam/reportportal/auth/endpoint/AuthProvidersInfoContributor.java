@@ -21,16 +21,9 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.OAuthSecurityConfig;
-import com.epam.reportportal.auth.oauth.OAuthProvider;
-import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
-import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath;
 
@@ -42,35 +35,35 @@ import static org.springframework.web.servlet.support.ServletUriComponentsBuilde
 @Component
 public class AuthProvidersInfoContributor implements InfoContributor {
 
-    private final ServerSettingsRepository settingsRepository;
-    private final Map<String, OAuthProvider> providersMap;
+//    private final ServerSettingsRepository settingsRepository;
+//    private final Map<String, OAuthProvider> providersMap;
 
-    @Autowired
-    public AuthProvidersInfoContributor(ServerSettingsRepository settingsRepository,
-            Map<String, OAuthProvider> providersMap) {
-        this.settingsRepository = settingsRepository;
-        this.providersMap = providersMap;
-    }
+//    @Autowired
+//    public AuthProvidersInfoContributor(ServerSettingsRepository settingsRepository,
+//            Map<String, OAuthProvider> providersMap) {
+//        this.settingsRepository = settingsRepository;
+//        this.providersMap = providersMap;
+//    }
 
     @Override
     public void contribute(Info.Builder builder) {
-        final Map<String, OAuth2LoginDetails> oauth2Details =
-                settingsRepository.findOne("default").getoAuth2LoginDetails();
-
-        final Map<String, AuthProviderInfo> providers = providersMap.values()
-                .stream()
-                .filter(p -> !p.isConfigDynamic() || (null != oauth2Details && oauth2Details.containsKey(p.getName())))
-                .collect(Collectors
-                        .toMap(OAuthProvider::getName,
-                                p -> new AuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))));
-
-        builder.withDetail("auth_extensions", providers);
+//        final Map<String, OAuth2LoginDetails> oauth2Details =
+		//                settingsRepository.findOne("default").getoAuth2LoginDetails();
+		//
+		//        final Map<String, AuthProviderInfo> providers = providersMap.values()
+		//                .stream()
+		//                .filter(p -> !p.isConfigDynamic() || (null != oauth2Details && oauth2Details.containsKey(p.getName())))
+		//                .collect(Collectors
+		//                        .toMap(OAuthProvider::getName,
+		//                                p -> new AuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))));
+		//
+		//        builder.withDetail("auth_extensions", providers);
         //@formatter:on
     }
 
-    private String getAuthBasePath() {
-        return fromCurrentContextPath().path(OAuthSecurityConfig.SSO_LOGIN_PATH).build().getPath();
-    }
+//    private String getAuthBasePath() {
+//        return fromCurrentContextPath().path(OAuthSecurityConfig.SSO_LOGIN_PATH).build().getPath();
+//    }
 
     public static class AuthProviderInfo {
         private String button;

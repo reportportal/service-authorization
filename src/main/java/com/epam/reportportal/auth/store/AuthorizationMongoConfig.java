@@ -21,14 +21,13 @@
 package com.epam.reportportal.auth.store;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * @author Andrei Varabyeu
  */
 @Configuration
-@EnableMongoRepositories(
-        basePackageClasses = OAuth2AccessTokenRepository.class)
+@EnableJpaRepositories(basePackageClasses = AuthConfigRepository.class)
 public class AuthorizationMongoConfig {
 
 }

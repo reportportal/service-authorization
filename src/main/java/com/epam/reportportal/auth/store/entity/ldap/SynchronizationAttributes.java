@@ -21,8 +21,8 @@
 package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.IfEnabled;
-import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**

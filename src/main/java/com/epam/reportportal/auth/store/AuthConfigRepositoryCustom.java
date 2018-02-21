@@ -24,7 +24,6 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import com.epam.ta.reportportal.database.entity.AuthType;
 
 import java.util.Optional;
 
