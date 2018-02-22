@@ -1,5 +1,7 @@
 package com.epam.reportportal.auth.store.entity.ldap;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,8 +10,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.Set;
-
-import static junit.framework.TestCase.assertTrue;
 
 public class AbstractLdapConfigTest {
 
@@ -28,6 +28,6 @@ public class AbstractLdapConfigTest {
 		cfg.setBaseDn("someDN");
 		cfg.setUrl("ldaps://localhost");
 		Set<ConstraintViolation<LdapConfig>> violations = validator.validate(cfg);
-		assertTrue(violations.isEmpty());
+		Assert.assertThat(violations, Matchers.empty());
 	}
 }
