@@ -34,7 +34,7 @@ import javax.validation.constraints.Pattern;
  */
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
-	@Pattern(regexp = "^ldap://.*")
+	@Pattern(regexp = "^ldaps?://.*")
 	@NotEmpty(groups = { IfEnabled.class })
 	private String url;
 
