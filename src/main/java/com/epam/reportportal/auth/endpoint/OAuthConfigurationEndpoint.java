@@ -20,9 +20,22 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
+import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
  * Endpoint for oauth configs
@@ -34,90 +47,70 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Api(description = "OAuth Configuration Endpoint")
 public class OAuthConfigurationEndpoint {
 
-//	private final ClientRegistrationService clientRegistrationService;
-//	private final Map<String, OAuthProvider> providers;
+	private final MutableClientRegistrationRepository clientRegistrations;
 
-//	@Autowired
-//	public OAuthConfigurationEndpoint(ClientRegistrationService clientRegistrationService
-////			Map<String, OAuthProvider> providers
-//	) {
-//		this.clientRegistrationService = clientRegistrationService;
-//
-////		this.providers = providers;
-//	}
+	@Autowired
+	public OAuthConfigurationEndpoint(MutableClientRegistrationRepository clientRegistrations) {
+		this.clientRegistrations = clientRegistrations;
+	}
 
-//	/**
-//	 * Updates oauth integration settings
-//	 *
-//	 * @param profileId         settings ProfileID
-//	 * @param oauthDetails      OAuth details resource update
-//	 * @param oauthProviderName ID of third-party OAuth provider
-//	 * @return All defined OAuth integration settings
-//	 */
-//	@RequestMapping(value = "/{authId}", method = { POST, PUT })
-//	@ResponseBody
-//	@ResponseStatus(HttpStatus.OK)
-//	@ApiOperation(value = "Updates OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
-//	public Map<String, ClientDetails> updateOAuthSettings(@PathVariable String profileId, @PathVariable("authId") String oauthProviderName,
-//			@RequestBody @Validated BaseClientDetails oauthDetails) {
-//		clientRegistrationService.updateClientDetails(oauthDetails);
-//		return getOAuthSettings();
-//	}
-//
-//	/**
-//	 * Deletes oauth integration settings
-//	 *
-//	 * @param clientID          settings ProfileID
-//	 * @param oauthProviderName ID of third-party OAuth provider
-//	 * @return All defined OAuth integration settings
-//	 */
-//	@RequestMapping(value = "/{authId}", method = { DELETE })
-//	@ResponseBody
-//	@ResponseStatus(HttpStatus.OK)
-//	@ApiOperation(value = "Deletes OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
-//	public OperationCompletionRS deleteOAuthSetting(@PathVariable("authId") String clientID) {
-//		try {
-//			clientRegistrationService.removeClientDetails(clientID);
-//		} catch (NoSuchClientException e) {
-//			throw new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND);
-//		}
-//
-//		return new OperationCompletionRS("Auth settings '" + clientID + "' were successfully removed");
-//	}
-//
-//	/**
-//	 * Returns oauth integration settings
-//	 *
-//	 * @return All defined OAuth integration settings
-//	 */
-//	@RequestMapping(value = "/", method = { GET })
-//	@ResponseBody
-//	@ResponseStatus(HttpStatus.OK)
-//	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
-//	public Map<String, ClientDetails> getOAuthSettings() {
-//		return clientRegistrationService.listClientDetails().stream().collect(Collectors.toMap(ClientDetails::getClientId, d -> d));
-//	}
-//
-//	//	/**
-//	//	 * Returns oauth integration settings
-//	//	 *
-//	//	 * @param profileId         settings ProfileID
-//	//	 * @param oauthProviderName ID of third-party OAuth provider
-//	//	 * @return All defined OAuth integration settings
-//	//	 */
-//	//	@RequestMapping(value = "/{authId}", method = { GET })
-//	//	@ResponseBody
-//	//	@ResponseStatus(HttpStatus.OK)
-//	//	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
-//	//	public OAuthDetailsResource getOAuthSettings(@PathVariable String profileId, @PathVariable("authId") String oauthProviderName) {
-//	//
-//	//		ServerSettings settings = repository.findOne(profileId);
-//	//		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
-//	//
-//	//		return Optional.ofNullable(settings.getoAuth2LoginDetails())
-//	//				.flatMap(details -> Optional.ofNullable(details.get(oauthProviderName)))
-//	//				.map(OAuthDetailsConverters.TO_RESOURCE)
-//	//				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, oauthProviderName));
-//	//
-//	//	}
+	/**
+	 * Updates oauth integration settings
+	 *
+	 * @param clientDetails OAuth configuration
+	 * @return All defined OAuth integration settings
+	 */
+	@RequestMapping(value = "/", method = { POST, PUT })
+	@ResponseBody
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Creates/Updates OAuth Integration Settings")
+	public ClientRegistration updateOAuthSettings(@RequestBody @Validated ClientRegistration clientDetails) {
+		return clientRegistrations.save(clientDetails);
+	}
+
+	/**
+	 * Deletes oauth integration settings
+	 *
+	 * @param clientID settings ProfileID
+	 * @return All defined OAuth integration settings
+	 */
+	@RequestMapping(value = "/{authId}", method = { DELETE })
+	@ResponseBody
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Deletes OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
+	public OperationCompletionRS deleteOAuthSetting(@PathVariable("authId") String clientID) {
+
+		if (!clientRegistrations.delete(clientID)) {
+			throw new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND);
+		}
+
+		return new OperationCompletionRS("Auth settings '" + clientID + "' were successfully removed");
+	}
+
+	/**
+	 * Returns oauth integration settings
+	 *
+	 * @return All defined OAuth integration settings
+	 */
+	@RequestMapping(value = "/", method = { GET })
+	@ResponseBody
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
+	public Map<String, ClientRegistration> getOAuthSettings() {
+		return clientRegistrations.findAll().stream().collect(MutableClientRegistrationRepository.KEY_MAPPER);
+	}
+
+	/**
+	 * Returns oauth integration settings
+	 *
+	 * @param oauthProviderName ID of third-party OAuth provider
+	 * @return All defined OAuth integration settings
+	 */
+	@RequestMapping(value = "/{authId}", method = { GET })
+	@ResponseBody
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
+	public ClientRegistration getOAuthSettings(@PathVariable("authId") String oauthProviderName) {
+		return clientRegistrations.findByRegistrationId(oauthProviderName);
+	}
 }
