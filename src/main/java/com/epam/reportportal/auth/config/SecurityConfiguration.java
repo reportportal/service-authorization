@@ -90,26 +90,22 @@ public class SecurityConfiguration {
 			 return super.authenticationManager();
 		}
 
-		@Bean
-		public ClientRegistrationRepository clientRegistrationRepository() {
-			return new InMemoryClientRegistrationRepository(this.githubClientRegistration());
-		}
 
-		private ClientRegistration githubClientRegistration() {
-			return ClientRegistration.withRegistrationId("github")
-					.clientId("f5cec43d4541283879c4")
-					.clientSecret("a41aa6de3e27c11d90762cad11936727d6b0759e")
-//					.clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
-					.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-					.redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
-					.scope("user")
-					.authorizationUri("https://github.com/login/oauth/authorize")
-					.tokenUri("https://github.com/login/oauth/access_token")
-					.userInfoUri("https://api.github.com/user")
-					.userNameAttributeName("username")
-					.clientName("github")
-					.build();
-		}
+//		private ClientRegistration githubClientRegistration() {
+//			return ClientRegistration.withRegistrationId("github")
+//					.clientId("f5cec43d4541283879c4")
+//					.clientSecret("a41aa6de3e27c11d90762cad11936727d6b0759e")
+////					.clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
+//					.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+//					.redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
+//					.scope("user")
+//					.authorizationUri("https://github.com/login/oauth/authorize")
+//					.tokenUri("https://github.com/login/oauth/access_token")
+//					.userInfoUri("https://api.github.com/user")
+//					.userNameAttributeName("username")
+//					.clientName("github")
+//					.build();
+//		}
 	}
 
 	@Configuration
