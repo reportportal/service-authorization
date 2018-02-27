@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth.util;
 
-import com.epam.ta.reportportal.database.entity.user.UserRole;
+import com.epam.ta.reportportal.jooq.enums.UserRoleEnum;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -39,7 +39,7 @@ public final class AuthUtils {
 		//statics only
 	}
 
-	public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections.singletonList(new SimpleGrantedAuthority(
-			userRole.getAuthority()));
-    
+	public static final Function<UserRoleEnum, List<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections.singletonList(new SimpleGrantedAuthority(
+			userRole.getLiteral()));
+
 }

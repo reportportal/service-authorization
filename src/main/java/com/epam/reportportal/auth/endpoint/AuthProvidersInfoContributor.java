@@ -20,12 +20,9 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
-import com.epam.reportportal.auth.OAuthSecurityConfig;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-
-import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath;
 
 /**
  * Shows list of supported authentication providers

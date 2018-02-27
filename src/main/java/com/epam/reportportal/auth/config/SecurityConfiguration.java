@@ -1,11 +1,14 @@
 package com.epam.reportportal.auth.config;
 
+import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
+import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +21,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -28,7 +29,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -43,6 +43,9 @@ public class SecurityConfiguration {
 	public static class GlobalWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		public static final String SSO_LOGIN_PATH = "/sso/login";
+
+		@Autowired
+		private OAuthSuccessHandler successHandler;
 
 		@Override
 		protected final void configure(HttpSecurity http) throws Exception {
@@ -61,8 +64,11 @@ public class SecurityConfiguration {
 				.and().authenticationProvider(basicPasswordAuthProvider())
 					.httpBasic()
 				.and()
-					.oauth2Login().tokenEndpoint();
-//						.loginPage(SSO_LOGIN_PATH + "/{registrationId}");
+					.oauth2Login().clientRegistrationRepository(clientRegistrationRepository())
+//					.redirectionEndpoint().baseUri(SSO_LOGIN_PATH).and()
+//					.authorizationEndpoint().baseUri(SSO_LOGIN_PATH).and()
+					.loginPage(SSO_LOGIN_PATH + "/{registrationId}")
+					.successHandler(successHandler);
 
 		}
 
@@ -91,21 +97,14 @@ public class SecurityConfiguration {
 		}
 
 
-//		private ClientRegistration githubClientRegistration() {
-//			return ClientRegistration.withRegistrationId("github")
-//					.clientId("f5cec43d4541283879c4")
-//					.clientSecret("a41aa6de3e27c11d90762cad11936727d6b0759e")
-////					.clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
-//					.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//					.redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
-//					.scope("user")
-//					.authorizationUri("https://github.com/login/oauth/authorize")
-//					.tokenUri("https://github.com/login/oauth/access_token")
-//					.userInfoUri("https://api.github.com/user")
-//					.userNameAttributeName("username")
-//					.clientName("github")
-//					.build();
-//		}
+		@Autowired
+		DSLContext dslContext;
+
+		@Bean
+		public ClientRegistrationRepository clientRegistrationRepository(){
+			return new MutableClientRegistrationRepository(dslContext);
+		}
+
 	}
 
 	@Configuration
