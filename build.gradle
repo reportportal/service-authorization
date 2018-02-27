@@ -67,7 +67,7 @@ dependencies {
 //        compile 'com.epam.reportportal:commons-dao:4.0.3'
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile('com.github.reportportal:commons-dao:ae82148718')
+        compile('com.github.reportportal:commons-dao:c47ed5b65b')
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 
@@ -78,7 +78,11 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-security'
 //    compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
 //    compile 'org.springframework.cloud:spring-cloud-starter-security'
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.2.1.RELEASE'
     compile 'org.springframework.security:spring-security-oauth2-client'
+    compile 'org.springframework.security:spring-security-jwt'
+    compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
+
 
 //    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 

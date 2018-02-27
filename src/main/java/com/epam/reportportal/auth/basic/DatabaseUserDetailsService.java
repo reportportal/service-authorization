@@ -22,12 +22,9 @@ package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.util.AuthUtils;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
-import com.epam.ta.reportportal.database.entity.user.UserRole;
 import com.epam.ta.reportportal.jooq.tables.pojos.Project;
+import com.epam.ta.reportportal.jooq.tables.pojos.ProjectUser;
 import com.epam.ta.reportportal.jooq.tables.pojos.Users;
-import com.epam.ta.reportportal.jooq.tables.pojos.UsersProject;
-import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -55,17 +52,17 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		Map<Users, List<FullProject>> userProjects = dsl.select()
 				.from(USERS)
-				.join(USERS_PROJECT)
-				.on(USERS_PROJECT.USER_ID.eq(USERS.ID))
+				.join(PROJECT_USER)
+				.on(PROJECT_USER.USER_ID.eq(USERS.ID))
 				.join(PROJECT)
-				.on(USERS_PROJECT.PROJECT_ID.eq(PROJECT.ID))
+				.on(PROJECT_USER.PROJECT_ID.eq(PROJECT.ID))
 				.where(USERS.LOGIN.eq(username))
 				.fetchGroups(
 						// Map records first into the USER table and then into the key POJO type
 						r -> r.into(Users.class),
 
 						// Map records first into the ROLE table and then into the value POJO type
-						r -> new FullProject(r.into(Project.class), r.into(UsersProject.class))
+						r -> new FullProject(r.into(Project.class), r.into(ProjectUser.class))
 				);
 
 		if (userProjects.isEmpty()) {
@@ -84,7 +81,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 				true,
 				true,
 				true,
-				AuthUtils.AS_AUTHORITIES.apply(UserRole.findByName(userEntity.getRole().name()).get())
+				AuthUtils.AS_AUTHORITIES.apply(com.epam.ta.reportportal.jooq.enums.UserRoleEnum.valueOf(userEntity.getRole()
+						.name()
+						.toUpperCase()))
 		);
 		return new ReportPortalUser(
 				u,
@@ -93,10 +92,10 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	}
 
 	static class FullProject {
-		UsersProject usersProject;
+		ProjectUser usersProject;
 		Project project;
 
-		FullProject(Project project, UsersProject usersProject) {
+		FullProject(Project project, ProjectUser usersProject) {
 			this.usersProject = usersProject;
 			this.project = project;
 		}
