@@ -4,7 +4,6 @@ server:
 #  oauth2:
 #    resource:
 #      filter-order: 3
-
 spring:
   cloud:
     consul:
@@ -27,7 +26,7 @@ spring:
     store-type: jdbc
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: rpuser
+    username: rpuser`
     password: rppass
     url: jdbc:postgresql://localhost:5432/reportportal
   jpa:

@@ -37,9 +37,8 @@ public class MutableClientRegistrationRepository implements ClientRegistrationRe
 				.clientId(registration.getClientId())
 				.clientSecret(registration.getClientSecret())
 				.clientName(registration.getClientName())
-				.redirectUriTemplate(registration.getRedirectUriTemplate())
 				.scope(fullRegistration.getValue().stream().map(OauthRegistrationScope::getScope).toArray(String[]::new))
-				.redirectUriTemplate("{baseUrl}/sso/login/{registrationId}")
+				.redirectUriTemplate("{baseUrl}/oauth2/authorization")
 				.build();
 
 	};
