@@ -58,7 +58,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:71b4af3"
+        mavenBom "com.github.reportportal:commons-bom:fc981d4"
     }
 }
 
@@ -67,7 +67,7 @@ dependencies {
 //        compile 'com.epam.reportportal:commons-dao:4.0.3'
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile('com.github.reportportal:commons-dao:c47ed5b65b')
+        compile('com.github.reportportal:commons-dao:e39f42e')
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 

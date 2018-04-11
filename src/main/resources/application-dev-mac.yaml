@@ -1,3 +1,4 @@
+
 spring:
   cloud:
     consul:
@@ -10,3 +11,5 @@ rp:
     uri: mongodb://localhost:27017
   uat:
     serviceUrl: http://localhost:8080/uat
+server:
+  port: 9999

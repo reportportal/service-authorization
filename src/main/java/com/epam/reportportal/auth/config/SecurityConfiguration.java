@@ -59,15 +59,16 @@ public class SecurityConfiguration {
                 .authenticated()
                 .and()
 					.csrf().disable()
+				.formLogin().disable()
 				.sessionManagement()
                 	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				.and().authenticationProvider(basicPasswordAuthProvider())
 					.httpBasic()
 				.and()
 					.oauth2Login().clientRegistrationRepository(clientRegistrationRepository())
-//					.redirectionEndpoint().baseUri(SSO_LOGIN_PATH).and()
-//					.authorizationEndpoint().baseUri(SSO_LOGIN_PATH).and()
-					.loginPage(SSO_LOGIN_PATH + "/{registrationId}")
+					.redirectionEndpoint().baseUri(SSO_LOGIN_PATH).and()
+					.authorizationEndpoint().baseUri(SSO_LOGIN_PATH).and()
+//					.loginPage(SSO_LOGIN_PATH + "/{registrationId}")
 					.successHandler(successHandler);
 
 		}
