@@ -85,7 +85,7 @@ github:
     accessTokenUri: https://github.com/login/oauth/access_token
     userAuthorizationUri: https://github.com/login/oauth/authorize
     clientAuthenticationScheme: form
-    scope: user
+    scope: user:read
   resource:
     userInfoUri: https://api.github.com/user
 logging:
