@@ -53,7 +53,7 @@ public class GithubOAuthProvider extends com.epam.reportportal.auth.oauth.OAuthP
 
     @Override
     public void applyDefaults(OAuth2LoginDetails details) {
-        details.setScope(ofNullable(details.getScope()).orElse(singletonList("user")));
+        details.setScope(ofNullable(details.getScope()).orElse(singletonList("user:read")));
         details.setGrantType(ofNullable(details.getGrantType()).orElse("authorization_code"));
         details.setAccessTokenUri(
                 ofNullable(details.getAccessTokenUri()).orElse("https://github.com/login/oauth/access_token"));

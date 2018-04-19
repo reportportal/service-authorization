@@ -77,17 +77,6 @@ rp:
         encryptor:
           password: reportportal
 
-# GitHUB Oauth Configuration
-github:
-  client:
-    clientId: f4cec43d4541283879c4
-    clientSecret: a31aa6de3e27c11d90762cad11936727d6b0759e
-    accessTokenUri: https://github.com/login/oauth/access_token
-    userAuthorizationUri: https://github.com/login/oauth/authorize
-    clientAuthenticationScheme: form
-    scope: user:read
-  resource:
-    userInfoUri: https://api.github.com/user
 logging:
   level:
     org.springframework.security: warn
