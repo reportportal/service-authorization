@@ -101,7 +101,7 @@ public class AuthConfigurationEndpoint {
 	@ApiOperation(value = "Retrieves auth settings")
 	public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
 		return authType.get(repository.findDefault())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, authType.getId()));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, authType.getId()));
 	}
 
 	/**

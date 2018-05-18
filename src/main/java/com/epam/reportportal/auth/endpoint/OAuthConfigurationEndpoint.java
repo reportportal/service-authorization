@@ -83,7 +83,7 @@ public class OAuthConfigurationEndpoint {
 			@PathVariable("authId") String oauthProviderName, @RequestBody @Validated OAuthDetailsResource oauthDetails) {
 
 		Optional<OAuthProvider> oAuthProvider = Optional.ofNullable(providers.get(oauthProviderName));
-		BusinessRule.expect(oAuthProvider, isPresent()).verify(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, profileId);
+		BusinessRule.expect(oAuthProvider, isPresent()).verify(ErrorType.AUTH_INTEGRATION_NOT_FOUND, profileId);
 
 		ServerSettings settings = repository.findOne(profileId);
 		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
@@ -121,7 +121,7 @@ public class OAuthConfigurationEndpoint {
 			settings.setoAuth2LoginDetails(serverOAuthDetails);
 			repository.save(settings);
 		} else {
-			throw new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND);
+			throw new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND);
 		}
 
 		return new OperationCompletionRS("Auth settings '" + oauthProviderName + "' were successfully removed");
@@ -144,7 +144,7 @@ public class OAuthConfigurationEndpoint {
 
 		return Optional.ofNullable(settings.getoAuth2LoginDetails()).map(details -> details.entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> OAuthDetailsConverters.TO_RESOURCE.apply(e.getValue()))))
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND));
 
 	}
 
@@ -166,7 +166,7 @@ public class OAuthConfigurationEndpoint {
 
 		return Optional.ofNullable(settings.getoAuth2LoginDetails()).flatMap(details -> Optional.ofNullable(details.get(oauthProviderName)))
 				.map(OAuthDetailsConverters.TO_RESOURCE)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, oauthProviderName));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, oauthProviderName));
 
 	}
 }

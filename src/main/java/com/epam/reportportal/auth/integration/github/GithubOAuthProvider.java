@@ -29,7 +29,8 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Named;
 
-import static java.util.Collections.singletonList;
+import java.util.Arrays;
+
 import static java.util.Optional.ofNullable;
 
 /**
@@ -53,7 +54,7 @@ public class GithubOAuthProvider extends com.epam.reportportal.auth.oauth.OAuthP
 
     @Override
     public void applyDefaults(OAuth2LoginDetails details) {
-        details.setScope(ofNullable(details.getScope()).orElse(singletonList("user")));
+        details.setScope(ofNullable(details.getScope()).orElse(Arrays.asList("read:user", "user:email")));
         details.setGrantType(ofNullable(details.getGrantType()).orElse("authorization_code"));
         details.setAccessTokenUri(
                 ofNullable(details.getAccessTokenUri()).orElse("https://github.com/login/oauth/access_token"));
