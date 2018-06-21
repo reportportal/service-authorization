@@ -79,11 +79,7 @@ public class OAuthConfigurationEndpoint {
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Deletes OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
 	public OperationCompletionRS deleteOAuthSetting(@PathVariable("authId") String clientID) {
-
-		if (!clientRegistrations.delete(clientID)) {
-			throw new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND);
-		}
-
+		clientRegistrations.delete(clientID);
 		return new OperationCompletionRS("Auth settings '" + clientID + "' were successfully removed");
 	}
 

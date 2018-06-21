@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.ta.reportportal.config.DatabaseConfiguration;
+import com.epam.reportportal.auth.config.DatabaseConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;

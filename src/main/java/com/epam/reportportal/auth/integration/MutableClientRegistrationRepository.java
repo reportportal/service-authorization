@@ -1,9 +1,8 @@
 package com.epam.reportportal.auth.integration;
 
-import com.epam.ta.reportportal.jooq.tables.pojos.OauthRegistration;
-import com.epam.ta.reportportal.jooq.tables.pojos.OauthRegistrationScope;
-import com.epam.ta.reportportal.jooq.tables.records.OauthRegistrationRecord;
-import org.jooq.DSLContext;
+import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
+import com.epam.reportportal.auth.store.entity.OAuthRegistration;
+import com.epam.reportportal.auth.store.entity.OAuthRegistrationScope;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -11,40 +10,37 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import static com.epam.ta.reportportal.jooq.Tables.OAUTH_REGISTRATION;
-import static com.epam.ta.reportportal.jooq.Tables.OAUTH_REGISTRATION_SCOPE;
+import java.util.stream.StreamSupport;
 
 @Component
 public class MutableClientRegistrationRepository implements ClientRegistrationRepository {
+
+	private OAuthRegistrationRepository oAuthRegistrationRepository;
+
 	public static final Collector<ClientRegistration, ?, Map<String, ClientRegistration>> KEY_MAPPER = Collectors.toMap(ClientRegistration::getRegistrationId,
 			r -> r
 	);
 
-	public static final Function<Map.Entry<OauthRegistration, List<OauthRegistrationScope>>, ClientRegistration> REGISTRATION_MAPPER = fullRegistration -> {
-		OauthRegistration registration = fullRegistration.getKey();
-		return ClientRegistration.withRegistrationId(registration.getClientName())
-				.authorizationGrantType(new AuthorizationGrantType(registration.getAuthGrantType()))
-				.authorizationUri(registration.getAuthorizationUri())
-				.tokenUri(registration.getTokenUri())
-				.clientAuthenticationMethod(new ClientAuthenticationMethod(registration.getClientAuthMethod()))
-				.clientId(registration.getClientId())
-				.clientSecret(registration.getClientSecret())
-				.clientName(registration.getClientName())
-				.scope(fullRegistration.getValue().stream().map(OauthRegistrationScope::getScope).toArray(String[]::new))
-				.redirectUriTemplate("{baseUrl}/oauth2/authorization")
-				.build();
+	public static final Function<OAuthRegistration, ClientRegistration> REGISTRATION_MAPPER = registration -> ClientRegistration.withRegistrationId(
+			registration.getClientName())
+			.authorizationGrantType(new AuthorizationGrantType(registration.getAuthGrantType()))
+			.authorizationUri(registration.getAuthorizationUri())
+			.tokenUri(registration.getTokenUri())
+			.clientAuthenticationMethod(new ClientAuthenticationMethod(registration.getClientAuthMethod()))
+			.clientId(registration.getClientId())
+			.clientSecret(registration.getClientSecret())
+			.clientName(registration.getClientName())
+			.scope(registration.getScopes().stream().map(OAuthRegistrationScope::getScope).toArray(String[]::new))
+			.redirectUriTemplate("{baseUrl}/oauth2/authorization")
+			.build();
 
-	};
-
-	public static final Function<ClientRegistration, OauthRegistration> REGISTRATION_REVERSE_MAPPER = fullRegistration -> {
-		OauthRegistration registration = new OauthRegistration();
+	public static final Function<ClientRegistration, OAuthRegistration> REGISTRATION_REVERSE_MAPPER = fullRegistration -> {
+		OAuthRegistration registration = new OAuthRegistration();
 		registration.setId(fullRegistration.getRegistrationId());
 
 		registration.setAuthGrantType(fullRegistration.getAuthorizationGrantType().getValue());
@@ -58,66 +54,37 @@ public class MutableClientRegistrationRepository implements ClientRegistrationRe
 			registration.setAuthorizationUri(details.getAuthorizationUri());
 			registration.setTokenUri(details.getTokenUri());
 			registration.setUserInfoEndpointUri(details.getUserInfoEndpoint().getUri());
-			registration.setUserInfoEndpointNameAttr(details.getUserInfoEndpoint().getUserNameAttributeName());
+			registration.setUserInfoEndpointNameAttribute(details.getUserInfoEndpoint().getUserNameAttributeName());
 			registration.setJwkSetUri(details.getJwkSetUri());
 		});
 		return registration;
 	};
 
-	private final DSLContext dslContext;
-
-	public MutableClientRegistrationRepository(DSLContext dslContext) {
-		this.dslContext = dslContext;
+	public MutableClientRegistrationRepository(OAuthRegistrationRepository oAuthRegistrationRepository) {
+		this.oAuthRegistrationRepository = oAuthRegistrationRepository;
 	}
 
 	@Override
 	public ClientRegistration findByRegistrationId(String registrationId) {
-		Map<OauthRegistration, List<OauthRegistrationScope>> registration = dslContext.select()
-				.from(OAUTH_REGISTRATION)
-				.join(OAUTH_REGISTRATION_SCOPE)
-				.on(OAUTH_REGISTRATION.ID.eq(OAUTH_REGISTRATION_SCOPE.OAUTH_REGISTRATION_FK))
-				.where(OAUTH_REGISTRATION.ID.eq(registrationId))
-				.fetchGroups(
-						//map records first into the ROLE table and then into the value POJO type
-						r -> r.into(OauthRegistration.class), r -> r.into(OauthRegistrationScope.class));
-		return REGISTRATION_MAPPER.apply(registration.entrySet().iterator().next());
+		return this.oAuthRegistrationRepository.findById(registrationId).map(REGISTRATION_MAPPER).orElse(null);
 	}
 
 	public boolean exists(String id) {
-		return dslContext.fetchExists(OAUTH_REGISTRATION, OAUTH_REGISTRATION.ID.eq(id));
+		return this.oAuthRegistrationRepository.existsById(id);
 
 	}
 
 	public ClientRegistration save(ClientRegistration registration) {
-
-		OauthRegistrationRecord oauthRegistrationRecord = dslContext.insertInto(OAUTH_REGISTRATION)
-				.values(REGISTRATION_REVERSE_MAPPER.apply(registration))
-				.returning(OAUTH_REGISTRATION.ID)
-				.fetchOne();
-
-		dslContext.insertInto(OAUTH_REGISTRATION_SCOPE)
-				.values(registration.getScopes()
-						.stream()
-						.map(s -> new OauthRegistrationScope(null, oauthRegistrationRecord.getId(), s))
-						.collect(Collectors.toList()));
-
-		return registration;
+		return REGISTRATION_MAPPER.apply(this.oAuthRegistrationRepository.save(REGISTRATION_REVERSE_MAPPER.apply(registration)));
 	}
 
-	public boolean delete(String id) {
-		return dslContext.delete(OAUTH_REGISTRATION).where(OAUTH_REGISTRATION.ID.eq(id)).execute() > 0;
+	public void delete(String id) {
+		oAuthRegistrationRepository.deleteById(id);
 	}
 
 	public Collection<ClientRegistration> findAll() {
-		return dslContext.select()
-				.from(OAUTH_REGISTRATION)
-				.fetchGroups(
-						//map records first into the ROLE table and then into the value POJO type
-						r -> r.into(OauthRegistration.class), r -> r.into(OauthRegistrationScope.class))
-				.entrySet()
-				.stream()
+		return StreamSupport.stream(this.oAuthRegistrationRepository.findAll().spliterator(), false)
 				.map(REGISTRATION_MAPPER)
 				.collect(Collectors.toList());
 	}
-
 }

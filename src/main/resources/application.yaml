@@ -5,28 +5,13 @@ server:
 #    resource:
 #      filter-order: 3
 spring:
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        tags:
-          - urlprefix-${server.context-path:}/${spring.application.name} opts strip=/${spring.application.name}
-          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:}/${spring.application.name}
-          - statusPageUrlPath=${server.contextPath:}/info
-          - healthCheckUrlPath=${server.contextPath:}/health
-        healthCheckPath: ${server.context-path:}/health
-        register: true
-        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
-        health-check-critical-timeout: 30s
-      enabled: true
   jackson:
     default-property-inclusion: non_null
   session:
     store-type: jdbc
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: rpuser`
+    username: rpuser
     password: rppass
     url: jdbc:postgresql://localhost:5432/reportportal
   jpa:
@@ -34,28 +19,7 @@ spring:
       hibernate.jdbc.lob.non_contextual_creation: true
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
-eureka:
-  instance:
-    hostname: ${HOSTNAME:localhost}
-    status-page-url-path: ${server.contextPath:}/info
-    health-check-url-path: ${server.contextPath:}/health
-  ## Disabled by default
-  client:
-    register-with-eureka: false
-    enabled: false
 
-
-# GitHUB Oauth Configuration
-github:
-  client:
-    clientId: f4cec43d4541283879c4
-    clientSecret: a31aa6de3e27c11d90762cad11936727d6b0759e
-    accessTokenUri: https://github.com/login/oauth/access_token
-    userAuthorizationUri: https://github.com/login/oauth/authorize
-    clientAuthenticationScheme: form
-    scope: user
-  resource:
-    userInfoUri: https://api.github.com/user
 logging:
   level:
     org.springframework.security: debug
@@ -65,31 +29,3 @@ springfox:
     swagger:
       v2:
         path: /api-docs
-## Consul as service registry
----
-spring:
-  profiles: consul
-  cloud:
-    consul:
-      enabled: true
-      discovery:
-        register: true
-eureka:
-  client:
-    register-with-eureka: false
-    enabled: false
-
-## Eureka as service registry
----
-spring:
-  profiles: eureka
-  cloud:
-    consul:
-      enabled: false
-      discovery:
-        register: false
-eureka:
-  client:
-    register-with-eureka: true
-    enabled: true
----

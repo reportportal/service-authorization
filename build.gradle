@@ -1,16 +1,16 @@
 buildscript {
 
     ext {
-        springBootVersion = '2.0.0.RC1'
-        springCloudVersion = 'Finchley.M5'
+        springBootVersion = '2.0.3.RELEASE'
+        springCloudVersion = 'Finchley.RC2'
     }
 
     repositories {
         mavenCentral()
         jcenter()
-        maven {
-            url 'https://repo.spring.io/libs-milestone'
-        }
+//        maven {
+//            url 'https://repo.spring.io/libs-milestone'
+//        }
     }
     dependencies {
         classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
@@ -58,26 +58,23 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:fc981d4"
+        mavenBom "com.github.reportportal:commons-bom:71b7ca8"
     }
 }
 
 dependencies {
     if (releaseMode) {
-//        compile 'com.epam.reportportal:commons-dao:4.0.3'
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile('com.github.reportportal:commons-dao:e39f42e')
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 
     compile 'javax.inject:javax.inject:1'
     compile 'org.hibernate:hibernate-validator:6.0.7.Final'
 //    compile('io.springfox:springfox-swagger2')
+    compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-security'
-//    compile 'org.springframework.cloud:spring-cloud-starter-oauth2'
-//    compile 'org.springframework.cloud:spring-cloud-starter-security'
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.2.1.RELEASE'
     compile 'org.springframework.security:spring-security-oauth2-client'
     compile 'org.springframework.security:spring-security-jwt'
@@ -107,18 +104,13 @@ dependencies {
 
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
 //    compile 'org.springframework.cloud:spring-cloud-starter-security'
-    compile 'org.postgresql:postgresql:42.2.1'
-    compile 'org.jooq:jooq:3.10.4'
+    compile 'org.postgresql:postgresql:42.2.2'
     compile 'commons-beanutils:commons-beanutils:1.9.3'
-
 
     testCompile 'org.hamcrest:hamcrest-all'
     testCompile 'junit:junit'
     testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'org.springframework:spring-test'
-    testCompile 'org.mockito:mockito-core'
-
-    testCompile 'com.github.fakemongo:fongo:2.1.0'
 
 
 }

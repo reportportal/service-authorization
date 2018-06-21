@@ -20,9 +20,6 @@
  */
 package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.jooq.tables.Users;
-import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -36,12 +33,12 @@ public class UiAuthenticationSuccessEventHandler implements ApplicationListener<
 
 	//    @Autowired
 	//    private UserRepository userRepository;
-//	@Autowired
-//	private DSLContext dsl;
+	//	@Autowired
+	//	private DSLContext dsl;
 
 	@Override
 	public void onApplicationEvent(UiUserSignedInEvent event) {
-//		dsl.update(Users.USERS).set(Users.USERS.)
+		//		dsl.update(Users.USERS).set(Users.USERS.)
 		//        userRepository.updateLastLoginDate(event.getAuthentication().getName(), new Date(event.getTimestamp()));
 	}
 }
