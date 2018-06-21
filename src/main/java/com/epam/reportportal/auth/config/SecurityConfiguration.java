@@ -2,13 +2,16 @@ package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
+import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
+import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
+import com.epam.reportportal.auth.store.entity.ProjectRole;
+import com.epam.reportportal.auth.store.entity.UserRole;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +19,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -29,10 +35,17 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -99,11 +112,11 @@ public class SecurityConfiguration {
 
 
 		@Autowired
-		DSLContext dslContext;
+		OAuthRegistrationRepository oAuthRegistrationRepository;
 
 		@Bean
 		public ClientRegistrationRepository clientRegistrationRepository(){
-			return new MutableClientRegistrationRepository(dslContext);
+			return new MutableClientRegistrationRepository(oAuthRegistrationRepository);
 		}
 
 	}
@@ -120,12 +133,28 @@ public class SecurityConfiguration {
 			this.authenticationManager = authenticationManager;
 		}
 
+//		@Override
+//		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+//			endpoints
+//					.tokenStore(tokenStore())
+//					.accessTokenConverter(accessTokenConverter())
+//					.authenticationManager(authenticationManager);
+//		}
+
 		@Override
 		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+			//@formatter:off
 			endpoints
+					.pathMapping("/oauth/token", "/sso/oauth/token")
+					.pathMapping("/oauth/token_key", "/sso/oauth/token_key")
+					.pathMapping("/oauth/check_token", "/sso/oauth/check_token")
+					.pathMapping("/oauth/authorize", "/sso/oauth/authorize")
+					.pathMapping("/oauth/confirm_access", "/sso/oauth/confirm_access")
 					.tokenStore(tokenStore())
+//					.exceptionTranslator(new OAuthErrorHandler(new ReportPortalExceptionResolver(new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING))))
 					.accessTokenConverter(accessTokenConverter())
 					.authenticationManager(authenticationManager);
+			//@formatter:on
 		}
 
 		@Override
@@ -169,6 +198,9 @@ public class SecurityConfiguration {
 		public JwtAccessTokenConverter accessTokenConverter() {
 			JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
 			converter.setSigningKey("123");
+			DefaultAccessTokenConverter converter1 = new DefaultAccessTokenConverter();
+			converter1.setUserTokenConverter(new ReportPortalAuthenticationConverter());
+			converter.setAccessTokenConverter(converter1);
 			return converter;
 		}
 
@@ -205,6 +237,62 @@ public class SecurityConfiguration {
 
 		}
 
+	}
+
+	static class ReportPortalAuthenticationConverter extends DefaultUserAuthenticationConverter {
+		@Override
+		public Map<String, ?> convertUserAuthentication(Authentication authentication) {
+			@SuppressWarnings("unchecked")
+			Map<String, Object> claims = (Map<String, Object>) super.convertUserAuthentication(authentication);
+			ReportPortalUser principal = (ReportPortalUser) authentication.getPrincipal();
+			claims.put("userId", principal.getUserId());
+			claims.put("userRole", principal.getUserRole());
+			claims.put("projects", principal.getProjectDetails());
+			return claims;
+		}
+
+		@Override
+		public Authentication extractAuthentication(Map<String, ?> map) {
+			Authentication auth = super.extractAuthentication(map);
+			if (null != auth) {
+				UsernamePasswordAuthenticationToken user = ((UsernamePasswordAuthenticationToken) auth);
+				Collection<GrantedAuthority> authorities = user.getAuthorities();
+
+				Long userId = map.containsKey("userId") ? parseId(map.get("userId")) : null;
+				UserRole userRole = map.containsKey("userRole") ? UserRole.valueOf(map.get("userRole").toString()) : null;
+				Map<String, Map> projects = map.containsKey("projects") ? (Map) map.get("projects") : Collections.emptyMap();
+
+				Map<String, ReportPortalUser.ProjectDetails> collect = projects.entrySet()
+						.stream()
+						.collect(Collectors.toMap(Map.Entry::getKey,
+								e -> new ReportPortalUser.ProjectDetails(parseId(e.getValue().get("projectId")),
+										ProjectRole.valueOf((String) e.getValue().get("projectRole"))
+								)
+						));
+
+				return new UsernamePasswordAuthenticationToken(new ReportPortalUser(
+						user.getName(),
+						"N/A",
+						authorities,
+						userId,
+						userRole,
+						collect
+				),
+						user.getCredentials(),
+						authorities
+				);
+			}
+
+			return null;
+
+		}
+
+		private Long parseId(Object id) {
+			if (id instanceof Integer) {
+				return Long.valueOf((Integer) id);
+			}
+			return (Long) id;
+		}
 	}
 
 	public static class MD5PasswordEncoder implements PasswordEncoder {

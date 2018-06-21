@@ -21,21 +21,16 @@
 package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.ReportPortalUser;
+import com.epam.reportportal.auth.store.UserRepository;
+import com.epam.reportportal.auth.store.entity.User;
 import com.epam.reportportal.auth.util.AuthUtils;
-import com.epam.ta.reportportal.jooq.tables.pojos.Project;
-import com.epam.ta.reportportal.jooq.tables.pojos.ProjectUser;
-import com.epam.ta.reportportal.jooq.tables.pojos.Users;
-import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.epam.ta.reportportal.jooq.Tables.*;
 
 /**
  * Spring's {@link UserDetailsService} implementation. Uses {@link Users} entity
@@ -46,58 +41,37 @@ import static com.epam.ta.reportportal.jooq.Tables.*;
 public class DatabaseUserDetailsService implements UserDetailsService {
 
 	@Autowired
-	private DSLContext dsl;
+	private UserRepository userRepository;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Map<Users, List<FullProject>> userProjects = dsl.select()
-				.from(USERS)
-				.join(PROJECT_USER)
-				.on(PROJECT_USER.USER_ID.eq(USERS.ID))
-				.join(PROJECT)
-				.on(PROJECT_USER.PROJECT_ID.eq(PROJECT.ID))
-				.where(USERS.LOGIN.eq(username))
-				.fetchGroups(
-						// Map records first into the USER table and then into the key POJO type
-						r -> r.into(Users.class),
-
-						// Map records first into the ROLE table and then into the value POJO type
-						r -> new FullProject(r.into(Project.class), r.into(ProjectUser.class))
-				);
-
-		if (userProjects.isEmpty()) {
+		Optional<User> user = userRepository.findByLogin(username);
+		if (!user.isPresent()) {
 			throw new UsernameNotFoundException("User not found");
 		}
-		Map.Entry<Users, List<FullProject>> userProject = userProjects.entrySet().iterator().next();
-		Users userEntity = userProject.getKey();
 
-		String login = userEntity.getLogin();
-		String password = userEntity.getPassword() == null ? "" : userEntity.getPassword();
+		String login = user.get().getLogin();
+		String password = user.get().getPassword() == null ? "" : user.get().getPassword();
 
-		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(
-				login,
+		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(login,
 				password,
 				true,
 				true,
 				true,
 				true,
-				AuthUtils.AS_AUTHORITIES.apply(com.epam.ta.reportportal.jooq.enums.UserRoleEnum.valueOf(userEntity.getRole()
-						.name()
-						.toUpperCase()))
+				AuthUtils.AS_AUTHORITIES.apply(user.get().getRole())
 		);
+
 		return new ReportPortalUser(
 				u,
-				userProject.getValue().stream().collect(Collectors.toMap(p -> p.project.getName(), p -> p.usersProject.getProjectRole()))
+				user.get().getId(),
+				user.get().getRole(),
+				user.get()
+						.getProjects()
+						.stream()
+						.collect(Collectors.toMap(p -> p.getProject().getName(),
+								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getRole())
+						))
 		);
-	}
-
-	static class FullProject {
-		ProjectUser usersProject;
-		Project project;
-
-		FullProject(Project project, ProjectUser usersProject) {
-			this.usersProject = usersProject;
-			this.project = project;
-		}
 	}
 }

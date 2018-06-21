@@ -21,7 +21,7 @@
 package com.epam.reportportal.auth.validation;
 
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
-import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 
 import java.util.ArrayList;
