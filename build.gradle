@@ -40,6 +40,7 @@ repositories {
     mavenCentral()
 
     if (!releaseMode) {
+
         maven { url "https://jitpack.io" }
     }
 

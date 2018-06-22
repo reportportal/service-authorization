@@ -45,6 +45,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -165,7 +166,7 @@ public class SecurityConfiguration {
                     	.secret("{bcrypt}$2a$10$ka8W./nA2Uiqsd2uOzazdu2lMbipaMB6RJNInB1Y0NMKQzj7plsie")
                     	.authorizedGrantTypes("refresh_token", "password")
                     	.scopes("ui")
-						.accessTokenValiditySeconds(500)
+						.accessTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(1))
                     .and()
                     .withClient(ReportPortalClient.api.name())
                     	.secret("apiman")
