@@ -20,11 +20,13 @@
  */
 package com.epam.reportportal.auth.store.entity;
 
+import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
 /**
  * @author Andrei Varabyeu
  */
+@MappedSuperclass
 public class AbstractAuthConfig {
 
 	@NotNull

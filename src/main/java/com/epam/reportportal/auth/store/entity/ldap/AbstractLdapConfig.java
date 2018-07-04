@@ -23,6 +23,7 @@ package com.epam.reportportal.auth.store.entity.ldap;
 import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 import com.epam.reportportal.auth.validation.IfEnabled;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -32,16 +33,36 @@ import javax.validation.constraints.Pattern;
  *
  * @author Andrei Varabyeu
  */
+
+@Entity
+@Table(name = "abstract_ldap_config", schema = "public")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class AbstractLdapConfig extends AbstractAuthConfig {
 
-	@Pattern(regexp = "^ldap://.*")
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+
+	@Pattern(regexp = "^ldaps?://.*")
 	@NotEmpty(groups = { IfEnabled.class })
+	@Column(name = "url", length = 256)
 	private String url;
 
 	@NotNull(groups = { IfEnabled.class })
+	@Column(name = "base_dn", length = 256)
 	private String baseDn;
 
+	@OneToOne
+	@JoinColumn(name = "sync_attributes_id")
 	private SynchronizationAttributes synchronizationAttributes;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getUrl() {
 		return url;

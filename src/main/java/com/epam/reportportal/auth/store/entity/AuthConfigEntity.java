@@ -25,19 +25,27 @@ import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
  * @author Andrei Varabyeu
  */
-//@Entity
-//@Table(name = "authConfig")
+@Entity
+@Table(name = "authConfig")
 public class AuthConfigEntity {
 
-//	@Id
-//	@javax.persistence.Id
+	@Id
+	@javax.persistence.Id
 	private String id;
+
+	@ManyToOne
+	@JoinColumn(name = "ldap_config_id")
 	private LdapConfig ldap;
+
+	@ManyToOne
+	@JoinColumn(name = "active_directory_config_id")
 	private ActiveDirectoryConfig activeDirectory;
 
 	public String getId() {
