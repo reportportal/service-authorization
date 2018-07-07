@@ -33,6 +33,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.util.Properties;
 
 /**
  * @author Pavel Bortnik
@@ -57,8 +58,17 @@ public class DatabaseConfiguration {
 
 		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 		factory.setJpaVendorAdapter(vendorAdapter);
-		factory.setPackagesToScan("com.epam.reportportal.auth.store.entity");
+		factory.setPackagesToScan(
+				"com.epam.reportportal.auth.store.entity",
+				"com.epam.ta.reportportal.commons",
+				"com.epam.ta.reportportal.entity"
+		);
 		factory.setDataSource(dataSource());
+
+		Properties jpaProperties = new Properties();
+		jpaProperties.setProperty("hibernate.dialect", "com.epam.ta.reportportal.commons.JsonbAwarePostgresDialect");
+		factory.setJpaProperties(jpaProperties);
+
 		factory.afterPropertiesSet();
 
 		return factory.getObject();

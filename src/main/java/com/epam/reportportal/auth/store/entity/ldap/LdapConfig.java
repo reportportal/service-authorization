@@ -34,7 +34,7 @@ import javax.persistence.*;
 @GroupSequenceProvider(LdapSequenceProvider.class)
 @Entity
 @Table(name = "ldap_config", schema = "public")
-public class LdapConfig extends AbstractLdapConfig {
+public class LdapConfig extends AbstractLdapIntegration {
 
 	@Column(name = "user_dn_pattern", length = 256)
 	private String userDnPattern;

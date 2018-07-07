@@ -20,8 +20,8 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 import com.epam.reportportal.auth.validation.IfEnabled;
+import com.epam.ta.reportportal.entity.integration.Integration;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -34,10 +34,8 @@ import javax.validation.constraints.Pattern;
  * @author Andrei Varabyeu
  */
 
-@Entity
-@Table(name = "abstract_ldap_config", schema = "public")
-@Inheritance(strategy = InheritanceType.JOINED)
-public class AbstractLdapConfig extends AbstractAuthConfig {
+@MappedSuperclass
+public class AbstractLdapIntegration extends Integration {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -52,7 +50,7 @@ public class AbstractLdapConfig extends AbstractAuthConfig {
 	@Column(name = "base_dn", length = 256)
 	private String baseDn;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "sync_attributes_id")
 	private SynchronizationAttributes synchronizationAttributes;
 

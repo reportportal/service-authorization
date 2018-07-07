@@ -37,7 +37,7 @@ import javax.validation.constraints.NotNull;
 @GroupSequenceProvider(AdSequenceProvider.class)
 @Entity
 @Table(name = "active_directory_config", schema = "public")
-public class ActiveDirectoryConfig extends AbstractLdapConfig {
+public class ActiveDirectoryConfig extends AbstractLdapIntegration {
 
 	@NotNull(groups = { IfEnabled.class })
 	@Column(name = "domain", length = 256)
