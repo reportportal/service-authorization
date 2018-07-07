@@ -37,10 +37,6 @@ import javax.validation.constraints.Pattern;
 @MappedSuperclass
 public class AbstractLdapIntegration extends Integration {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
-
 	@Pattern(regexp = "^ldaps?://.*")
 	@NotEmpty(groups = { IfEnabled.class })
 	@Column(name = "url", length = 256)
@@ -53,14 +49,6 @@ public class AbstractLdapIntegration extends Integration {
 	@ManyToOne
 	@JoinColumn(name = "sync_attributes_id")
 	private SynchronizationAttributes synchronizationAttributes;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public String getUrl() {
 		return url;
