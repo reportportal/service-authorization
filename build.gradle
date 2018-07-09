@@ -109,7 +109,7 @@ dependencies {
     compile 'org.postgresql:postgresql:42.2.2'
     compile 'commons-beanutils:commons-beanutils:1.9.3'
 
-    testCompile 'org.hamcrest:hamcrest-all'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
     testCompile 'junit:junit'
     testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'org.springframework:spring-test'
@@ -142,7 +142,7 @@ jar {
 
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
+    gradleVersion = '4.7'
 }
 
 /* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
@@ -164,6 +164,7 @@ javadoc() {
 }
 
 task fatDist(type: Zip) {
+    archiveName = "${baseName}.${extension}"
     appendix = 'dist'
     into('lib') {
         from configurations.runtime
@@ -213,9 +214,6 @@ bintray {
     }
 }
 
-ext {
-    grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
-}
 
 task releaseDockerfile(type: Copy) {
     /* copy dockerfile and replace version of JAR */
@@ -232,11 +230,28 @@ task releaseDockerfile(type: Copy) {
 }
 
 task addDockerfileToGit << {
+    grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
+
     grgit.add(patterns: ['Dockerfile'])
 }
 
 task removeDockerfileFromGit << {
+    grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
+
     grgit.remove(patterns: ['Dockerfile'])
+}
+
+task resolveDependencies() {
+    doLast {
+        project.rootProject.allprojects.each { subProject ->
+            subProject.buildscript.configurations.each { configuration ->
+                if (configuration.isCanBeResolved()) configuration.resolve()
+            }
+            subProject.configurations.each { configuration ->
+                if (configuration.isCanBeResolved()) configuration.resolve()
+            }
+        }
+    }
 }
 
 addDockerfileToGit.dependsOn releaseDockerfile
