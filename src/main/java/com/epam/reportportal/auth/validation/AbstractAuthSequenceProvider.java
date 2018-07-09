@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth.validation;
 
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import org.apache.commons.lang.BooleanUtils;
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 
@@ -33,7 +33,7 @@ import java.util.List;
  * @param <T> Type of Auth Config
  * @author Andrei Varabyeu
  */
-public class AbstractAuthSequenceProvider<T extends AbstractAuthConfig> implements DefaultGroupSequenceProvider<T> {
+public class AbstractAuthSequenceProvider<T extends Integration> implements DefaultGroupSequenceProvider<T> {
 
 	private final Class<T> modelType;
 
@@ -42,7 +42,7 @@ public class AbstractAuthSequenceProvider<T extends AbstractAuthConfig> implemen
 	}
 
 	@Override
-	public List<Class<?>> getValidationGroups(AbstractAuthConfig authConfig) {
+	public List<Class<?>> getValidationGroups(Integration authConfig) {
 		List<Class<?>> defaultGroupSequence = new ArrayList<>();
 		defaultGroupSequence.add(modelType);
 

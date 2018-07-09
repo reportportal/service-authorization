@@ -20,9 +20,10 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 import com.epam.reportportal.auth.validation.IfEnabled;
+import com.epam.ta.reportportal.entity.integration.Integration;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -32,15 +33,21 @@ import javax.validation.constraints.Pattern;
  *
  * @author Andrei Varabyeu
  */
-public class AbstractLdapConfig extends AbstractAuthConfig {
 
-	@Pattern(regexp = "^ldap://.*")
+@MappedSuperclass
+public class AbstractLdapIntegration extends Integration {
+
+	@Pattern(regexp = "^ldaps?://.*")
 	@NotEmpty(groups = { IfEnabled.class })
+	@Column(name = "url", length = 256)
 	private String url;
 
 	@NotNull(groups = { IfEnabled.class })
+	@Column(name = "base_dn", length = 256)
 	private String baseDn;
 
+	@ManyToOne
+	@JoinColumn(name = "sync_attributes_id")
 	private SynchronizationAttributes synchronizationAttributes;
 
 	public String getUrl() {
