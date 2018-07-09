@@ -116,7 +116,7 @@ public class SecurityConfiguration {
 		OAuthRegistrationRepository oAuthRegistrationRepository;
 
 		@Bean
-		public ClientRegistrationRepository clientRegistrationRepository(){
+		public ClientRegistrationRepository clientRegistrationRepository() {
 			return new MutableClientRegistrationRepository(oAuthRegistrationRepository);
 		}
 

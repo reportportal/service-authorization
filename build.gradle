@@ -24,10 +24,11 @@ buildscript {
 plugins {
     id 'net.researchgate.release' version '2.4.1'
     id "com.jfrog.bintray" version "1.7"
+    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
+
 }
 
 apply plugin: 'java'
-apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 apply plugin: 'jacoco'
 
@@ -59,7 +60,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:71b7ca8"
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
     }
 }
 
@@ -89,8 +90,8 @@ dependencies {
 //    compile 'org.springframework.session:spring-session-jdbc'
 //    compile 'org.springframework.session:spring-session-data-mongo'
 
-    compile 'org.apache.tika:tika-core'
-    compile 'org.apache.tika:tika-parsers'
+    compile 'org.apache.tika:tika-core:1.17'
+    compile 'org.apache.tika:tika-parsers:1.17'
 
     //LDAP stuff
 //    compile("org.springframework.ldap:spring-ldap-core")
@@ -125,25 +126,23 @@ task copyRuntimeLibs(type: Copy) {
 
 build.dependsOn(copyRuntimeLibs)
 
-//jar {
-//    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-//    manifest {
-//        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-//                'Implementation-Version': version,
-//                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-//                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-//
-//    }
-//
-//}
 
+jar {
+    archiveName "${baseName}.${extension}"
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    manifest {
+        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
+                'Implementation-Version': version,
+                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
 
-bootJar {
-    enabled = false
+    }
+
 }
 
+
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.5'
+    gradleVersion = '3.0'
 }
 
 /* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
