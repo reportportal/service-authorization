@@ -15,10 +15,7 @@ COPY . ./
 RUN ./gradlew build
 
 FROM openjdk:8-alpine
-
 LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
-LABEL version="@version@"
-LABEL description="@description@"
 
 ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_APP=/app.jar
