@@ -22,7 +22,7 @@ package com.epam.reportportal.auth.integration;
 
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.BinaryData;
-import com.epam.ta.reportportal.DataStorage;
+import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
@@ -50,79 +50,85 @@ import static com.epam.ta.reportportal.commons.querygen.FilterCondition.builder;
  */
 public class AbstractUserReplicator {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
+	protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
 
-    protected final UserRepository userRepository;
-    protected final ProjectRepository projectRepository;
-    protected final PersonalProjectService personalProjectService;
-    protected final DataStorage dataStorage;
+	protected final UserRepository userRepository;
+	protected final ProjectRepository projectRepository;
+	protected final PersonalProjectService personalProjectService;
+	protected final DataStore dataStorage;
 
-    public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-            PersonalProjectService personalProjectService, DataStorage dataStorage) {
-        this.userRepository = userRepository;
-        this.projectRepository = projectRepository;
-        this.personalProjectService = personalProjectService;
-        this.dataStorage = dataStorage;
-    }
+	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
+			PersonalProjectService personalProjectService, DataStore dataStorage) {
+		this.userRepository = userRepository;
+		this.projectRepository = projectRepository;
+		this.personalProjectService = personalProjectService;
+		this.dataStorage = dataStorage;
+	}
 
-    /**
-     * Generates personal project if does NOT exists
-     *
-     * @param user Owner of personal project
-     * @return Created project name
-     */
-    protected String generatePersonalProject(User user) {
-        Optional<String> projectName = projectRepository.findPersonalProjectName(user.getLogin());
-        return projectName.orElseGet(() -> {
-            Project personalProject = personalProjectService.generatePersonalProject(user);
-            projectRepository.save(personalProject);
-            return personalProject.getId();
-        });
-    }
+	/**
+	 * Generates personal project if does NOT exists
+	 *
+	 * @param user Owner of personal project
+	 * @return Created project name
+	 */
+	protected Project generatePersonalProject(User user) {
+		Optional<String> projectName = projectRepository.findPersonalProjectName(user.getLogin());
+		if (projectName.isPresent()) {
+			return projectRepository.findByName(projectName.get()).orElseGet(() -> generatePersonalProjectByUser(user));
+		} else {
+			return generatePersonalProjectByUser(user);
+		}
+	}
 
-    /**
-     * Generates default metainfo
-     *
-     * @return Default meta info
-     */
-    protected User.MetaInfo defaultMetaInfo() {
-        User.MetaInfo metaInfo = new User.MetaInfo();
-        Date now = Date.from(ZonedDateTime.now().toInstant());
-        metaInfo.setLastLogin(now);
-        metaInfo.setSynchronizationDate(now);
-        return metaInfo;
-    }
+	/**
+	 * Generates default metainfo
+	 *
+	 * @return Default meta info
+	 */
+	protected User.MetaInfo defaultMetaInfo() {
+		User.MetaInfo metaInfo = new User.MetaInfo();
+		Date now = Date.from(ZonedDateTime.now().toInstant());
+		metaInfo.setLastLogin(now);
+		metaInfo.setSynchronizationDate(now);
+		return metaInfo;
+	}
 
-    /**
-     * Checks email is available
-     *
-     * @param email email to check
-     */
-    protected void checkEmail(String email) {
-        if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
-            throw new UserSynchronizationException("User with email '" + email + "' already exists");
-        }
-    }
+	/**
+	 * Checks email is available
+	 *
+	 * @param email email to check
+	 */
+	protected void checkEmail(String email) {
+		if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
+			throw new UserSynchronizationException("User with email '" + email + "' already exists");
+		}
+	}
 
-    protected String uploadPhoto(String login, byte[] data) {
-        return uploadPhoto(login, data, resolveContentType(data));
-    }
+	protected String uploadPhoto(String login, byte[] data) {
+		return uploadPhoto(login, data, resolveContentType(data));
+	}
 
-    protected String uploadPhoto(String login, byte[] data, String contentType) {
-        BinaryData photo = new BinaryData(contentType, (long) data.length, new ByteArrayInputStream(data));
-        return uploadPhoto(login, photo);
-    }
+	protected String uploadPhoto(String login, byte[] data, String contentType) {
+		BinaryData photo = new BinaryData(contentType, (long) data.length, new ByteArrayInputStream(data));
+		return uploadPhoto(login, photo);
+	}
 
-    protected String uploadPhoto(String login, BinaryData data) {
-        return userRepository.uploadUserPhoto(login, data);
-    }
+	protected String uploadPhoto(String login, BinaryData data) {
+		return userRepository.uploadUserPhoto(login, data);
+	}
 
-    private String resolveContentType(byte[] data) {
-        AutoDetectParser parser = new AutoDetectParser(new ImageParser());
-        try {
-            return parser.getDetector().detect(TikaInputStream.get(data), new Metadata()).toString();
-        } catch (IOException e) {
-            return MediaType.OCTET_STREAM.toString();
-        }
-    }
+	private String resolveContentType(byte[] data) {
+		AutoDetectParser parser = new AutoDetectParser(new ImageParser());
+		try {
+			return parser.getDetector().detect(TikaInputStream.get(data), new Metadata()).toString();
+		} catch (IOException e) {
+			return MediaType.OCTET_STREAM.toString();
+		}
+	}
+
+	private Project generatePersonalProjectByUser(User user) {
+		Project personalProject = personalProjectService.generatePersonalProject(user);
+		projectRepository.save(personalProject);
+		return personalProject;
+	}
 }

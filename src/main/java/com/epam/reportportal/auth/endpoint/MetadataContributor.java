@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
-import com.epam.reportportal.auth.store.entity.ProjectRole;
+import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;

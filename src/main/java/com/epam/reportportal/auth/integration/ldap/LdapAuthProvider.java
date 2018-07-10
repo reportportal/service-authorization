@@ -23,20 +23,16 @@ package com.epam.reportportal.auth.integration.ldap;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import com.epam.reportportal.auth.store.entity.ldap.PasswordEncoderType;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.encoding.*;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
-
-import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Collections.singletonList;
@@ -98,17 +94,17 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 			 * This is why we just wrap old encoder with new one interface
 			 * New encoder cannot be used everywhere since it does not have implementation for LDAP
 			 */
-			final PasswordEncoder delegate = ENCODER_MAPPING.get(ldap.getPasswordEncoderType());
+			final PasswordEncoder delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 			builder.passwordEncoder(new org.springframework.security.crypto.password.PasswordEncoder() {
 
 				@Override
 				public String encode(CharSequence rawPassword) {
-					return delegate.encodePassword(rawPassword.toString(), null);
+					return delegate.encode(rawPassword);
 				}
 
 				@Override
 				public boolean matches(CharSequence rawPassword, String encodedPassword) {
-					return delegate.isPasswordValid(encodedPassword, rawPassword.toString(), null);
+					return delegate.matches(rawPassword, encodedPassword);
 				}
 			});
 
@@ -126,16 +122,5 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 			throw new ReportPortalException("Cannot build LDAP auth provider", e);
 		}
 	}
-
-	//@formatter:off
-    @VisibleForTesting
-    static final Map<PasswordEncoderType, PasswordEncoder> ENCODER_MAPPING = ImmutableMap.<PasswordEncoderType, PasswordEncoder>builder()
-            .put(PasswordEncoderType.LDAP_SHA, new LdapShaPasswordEncoder())
-            .put(PasswordEncoderType.MD4, new Md4PasswordEncoder())
-            .put(PasswordEncoderType.MD5, new Md5PasswordEncoder())
-            .put(PasswordEncoderType.SHA, new ShaPasswordEncoder())
-            .put(PasswordEncoderType.PLAIN, new PlaintextPasswordEncoder())
-            .build();
-    //@formatter:on
 
 }
