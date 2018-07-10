@@ -24,10 +24,11 @@ buildscript {
 plugins {
     id 'net.researchgate.release' version '2.4.1'
     id "com.jfrog.bintray" version "1.7"
+    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
+
 }
 
 apply plugin: 'java'
-apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 apply plugin: 'jacoco'
 
@@ -59,7 +60,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:71b7ca8"
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
     }
 }
 
@@ -89,8 +90,8 @@ dependencies {
 //    compile 'org.springframework.session:spring-session-jdbc'
 //    compile 'org.springframework.session:spring-session-data-mongo'
 
-    compile 'org.apache.tika:tika-core'
-    compile 'org.apache.tika:tika-parsers'
+    compile 'org.apache.tika:tika-core:1.17'
+    compile 'org.apache.tika:tika-parsers:1.17'
 
     //LDAP stuff
 //    compile("org.springframework.ldap:spring-ldap-core")
@@ -108,7 +109,7 @@ dependencies {
     compile 'org.postgresql:postgresql:42.2.2'
     compile 'commons-beanutils:commons-beanutils:1.9.3'
 
-    testCompile 'org.hamcrest:hamcrest-all'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
     testCompile 'junit:junit'
     testCompile 'org.springframework.boot:spring-boot-test'
     testCompile 'org.springframework:spring-test'
@@ -125,25 +126,23 @@ task copyRuntimeLibs(type: Copy) {
 
 build.dependsOn(copyRuntimeLibs)
 
-//jar {
-//    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-//    manifest {
-//        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-//                'Implementation-Version': version,
-//                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-//                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-//
-//    }
-//
-//}
 
+jar {
+    archiveName "${baseName}.${extension}"
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    manifest {
+        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
+                'Implementation-Version': version,
+                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
 
-bootJar {
-    enabled = false
+    }
+
 }
 
+
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.5'
+    gradleVersion = '4.7'
 }
 
 /* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
@@ -165,6 +164,7 @@ javadoc() {
 }
 
 task fatDist(type: Zip) {
+    archiveName = "${baseName}.${extension}"
     appendix = 'dist'
     into('lib') {
         from configurations.runtime
@@ -214,9 +214,6 @@ bintray {
     }
 }
 
-ext {
-    grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
-}
 
 task releaseDockerfile(type: Copy) {
     /* copy dockerfile and replace version of JAR */
@@ -233,11 +230,28 @@ task releaseDockerfile(type: Copy) {
 }
 
 task addDockerfileToGit << {
+    grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
+
     grgit.add(patterns: ['Dockerfile'])
 }
 
 task removeDockerfileFromGit << {
+    grgit = org.ajoberstar.grgit.Grgit.open(dir: '.')
+
     grgit.remove(patterns: ['Dockerfile'])
+}
+
+task resolveDependencies() {
+    doLast {
+        project.rootProject.allprojects.each { subProject ->
+            subProject.buildscript.configurations.each { configuration ->
+                if (configuration.isCanBeResolved()) configuration.resolve()
+            }
+            subProject.configurations.each { configuration ->
+                if (configuration.isCanBeResolved()) configuration.resolve()
+            }
+        }
+    }
 }
 
 addDockerfileToGit.dependsOn releaseDockerfile
