@@ -53,12 +53,13 @@ public class DatabaseConfiguration {
 	public EntityManagerFactory entityManagerFactory() {
 
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-		vendorAdapter.setGenerateDdl(true);
+		vendorAdapter.setGenerateDdl(false);
 
 		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 		factory.setJpaVendorAdapter(vendorAdapter);
 		factory.setPackagesToScan("com.epam.reportportal.auth.store.entity");
 		factory.setDataSource(dataSource());
+
 		factory.afterPropertiesSet();
 
 		return factory.getObject();
