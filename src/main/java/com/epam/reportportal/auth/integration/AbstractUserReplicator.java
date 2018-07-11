@@ -114,7 +114,7 @@ public class AbstractUserReplicator {
 	}
 
 	protected String uploadPhoto(String login, BinaryData data) {
-		return userRepository.uploadUserPhoto(login, data);
+		return dataStorage.save(login, data.getInputStream());
 	}
 
 	private String resolveContentType(byte[] data) {

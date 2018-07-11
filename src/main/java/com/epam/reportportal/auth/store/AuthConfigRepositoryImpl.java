@@ -20,86 +20,138 @@
  */
 package com.epam.reportportal.auth.store;
 
+import com.epam.reportportal.auth.store.entity.AuthConfig;
+import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
+import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
+import com.epam.ta.reportportal.commons.querygen.Filter;
+import org.jooq.Record;
+import org.jooq.RecordMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.List;
+import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
+
 /**
  * AuthConfig repository custom
  *
  * @author Andrei Varabyeu
  */
-//public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
-public class AuthConfigRepositoryImpl {
+@Repository
+@Transactional
+public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
 
-//    private final DSLContext dslContext;
-//
-//    @Autowired
-//    public AuthConfigRepositoryImpl(DSLContext dslContext) {
-//        this.dslContext = dslContext;
-//        createDefaultProfileIfAbsent();
-//    }
-//
-//    @Override
-//    public void createDefaultProfileIfAbsent() {
-//        if (null == mongoOperations.findOne(findDefaultQuery(), AuthConfigEntity.class)) {
-//            AuthConfigEntity entity = new AuthConfigEntity();
-//            entity.setId(AuthConfigRepository.DEFAULT_PROFILE);
-//            mongoOperations.save(entity);
-//        }
-//    }
-//
-//    @Override
-//    public void deleteSettings(AuthIntegrationType type) {
-//        mongoOperations.updateFirst(findDefaultQuery(), new Update().unset(type.getDbField()), AuthConfigEntity.class);
-//    }
-//
-//    @Override
-//    public void updatePartially(AuthConfigEntity entity) {
-//        mongoOperations.updateFirst(findDefaultQuery(), updateExisting(entity), AuthConfigEntity.class);
-//    }
-//
-//    @Override
-//    public void updateLdap(LdapConfig ldapConfig) {
-//        mongoOperations
-//                .updateFirst(findDefaultQuery(), Update.update(AuthIntegrationType.LDAP.getDbField(), ldapConfig),
-//                        AuthConfigEntity.class);
-//
-//    }
-//
-//    @Override
-//    public void updateActiveDirectory(ActiveDirectoryConfig adConfig) {
-//        mongoOperations
-//                .updateFirst(findDefaultQuery(),
-//                        Update.update(AuthIntegrationType.ACTIVE_DIRECTORY.getDbField(), adConfig),
-//                        AuthConfigEntity.class);
-//    }
-//
-//    @Override
-//    public Optional<LdapConfig> findLdap(boolean enabled) {
-//        return ofNullable(
-//                mongoOperations.findOne(findDefaultQuery().addCriteria(Criteria.where("ldap.enabled").is(enabled)),
-//                        AuthConfigEntity.class))
-//                .flatMap(cfg -> ofNullable(cfg.getLdap()));
-//    }
-//
-//    @Override
-//    public Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled) {
-//        return ofNullable(mongoOperations
-//                .findOne(findDefaultQuery().addCriteria(Criteria.where("activeDirectory.enabled").is(enabled)),
-//                        AuthConfigEntity.class))
-//                .flatMap(cfg -> ofNullable(cfg.getActiveDirectory()));
-//    }
-//
-//    private Query findDefaultQuery() {
-//        return query(where("_id").is(AuthConfigRepository.DEFAULT_PROFILE));
-//    }
-//
-//    private Update updateExisting(Object object) {
-//        try {
-//            Update update = new Update();
-//            PropertyUtils.describe(object).entrySet().stream().filter(e -> null != e.getValue())
-//                    .forEach(it -> update.set(it.getKey(), it.getValue()));
-//            return update;
-//        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-//            throw new ReportPortalException("Error during auth config update", e);
-//        }
-//    }
+	//	private final DSLContext dslContext;
+
+	private final EntityManager entityManager;
+
+	@Autowired
+	public AuthConfigRepositoryImpl(EntityManager entityManager) {
+		this.entityManager = entityManager;
+		//		createDefaultProfileIfAbsent();
+	}
+
+	@Override
+	@Transactional
+	public void refresh(AuthConfig t) {
+		entityManager.refresh(t);
+	}
+
+	@Override
+	public <R> List<R> findByFilter(Filter filter, RecordMapper<? super Record, R> mapper) {
+		return null;
+	}
+
+	@Override
+	public <R> Page<R> findByFilter(Filter filter, Pageable pageable, RecordMapper<? super Record, R> mapper) {
+		return null;
+	}
+
+	@Override
+	public boolean exists(Filter filter) {
+		return false;
+	}
+
+	@Override
+	public void createDefaultProfileIfAbsent() {
+		List<AuthConfig> authConfigs = entityManager.createQuery(findDefaultQuery()).getResultList();
+		if (null == authConfigs || authConfigs.size() == 0) {
+			AuthConfig entity = new AuthConfig();
+			entity.setId(AuthConfigRepository.DEFAULT_PROFILE);
+			entityManager.persist(entity);
+		}
+	}
+	//
+	//    @Override
+	//    public void deleteSettings(AuthIntegrationType type) {
+	//        mongoOperations.updateFirst(findDefaultQuery(), new Update().unset(type.getDbField()), AuthConfigEntity.class);
+	//    }
+	//
+	//    @Override
+	//    public void updatePartially(AuthConfigEntity entity) {
+	//        mongoOperations.updateFirst(findDefaultQuery(), updateExisting(entity), AuthConfigEntity.class);
+	//    }
+	//
+	//    @Override
+	//    public void updateLdap(LdapConfig ldapConfig) {
+	//        mongoOperations
+	//                .updateFirst(findDefaultQuery(), Update.update(AuthIntegrationType.LDAP.getDbField(), ldapConfig),
+	//                        AuthConfigEntity.class);
+	//
+	//    }
+	//
+	//    @Override
+	//    public void updateActiveDirectory(ActiveDirectoryConfig adConfig) {
+	//        mongoOperations
+	//                .updateFirst(findDefaultQuery(),
+	//                        Update.update(AuthIntegrationType.ACTIVE_DIRECTORY.getDbField(), adConfig),
+	//                        AuthConfigEntity.class);
+	//    }
+
+	@Override
+	public Optional<LdapConfig> findLdap(boolean enabled) {
+		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = findDefaultQuery();
+		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
+		return ofNullable(entityManager.createQuery(findDefaultQuery().where(entityManager.getCriteriaBuilder()
+				.equal(authConfigRoot.get("ldap.enabled"), String.valueOf(enabled))))
+				.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getLdap()));
+	}
+
+	@Override
+	public Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled) {
+		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = findDefaultQuery();
+		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
+		return ofNullable(entityManager.createQuery(findDefaultQuery().where(entityManager.getCriteriaBuilder()
+				.equal(authConfigRoot.get("active_directory_config.enabled"), String.valueOf(enabled))))
+				.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getActiveDirectory()));
+	}
+
+	private CriteriaQuery<AuthConfig> findDefaultQuery() {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = criteriaBuilder.createQuery(AuthConfig.class);
+		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
+		authConfigCriteriaQuery.select(authConfigRoot).where(criteriaBuilder.equal(authConfigRoot.get("id"), "default"));
+		return authConfigCriteriaQuery;
+	}
+
+	//    private Update updateExisting(Object object) {
+	//        try {
+	//            Update update = new Update();
+	//            PropertyUtils.describe(object).entrySet().stream().filter(e -> null != e.getValue())
+	//                    .forEach(it -> update.set(it.getKey(), it.getValue()));
+	//            return update;
+	//        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+	//            throw new ReportPortalException("Error during auth config update", e);
+	//        }
+	//    }
 
 }

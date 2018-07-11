@@ -20,11 +20,16 @@
  */
 package com.epam.reportportal.auth.store;
 
-import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
+import com.epam.reportportal.auth.store.entity.AuthConfig;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
+import com.epam.ta.reportportal.commons.querygen.Filter;
+import org.jooq.Record;
+import org.jooq.RecordMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,17 +39,25 @@ import java.util.Optional;
  */
 public interface AuthConfigRepositoryCustom {
 
-    void createDefaultProfileIfAbsent();
+	void createDefaultProfileIfAbsent();
 
-    void deleteSettings(AuthIntegrationType type);
+	public void refresh(AuthConfig t);
 
-    void updatePartially(AuthConfigEntity entity);
+	<R> List<R> findByFilter(Filter filter, RecordMapper<? super Record, R> mapper);
 
-    void updateLdap(LdapConfig ldapConfig);
+	<R> Page<R> findByFilter(Filter filter, Pageable pageable, RecordMapper<? super Record, R> mapper);
 
-    void updateActiveDirectory(ActiveDirectoryConfig adConfig);
+	boolean exists(Filter filter);
+	//
+	//    void deleteSettings(AuthIntegrationType type);
+	//
+	//    void updatePartially(AuthConfig entity);
+	//
+	//    void updateLdap(LdapConfig ldapConfig);
+	//
+	//    void updateActiveDirectory(ActiveDirectoryConfig adConfig);
 
-    Optional<LdapConfig> findLdap(boolean enabled);
+	Optional<LdapConfig> findLdap(boolean enabled);
 
-    Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
+	Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
 }

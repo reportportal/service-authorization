@@ -79,13 +79,14 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 			ofNullable(attributes.getPhoto()).flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
 					.filter(photo -> photo instanceof byte[])
-					.map(photo -> (byte[]) photo).ifPresent(photo -> newUser.setPhotoPath(uploadPhoto(login, photo)));
+					.map(photo -> (byte[]) photo)
+					.ifPresent(photo -> newUser.setPhotoPath(uploadPhoto(login, photo)));
 
 			checkEmail(email);
 			newUser.setEmail(email);
 			newUser.setMetaInfo(defaultMetaInfo());
 
-			newUser.setType(String.valueOf(UserType.LDAP));
+			newUser.setUserType(UserType.LDAP);
 			newUser.setRole(UserRole.USER);
 			newUser.setExpired(false);
 
@@ -94,7 +95,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 			return newUser;
 
-		} else if (!String.valueOf(UserType.LDAP).equalsIgnoreCase(userOptional.get().getType())) {
+		} else if (!UserType.LDAP.equals(userOptional.get().getUserType())) {
 			//if user with such login exists, but it's not GitHub user than throw an exception
 			throw new UserSynchronizationException("User with login '" + userOptional.get().getId() + "' already exists");
 		}

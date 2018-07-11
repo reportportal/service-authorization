@@ -33,8 +33,8 @@ import javax.persistence.Table;
  * @author Andrei Varabyeu
  */
 @Entity
-@Table(name = "authConfig")
-public class AuthConfigEntity {
+@Table(name = "auth_config")
+public class AuthConfig {
 
 	@Id
 	@javax.persistence.Id
@@ -47,6 +47,9 @@ public class AuthConfigEntity {
 	@ManyToOne
 	@JoinColumn(name = "active_directory_config_id")
 	private ActiveDirectoryConfig activeDirectory;
+
+	public AuthConfig() {
+	}
 
 	public String getId() {
 		return id;
