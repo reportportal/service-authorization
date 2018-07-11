@@ -5,45 +5,21 @@ server:
 #    resource:
 #      filter-order: 3
 spring:
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        tags:
-          - urlprefix-${server.context-path:}/${spring.application.name} opts strip=/${spring.application.name}
-          - traefik.frontend.rule=PathPrefixStrip:${server.context-path:}/${spring.application.name}
-          - statusPageUrlPath=${server.contextPath:}/info
-          - healthCheckUrlPath=${server.contextPath:}/health
-        healthCheckPath: ${server.context-path:}/health
-        register: true
-        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
-        health-check-critical-timeout: 180s
-      enabled: true
   jackson:
     default-property-inclusion: non_null
   session:
     store-type: jdbc
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: rpuser`
-    password: rppass
-    url: jdbc:postgresql://localhost:5432/reportportal
+    url: ${rp.db.url}
   jpa:
     properties:
-      hibernate.jdbc.lob.non_contextual_creation: true
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
-eureka:
-  instance:
-    hostname: ${HOSTNAME:localhost}
-    status-page-url-path: ${server.contextPath:}/info
-    health-check-url-path: ${server.contextPath:}/health
-  ## Disabled by default
-  client:
-    register-with-eureka: false
-    enabled: false
-
+        jdbc.lob.non_contextual_creation: true
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
 
 logging:
   level:
@@ -54,31 +30,17 @@ springfox:
     swagger:
       v2:
         path: /api-docs
-## Consul as service registry
----
-spring:
-  profiles: consul
-  cloud:
-    consul:
-      enabled: true
-      discovery:
-        register: true
-eureka:
-  client:
-    register-with-eureka: false
-    enabled: false
 
-## Eureka as service registry
----
-spring:
-  profiles: eureka
-  cloud:
-    consul:
-      enabled: false
-      discovery:
-        register: false
-eureka:
-  client:
-    register-with-eureka: true
-    enabled: true
----
+
+#### Custom ReportPortal Properties ######
+##########################################
+rp:
+  amqp:
+    addresses: amqp://guest:guest@rabbitmq:5672
+  db:
+    url: jdbc:postgresql://postgres:5432/reportportal?user=rpuser&password=rppass
+  upload:
+    maxUploadSize: 128MB
+    maxFileSize: 64MB
+  analytics:
+    enableByDefault: true

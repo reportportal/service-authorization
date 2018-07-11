@@ -49,88 +49,88 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @Api(description = "Main Auth Configuration Endpoint")
 public class AuthConfigurationEndpoint {
 
-	private final AuthConfigRepository repository;
-	private final Encryptor encryptor;
+//	private final AuthConfigRepository repository;
+//	private final Encryptor encryptor;
+//
+//	@Autowired
+//	public AuthConfigurationEndpoint(AuthConfigRepository repository, Encryptor encryptor) {
+//		this.repository = repository;
+//		this.encryptor = encryptor;
+//	}
 
-	@Autowired
-	public AuthConfigurationEndpoint(AuthConfigRepository repository, Encryptor encryptor) {
-		this.repository = repository;
-		this.encryptor = encryptor;
-	}
+//	/**
+//	 * Updates LDAP auth settings
+//	 *
+//	 * @param ldapConfig LDAP configuration
+//	 * @return Successful message or an error
+//	 */
+//	@RequestMapping(value = "/ldap", method = { POST, PUT })
+//	@ResponseBody
+//	@ResponseStatus(HttpStatus.OK)
+//	@ApiOperation(value = "Updates LDAP auth settings")
+//	public LdapConfig updateLdapSettings(@RequestBody @Valid LdapConfig ldapConfig) {
+//		encyptPasswords(ldapConfig);
+//		repository.updateLdap(ldapConfig);
+//		return repository.findDefault().getLdap();
+//	}
 
-	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param ldapConfig LDAP configuration
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/ldap", method = { POST, PUT })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates LDAP auth settings")
-	public LdapConfig updateLdapSettings(@RequestBody @Valid LdapConfig ldapConfig) {
-		encyptPasswords(ldapConfig);
-		repository.updateLdap(ldapConfig);
-		return repository.findDefault().getLdap();
-	}
+//	/**
+//	 * Updates LDAP auth settings
+//	 *
+//	 * @param adConfig Active Directory configuration
+//	 * @return Successful message or an error
+//	 */
+//	@RequestMapping(value = "/ad", method = { POST, PUT })
+//	@ResponseBody
+//	@ResponseStatus(HttpStatus.OK)
+//	@ApiOperation(value = "Updates LDAP auth settings")
+//	public ActiveDirectoryConfig updateADSettings(@RequestBody @Validated ActiveDirectoryConfig adConfig) {
+//		repository.updateActiveDirectory(adConfig);
+//		return repository.findDefault().getActiveDirectory();
+//	}
+//
+//	/**
+//	 * Updates LDAP auth settings
+//	 *
+//	 * @param authType Type of Auth
+//	 * @return Successful message or an error
+//	 */
+//	@RequestMapping(value = "/{authType}", method = { GET })
+//	@ResponseBody
+//	@ResponseStatus(HttpStatus.OK)
+//	@ApiOperation(value = "Retrieves auth settings")
+//	public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
+//		return authType.get(repository.findDefault())
+//				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, authType.getId()));
+//	}
 
-	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param adConfig Active Directory configuration
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/ad", method = { POST, PUT })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates LDAP auth settings")
-	public ActiveDirectoryConfig updateADSettings(@RequestBody @Validated ActiveDirectoryConfig adConfig) {
-		repository.updateActiveDirectory(adConfig);
-		return repository.findDefault().getActiveDirectory();
-	}
-
-	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param authType Type of Auth
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/{authType}", method = { GET })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Retrieves auth settings")
-	public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
-		return authType.get(repository.findDefault())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, authType.getId()));
-	}
-
-	/**
-	 * Deletes LDAP auth settings
-	 *
-	 * @param authType Type of Auth
-	 * @return Successful message or an error
-	 */
-	@RequestMapping(value = "/{authType}", method = { DELETE })
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Retrieves auth settings")
-	public OperationCompletionRS deleteSettings(@PathVariable AuthIntegrationType authType) {
-		repository.deleteSettings(authType);
-		return new OperationCompletionRS(String.format("Auth config %s successfully deleted", authType));
-	}
-
-	@InitBinder
-	public void initBinder(final WebDataBinder webdataBinder) {
-		webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport() {
-			@Override
-			public void setAsText(String text) throws IllegalArgumentException {
-				setValue(AuthIntegrationType.fromId(text).orElse(null));
-			}
-		});
-	}
-
-	private void encyptPasswords(LdapConfig ldapConfig) {
-		ofNullable(ldapConfig).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
-				.ifPresent(pwd -> ldapConfig.setManagerPassword(encryptor.encrypt(ldapConfig.getManagerPassword())));
-	}
+//	/**
+//	 * Deletes LDAP auth settings
+//	 *
+//	 * @param authType Type of Auth
+//	 * @return Successful message or an error
+//	 */
+//	@RequestMapping(value = "/{authType}", method = { DELETE })
+//	@ResponseBody
+//	@ResponseStatus(HttpStatus.OK)
+//	@ApiOperation(value = "Retrieves auth settings")
+//	public OperationCompletionRS deleteSettings(@PathVariable AuthIntegrationType authType) {
+////		repository.deleteSettings(authType);
+//		return new OperationCompletionRS(String.format("Auth config %s successfully deleted", authType));
+//	}
+//
+//	@InitBinder
+//	public void initBinder(final WebDataBinder webdataBinder) {
+//		webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport() {
+//			@Override
+//			public void setAsText(String text) throws IllegalArgumentException {
+//				setValue(AuthIntegrationType.fromId(text).orElse(null));
+//			}
+//		});
+//	}
+//
+//	private void encyptPasswords(LdapConfig ldapConfig) {
+//		ofNullable(ldapConfig).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
+//				.ifPresent(pwd -> ldapConfig.setManagerPassword(encryptor.encrypt(ldapConfig.getManagerPassword())));
+//	}
 }
