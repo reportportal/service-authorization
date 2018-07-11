@@ -11,14 +11,15 @@ spring:
     store-type: jdbc
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: rpuser
-    password: rppass
-    url: jdbc:postgresql://localhost:5432/reportportal
+    url: ${rp.db.url}
   jpa:
     properties:
-      hibernate.jdbc.lob.non_contextual_creation: true
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        jdbc.lob.non_contextual_creation: true
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
 
 logging:
   level:
@@ -29,3 +30,17 @@ springfox:
     swagger:
       v2:
         path: /api-docs
+
+
+#### Custom ReportPortal Properties ######
+##########################################
+rp:
+  amqp:
+    addresses: amqp://guest:guest@rabbitmq:5672
+  db:
+    url: jdbc:postgresql://postgres:5432/reportportal?user=rpuser&password=rppass
+  upload:
+    maxUploadSize: 128MB
+    maxFileSize: 64MB
+  analytics:
+    enableByDefault: true
