@@ -22,6 +22,7 @@ package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.IfEnabled;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import com.google.common.base.MoreObjects;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -35,6 +36,7 @@ import javax.validation.constraints.Pattern;
  */
 
 @MappedSuperclass
+@PrimaryKeyJoinColumn(name = "id")
 public class AbstractLdapIntegration extends Integration {
 
 	@Pattern(regexp = "^ldaps?://.*")
@@ -72,5 +74,15 @@ public class AbstractLdapIntegration extends Integration {
 
 	public void setSynchronizationAttributes(SynchronizationAttributes synchronizationAttributes) {
 		this.synchronizationAttributes = synchronizationAttributes;
+	}
+
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("url", url)
+				.add("baseDn", baseDn)
+				.add("synchronizationAttributes", synchronizationAttributes)
+				.add("super1", super.isEnabled())
+				.toString();
 	}
 }

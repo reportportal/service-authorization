@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.LdapSequenceProvider;
+import com.google.common.base.MoreObjects;
 import org.hibernate.validator.group.GroupSequenceProvider;
 
 import javax.persistence.*;
@@ -124,4 +125,17 @@ public class LdapConfig extends AbstractLdapIntegration {
 		this.groupSearchFilter = groupSearchFilter;
 	}
 
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("userDnPattern", userDnPattern)
+				.add("userSearchFilter", userSearchFilter)
+				.add("groupSearchBase", groupSearchBase)
+				.add("groupSearchFilter", groupSearchFilter)
+				.add("passwordEncoderType", passwordEncoderType)
+				.add("passwordAttribute", passwordAttribute)
+				.add("managerDn", managerDn)
+				.add("managerPassword", managerPassword)
+				.toString();
+	}
 }

@@ -27,10 +27,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import java.util.List;
+import javax.persistence.TypedQuery;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -52,15 +49,6 @@ public class AuthConfigRepositoryCustomImpl implements AuthConfigRepositoryCusto
 		//		createDefaultProfileIfAbsent();
 	}
 
-	@Override
-	public void createDefaultProfileIfAbsent() {
-		List<AuthConfig> authConfigs = entityManager.createQuery(findDefaultQuery()).getResultList();
-		if (null == authConfigs || authConfigs.size() == 0) {
-			AuthConfig entity = new AuthConfig();
-			entity.setId(AuthConfigRepository.DEFAULT_PROFILE);
-			entityManager.persist(entity);
-		}
-	}
 	//
 	//    @Override
 	//    public void deleteSettings(AuthIntegrationType type) {
@@ -90,30 +78,32 @@ public class AuthConfigRepositoryCustomImpl implements AuthConfigRepositoryCusto
 
 	@Override
 	public Optional<LdapConfig> findLdap(boolean enabled) {
-		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = findDefaultQuery();
-		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
-		return ofNullable(entityManager.createQuery(findDefaultQuery().where(entityManager.getCriteriaBuilder()
-				.equal(authConfigRoot.get("integration.enabled"), String.valueOf(enabled))))
-				.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getLdap()));
+		TypedQuery<AuthConfig> authConfigTypedQuery = findDefaultQuery();
+
+		authConfigTypedQuery.setParameter("enabled", enabled);
+
+		return ofNullable(authConfigTypedQuery.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getLdap()));
 	}
 
 	@Override
 	public Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled) {
-		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = findDefaultQuery();
-		System.out.println(authConfigCriteriaQuery.toString());
-		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
-		return ofNullable(entityManager.createQuery(findDefaultQuery().where(entityManager.getCriteriaBuilder()
-				.equal(authConfigRoot.get("integration.enabled"), String.valueOf(enabled))))
-				.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getActiveDirectory()));
+		TypedQuery<AuthConfig> authConfigTypedQuery = findDefaultQuery();
+
+		authConfigTypedQuery.setParameter("enabled", enabled);
+
+		return ofNullable(authConfigTypedQuery.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getActiveDirectory()));
+
+		//		return ofNullable(entityManager.createQuery(findDefaultQuery().where(criteriaBuilder
+		//				.equal(integrationRoot.get("enabled"), String.valueOf(enabled)))).getSingleResult()).flatMap(cfg -> ofNullable(cfg
+		//				.getActiveDirectory()));
 	}
 
 	@Transactional
-	private CriteriaQuery<AuthConfig> findDefaultQuery() {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = criteriaBuilder.createQuery(AuthConfig.class);
-		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
-		authConfigCriteriaQuery.select(authConfigRoot).where(criteriaBuilder.equal(authConfigRoot.get("id"), "default"));
-		return authConfigCriteriaQuery;
+	private TypedQuery<AuthConfig> findDefaultQuery() {
+		return entityManager.createQuery(
+				"SELECT a FROM AuthConfig a JOIN a.activeDirectory ad JOIN Integration i ON ad.id = i.id WHERE a.id = 'default' AND i.enabled = :enabled",
+				AuthConfig.class
+		);
 	}
 
 	//    private Update updateExisting(Object object) {

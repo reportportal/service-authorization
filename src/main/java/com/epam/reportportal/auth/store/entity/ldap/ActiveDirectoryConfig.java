@@ -22,6 +22,7 @@ package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.AdSequenceProvider;
 import com.epam.reportportal.auth.validation.IfEnabled;
+import com.google.common.base.MoreObjects;
 import org.hibernate.validator.group.GroupSequenceProvider;
 
 import javax.persistence.Column;
@@ -51,4 +52,8 @@ public class ActiveDirectoryConfig extends AbstractLdapIntegration {
 		this.domain = domain;
 	}
 
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this).add("SUPER", super.toString()).add("domain", domain).toString();
+	}
 }

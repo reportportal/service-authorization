@@ -48,8 +48,6 @@ import java.util.Properties;
  * @author Pavel Bortnik
  */
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = { "com.epam.ta.reportportal.dao",
-		"com.epam.reportportal.auth.store" }, repositoryBaseClass = ReportPortalRepositoryImpl.class, repositoryFactoryBeanClass = DatabaseConfiguration.RpRepoFactoryBean.class)
 @EnableTransactionManagement
 public class DatabaseConfiguration {
 

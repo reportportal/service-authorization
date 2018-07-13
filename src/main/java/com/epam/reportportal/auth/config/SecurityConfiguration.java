@@ -3,9 +3,9 @@ package com.epam.reportportal.auth.config;
 import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.ReportPortalUser;
-import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
+import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
@@ -84,7 +84,7 @@ public class SecurityConfiguration {
 				.formLogin().disable()
 				.sessionManagement()
                 	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and().authenticationProvider(basicPasswordAuthProvider())
+				.and().authenticationProvider(authenticationProvider())
 					.httpBasic()
 				.and()
 					.oauth2Login().clientRegistrationRepository(clientRegistrationRepository())
@@ -100,19 +100,19 @@ public class SecurityConfiguration {
 			return new DatabaseUserDetailsService();
 		}
 
-//		@Bean
-//		public AuthenticationProvider authenticationProvider() {
-//			ActiveDirectoryAuthProvider provider = new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
-//			return provider;
-//		}
-//
 		@Bean
-		public AuthenticationProvider basicPasswordAuthProvider() {
-			BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
-			provider.setUserDetailsService(userDetailsService());
-			provider.setPasswordEncoder(passwordEncoder());
+		public AuthenticationProvider authenticationProvider() {
+			ActiveDirectoryAuthProvider provider = new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
 			return provider;
 		}
+
+//		@Bean
+//		public AuthenticationProvider basicPasswordAuthProvider() {
+//			BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
+//			provider.setUserDetailsService(userDetailsService());
+//			provider.setPasswordEncoder(passwordEncoder());
+//			return provider;
+//		}
 
 		public PasswordEncoder passwordEncoder() {
 			return new MD5PasswordEncoder();

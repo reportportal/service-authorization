@@ -32,8 +32,6 @@ import java.util.Optional;
  */
 public interface AuthConfigRepositoryCustom {
 
-	void createDefaultProfileIfAbsent();
-
 	//
 	//    void deleteSettings(AuthIntegrationType type);
 	//

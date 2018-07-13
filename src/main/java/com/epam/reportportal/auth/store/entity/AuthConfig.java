@@ -69,4 +69,9 @@ public class AuthConfig {
 	public void setActiveDirectory(ActiveDirectoryConfig activeDirectory) {
 		this.activeDirectory = activeDirectory;
 	}
+
+	@Override
+	public String toString() {
+		return "AuthConfig{" + "id='" + id + '\'' + ", ldap=" + ldap + ", activeDirectory=" + activeDirectory + '}';
+	}
 }
