@@ -6,6 +6,8 @@ import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
+import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.epam.ta.reportportal.entity.user.UserRole;
@@ -59,6 +61,12 @@ public class SecurityConfiguration {
 		public static final String SSO_LOGIN_PATH = "/sso/login";
 
 		@Autowired
+		private AuthConfigRepository authConfigRepository;
+
+		@Autowired
+		private LdapUserReplicator ldapUserReplicator;
+
+		@Autowired
 		private OAuthSuccessHandler successHandler;
 
 		@Override
@@ -92,6 +100,12 @@ public class SecurityConfiguration {
 			return new DatabaseUserDetailsService();
 		}
 
+//		@Bean
+//		public AuthenticationProvider authenticationProvider() {
+//			ActiveDirectoryAuthProvider provider = new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
+//			return provider;
+//		}
+//
 		@Bean
 		public AuthenticationProvider basicPasswordAuthProvider() {
 			BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();

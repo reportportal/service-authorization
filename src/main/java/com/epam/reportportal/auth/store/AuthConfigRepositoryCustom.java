@@ -20,16 +20,9 @@
  */
 package com.epam.reportportal.auth.store;
 
-import com.epam.reportportal.auth.store.entity.AuthConfig;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import com.epam.ta.reportportal.commons.querygen.Filter;
-import org.jooq.Record;
-import org.jooq.RecordMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -41,13 +34,6 @@ public interface AuthConfigRepositoryCustom {
 
 	void createDefaultProfileIfAbsent();
 
-	public void refresh(AuthConfig t);
-
-	<R> List<R> findByFilter(Filter filter, RecordMapper<? super Record, R> mapper);
-
-	<R> Page<R> findByFilter(Filter filter, Pageable pageable, RecordMapper<? super Record, R> mapper);
-
-	boolean exists(Filter filter);
 	//
 	//    void deleteSettings(AuthIntegrationType type);
 	//

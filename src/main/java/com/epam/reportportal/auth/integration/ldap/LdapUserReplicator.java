@@ -84,7 +84,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 			checkEmail(email);
 			newUser.setEmail(email);
-			newUser.setMetaInfo(defaultMetaInfo());
+			newUser.setMetadata(defaultMetaData());
 
 			newUser.setUserType(UserType.LDAP);
 			newUser.setRole(UserRole.USER);

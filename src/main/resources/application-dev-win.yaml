@@ -7,8 +7,8 @@ spring:
       host: localhost
 
 rp:
-  mongo:
-    uri: mongodb://localhost:27017
+  db:
+     url: jdbc:postgresql://localhost:5432/reportportal?user=rpuser&password=rppass
   uat:
     serviceUrl: http://localhost:8080/uat
 server:

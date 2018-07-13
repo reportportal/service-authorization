@@ -22,12 +22,8 @@ package com.epam.reportportal.auth.store.entity;
 
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import org.springframework.data.annotation.Id;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author Andrei Varabyeu
@@ -37,7 +33,6 @@ import javax.persistence.Table;
 public class AuthConfig {
 
 	@Id
-	@javax.persistence.Id
 	private String id;
 
 	@ManyToOne

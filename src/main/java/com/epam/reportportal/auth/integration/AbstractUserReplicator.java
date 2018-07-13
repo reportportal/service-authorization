@@ -20,15 +20,16 @@
  */
 package com.epam.reportportal.auth.integration;
 
+import com.epam.reportportal.auth.integration.ldap.MetaData;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.BinaryData;
-import com.epam.ta.reportportal.filesystem.DataStore;
+import com.epam.ta.reportportal.commons.querygen.Filter;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.personal.PersonalProjectService;
-import com.epam.ta.reportportal.commons.querygen.Filter;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -40,8 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 import static com.epam.ta.reportportal.commons.querygen.FilterCondition.builder;
 
@@ -85,12 +85,12 @@ public class AbstractUserReplicator {
 	 *
 	 * @return Default meta info
 	 */
-	protected User.MetaInfo defaultMetaInfo() {
-		User.MetaInfo metaInfo = new User.MetaInfo();
+	protected MetaData defaultMetaData() {
+		Map<String, Object> metaDataMap = new HashMap<>();
 		Date now = Date.from(ZonedDateTime.now().toInstant());
-		metaInfo.setLastLogin(now);
-		metaInfo.setSynchronizationDate(now);
-		return metaInfo;
+		metaDataMap.put("last login", now);
+		metaDataMap.put("synchronization date", now);
+		return new MetaData(metaDataMap);
 	}
 
 	/**

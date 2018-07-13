@@ -23,12 +23,6 @@ package com.epam.reportportal.auth.store;
 import com.epam.reportportal.auth.store.entity.AuthConfig;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import com.epam.ta.reportportal.commons.querygen.Filter;
-import org.jooq.Record;
-import org.jooq.RecordMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,38 +41,15 @@ import static java.util.Optional.ofNullable;
  * @author Andrei Varabyeu
  */
 @Repository
-@Transactional
-public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
+public class AuthConfigRepositoryCustomImpl implements AuthConfigRepositoryCustom {
 
 	//	private final DSLContext dslContext;
 
 	private final EntityManager entityManager;
 
-	@Autowired
-	public AuthConfigRepositoryImpl(EntityManager entityManager) {
+	public AuthConfigRepositoryCustomImpl(EntityManager entityManager) {
 		this.entityManager = entityManager;
 		//		createDefaultProfileIfAbsent();
-	}
-
-	@Override
-	@Transactional
-	public void refresh(AuthConfig t) {
-		entityManager.refresh(t);
-	}
-
-	@Override
-	public <R> List<R> findByFilter(Filter filter, RecordMapper<? super Record, R> mapper) {
-		return null;
-	}
-
-	@Override
-	public <R> Page<R> findByFilter(Filter filter, Pageable pageable, RecordMapper<? super Record, R> mapper) {
-		return null;
-	}
-
-	@Override
-	public boolean exists(Filter filter) {
-		return false;
 	}
 
 	@Override
@@ -122,19 +93,21 @@ public class AuthConfigRepositoryImpl implements AuthConfigRepositoryCustom {
 		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = findDefaultQuery();
 		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
 		return ofNullable(entityManager.createQuery(findDefaultQuery().where(entityManager.getCriteriaBuilder()
-				.equal(authConfigRoot.get("ldap.enabled"), String.valueOf(enabled))))
+				.equal(authConfigRoot.get("integration.enabled"), String.valueOf(enabled))))
 				.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getLdap()));
 	}
 
 	@Override
 	public Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled) {
 		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = findDefaultQuery();
+		System.out.println(authConfigCriteriaQuery.toString());
 		Root<AuthConfig> authConfigRoot = authConfigCriteriaQuery.from(AuthConfig.class);
 		return ofNullable(entityManager.createQuery(findDefaultQuery().where(entityManager.getCriteriaBuilder()
-				.equal(authConfigRoot.get("active_directory_config.enabled"), String.valueOf(enabled))))
+				.equal(authConfigRoot.get("integration.enabled"), String.valueOf(enabled))))
 				.getSingleResult()).flatMap(cfg -> ofNullable(cfg.getActiveDirectory()));
 	}
 
+	@Transactional
 	private CriteriaQuery<AuthConfig> findDefaultQuery() {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<AuthConfig> authConfigCriteriaQuery = criteriaBuilder.createQuery(AuthConfig.class);
