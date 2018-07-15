@@ -40,7 +40,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan("com.epam")
 @EnableJpaRepositories(basePackages = { "com.epam.ta.reportportal.dao",
 		"com.epam.reportportal.auth.store" }, repositoryBaseClass = ReportPortalRepositoryImpl.class, repositoryFactoryBeanClass = DatabaseConfiguration.RpRepoFactoryBean.class)
-@Import({ DatabaseConfiguration.class })
 @SpringBootApplication
 public class AuthServerApplication {
 
