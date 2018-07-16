@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth.util;
 
-import com.epam.reportportal.auth.store.entity.UserRole;
+import com.epam.ta.reportportal.entity.user.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 

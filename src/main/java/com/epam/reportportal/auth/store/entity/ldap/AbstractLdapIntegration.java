@@ -20,9 +20,11 @@
  */
 package com.epam.reportportal.auth.store.entity.ldap;
 
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
 import com.epam.reportportal.auth.validation.IfEnabled;
+import com.epam.ta.reportportal.entity.integration.Integration;
+import com.google.common.base.MoreObjects;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -32,15 +34,22 @@ import javax.validation.constraints.Pattern;
  *
  * @author Andrei Varabyeu
  */
-public class AbstractLdapConfig extends AbstractAuthConfig {
 
-	@Pattern(regexp = "^ldap://.*")
+@MappedSuperclass
+@PrimaryKeyJoinColumn(name = "id")
+public class AbstractLdapIntegration extends Integration {
+
+	@Pattern(regexp = "^ldaps?://.*")
 	@NotEmpty(groups = { IfEnabled.class })
+	@Column(name = "url", length = 256)
 	private String url;
 
 	@NotNull(groups = { IfEnabled.class })
+	@Column(name = "base_dn", length = 256)
 	private String baseDn;
 
+	@ManyToOne
+	@JoinColumn(name = "sync_attributes_id")
 	private SynchronizationAttributes synchronizationAttributes;
 
 	public String getUrl() {
@@ -65,5 +74,15 @@ public class AbstractLdapConfig extends AbstractAuthConfig {
 
 	public void setSynchronizationAttributes(SynchronizationAttributes synchronizationAttributes) {
 		this.synchronizationAttributes = synchronizationAttributes;
+	}
+
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("url", url)
+				.add("baseDn", baseDn)
+				.add("synchronizationAttributes", synchronizationAttributes)
+				.add("super1", super.isEnabled())
+				.toString();
 	}
 }

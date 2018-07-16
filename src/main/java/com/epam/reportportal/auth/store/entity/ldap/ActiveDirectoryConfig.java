@@ -22,8 +22,12 @@ package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.AdSequenceProvider;
 import com.epam.reportportal.auth.validation.IfEnabled;
+import com.google.common.base.MoreObjects;
 import org.hibernate.validator.group.GroupSequenceProvider;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -32,9 +36,12 @@ import javax.validation.constraints.NotNull;
  * @author Andrei Varabyeu
  */
 @GroupSequenceProvider(AdSequenceProvider.class)
-public class ActiveDirectoryConfig extends AbstractLdapConfig {
+@Entity
+@Table(name = "active_directory_config", schema = "public")
+public class ActiveDirectoryConfig extends AbstractLdapIntegration {
 
 	@NotNull(groups = { IfEnabled.class })
+	@Column(name = "domain", length = 256)
 	private String domain;
 
 	public String getDomain() {
@@ -45,4 +52,8 @@ public class ActiveDirectoryConfig extends AbstractLdapConfig {
 		this.domain = domain;
 	}
 
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this).add("SUPER", super.toString()).add("domain", domain).toString();
+	}
 }

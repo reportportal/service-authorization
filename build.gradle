@@ -68,6 +68,7 @@ dependencies {
     if (releaseMode) {
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
+        compile 'com.github.reportportal:commons-dao:postgres-migration-SNAPSHOT'
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 
@@ -94,12 +95,12 @@ dependencies {
     compile 'org.apache.tika:tika-parsers:1.17'
 
     //LDAP stuff
-//    compile("org.springframework.ldap:spring-ldap-core")
-//    compile("org.springframework.security:spring-security-ldap")
-//    compile("org.springframework:spring-tx")
-//    compile("com.unboundid:unboundid-ldapsdk")
-//    compile("org.apache.directory.server:apacheds-core:1.5.5")
-//    compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
+    compile("org.springframework.ldap:spring-ldap-core")
+    compile("org.springframework.security:spring-security-ldap")
+    compile("org.springframework:spring-tx")
+    compile("com.unboundid:unboundid-ldapsdk")
+    compile("org.apache.directory.server:apacheds-core:1.5.5")
+    compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
     compile 'org.jasypt:jasypt:1.9.2'
 
     compile 'org.springframework.retry:spring-retry'

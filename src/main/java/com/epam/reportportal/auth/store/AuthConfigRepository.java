@@ -20,20 +20,15 @@
  */
 package com.epam.reportportal.auth.store;
 
-import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.epam.reportportal.auth.store.entity.AuthConfig;
+import com.epam.ta.reportportal.dao.ReportPortalRepository;
 
 /**
  * @author Andrei Varabyeu
  */
-//@Repository
-//public interface AuthConfigRepository extends JpaRepository<AuthConfigEntity, String>, AuthConfigRepositoryCustom {
-public interface AuthConfigRepository {
-	//public interface AuthConfigRepository extends JpaRepository<AuthConfigEntity, String>, AuthConfigRepositoryCustom {
 
-	//	String DEFAULT_PROFILE = "default";
-	//
-	//	@Query(value = "{ '_id' : 'default'}")
-	//	AuthConfigEntity findDefault();
+public interface AuthConfigRepository extends ReportPortalRepository<AuthConfig, String>, AuthConfigRepositoryCustom {
+
+	String DEFAULT_PROFILE = "default";
 
 }

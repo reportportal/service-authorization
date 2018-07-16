@@ -1,7 +1,7 @@
 package com.epam.reportportal.auth.store;
 
 import com.epam.reportportal.auth.store.entity.OAuthRegistration;
-import org.springframework.data.repository.CrudRepository;
+import com.epam.ta.reportportal.dao.ReportPortalRepository;
 
-public interface OAuthRegistrationRepository extends CrudRepository<OAuthRegistration, String> {
+public interface OAuthRegistrationRepository extends ReportPortalRepository<OAuthRegistration, String>, OAuthRegistrationRepositoryCustom {
 }
