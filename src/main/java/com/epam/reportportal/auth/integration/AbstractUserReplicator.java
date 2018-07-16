@@ -21,9 +21,7 @@
 package com.epam.reportportal.auth.integration;
 
 import com.epam.reportportal.auth.integration.ldap.MetaData;
-import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.BinaryData;
-import com.epam.ta.reportportal.commons.querygen.Filter;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
@@ -41,9 +39,10 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.*;
-
-import static com.epam.ta.reportportal.commons.querygen.FilterCondition.builder;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Andrei Varabyeu
@@ -99,9 +98,9 @@ public class AbstractUserReplicator {
 	 * @param email email to check
 	 */
 	protected void checkEmail(String email) {
-		if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
-			throw new UserSynchronizationException("User with email '" + email + "' already exists");
-		}
+		//		if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
+		//			throw new UserSynchronizationException("User with email '" + email + "' already exists");
+		//		}
 	}
 
 	protected String uploadPhoto(String login, byte[] data) {

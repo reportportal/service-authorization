@@ -44,7 +44,6 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		System.out.println(authConfigRepository.findActiveDirectory(true).isPresent());
 		return authConfigRepository.findActiveDirectory(true).isPresent();
 	}
 
