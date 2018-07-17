@@ -1,8 +1,8 @@
 package com.epam.reportportal.auth.integration;
 
-import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
-import com.epam.reportportal.auth.store.entity.OAuthRegistration;
-import com.epam.reportportal.auth.store.entity.OAuthRegistrationScope;
+import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
+import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
+import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationScope;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;

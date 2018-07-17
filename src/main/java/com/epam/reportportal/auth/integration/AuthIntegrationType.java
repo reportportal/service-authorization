@@ -20,8 +20,8 @@
  */
 package com.epam.reportportal.auth.integration;
 
-import com.epam.reportportal.auth.store.entity.AuthConfig;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.ldap.AuthConfig;
 
 import java.util.Arrays;
 import java.util.Optional;

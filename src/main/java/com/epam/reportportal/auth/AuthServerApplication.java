@@ -20,13 +20,9 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.config.DatabaseConfiguration;
-import com.epam.ta.reportportal.dao.ReportPortalRepositoryImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * Application entry point
@@ -37,10 +33,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 //@EnableDiscoveryClient
 
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
-@ComponentScan("com.epam")
-@EnableJpaRepositories(basePackages = { "com.epam.ta.reportportal.dao",
-		"com.epam.reportportal.auth.store" }, repositoryBaseClass = ReportPortalRepositoryImpl.class, repositoryFactoryBeanClass = DatabaseConfiguration.RpRepoFactoryBean.class)
 @SpringBootApplication
+@ComponentScan("com.epam")
 public class AuthServerApplication {
 
 	public static void main(String[] args) {

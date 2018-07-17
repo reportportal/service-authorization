@@ -22,9 +22,9 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.auth.store.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
+import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
