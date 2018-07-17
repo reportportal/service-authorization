@@ -22,6 +22,7 @@ package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.IfEnabled;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -30,13 +31,32 @@ import javax.validation.constraints.NotNull;
  *
  * @author Andrei Varabyeu
  */
+@Entity
+@Table(name = "synchronization_attributes")
 public class SynchronizationAttributes {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
 
 	@NotEmpty(groups = { IfEnabled.class })
 	@NotNull(groups = { IfEnabled.class })
+	@Column(name = "email", unique = true, length = 256)
 	private String email;
+
+	@Column(name = "full_name", length = 256)
 	private String fullName;
+
+	@Column(name = "photo", length = 128)
 	private String photo;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getEmail() {
 		return email;

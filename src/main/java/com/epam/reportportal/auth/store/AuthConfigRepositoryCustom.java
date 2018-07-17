@@ -20,8 +20,6 @@
  */
 package com.epam.reportportal.auth.store;
 
-import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.store.entity.AuthConfigEntity;
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 
@@ -34,17 +32,16 @@ import java.util.Optional;
  */
 public interface AuthConfigRepositoryCustom {
 
-    void createDefaultProfileIfAbsent();
+	//
+	//    void deleteSettings(AuthIntegrationType type);
+	//
+	//    void updatePartially(AuthConfig entity);
+	//
+	//    void updateLdap(LdapConfig ldapConfig);
+	//
+	//    void updateActiveDirectory(ActiveDirectoryConfig adConfig);
 
-    void deleteSettings(AuthIntegrationType type);
+	Optional<LdapConfig> findLdap(boolean enabled);
 
-    void updatePartially(AuthConfigEntity entity);
-
-    void updateLdap(LdapConfig ldapConfig);
-
-    void updateActiveDirectory(ActiveDirectoryConfig adConfig);
-
-    Optional<LdapConfig> findLdap(boolean enabled);
-
-    Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
+	Optional<ActiveDirectoryConfig> findActiveDirectory(boolean enabled);
 }

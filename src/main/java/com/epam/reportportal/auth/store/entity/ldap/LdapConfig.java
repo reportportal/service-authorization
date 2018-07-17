@@ -21,7 +21,10 @@
 package com.epam.reportportal.auth.store.entity.ldap;
 
 import com.epam.reportportal.auth.validation.LdapSequenceProvider;
+import com.google.common.base.MoreObjects;
 import org.hibernate.validator.group.GroupSequenceProvider;
+
+import javax.persistence.*;
 
 /**
  * LDAP auth config
@@ -30,15 +33,32 @@ import org.hibernate.validator.group.GroupSequenceProvider;
  */
 
 @GroupSequenceProvider(LdapSequenceProvider.class)
-public class LdapConfig extends AbstractLdapConfig {
+@Entity
+@Table(name = "ldap_config", schema = "public")
+public class LdapConfig extends AbstractLdapIntegration {
 
+	@Column(name = "user_dn_pattern", length = 256)
 	private String userDnPattern;
+
+	@Column(name = "user_search_filter", length = 256)
 	private String userSearchFilter;
+
+	@Column(name = "group_search_base", length = 256)
 	private String groupSearchBase;
+
+	@Column(name = "group_search_filter", length = 256)
 	private String groupSearchFilter;
+
+	@Enumerated(EnumType.STRING)
 	private PasswordEncoderType passwordEncoderType;
+
+	@Column(name = "password_attributes", length = 256)
 	private String passwordAttribute;
+
+	@Column(name = "manager_dn", length = 256)
 	private String managerDn;
+
+	@Column(name = "manager_password", length = 256)
 	private String managerPassword;
 
 	public String getUserDnPattern() {
@@ -105,4 +125,17 @@ public class LdapConfig extends AbstractLdapConfig {
 		this.groupSearchFilter = groupSearchFilter;
 	}
 
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("userDnPattern", userDnPattern)
+				.add("userSearchFilter", userSearchFilter)
+				.add("groupSearchBase", groupSearchBase)
+				.add("groupSearchFilter", groupSearchFilter)
+				.add("passwordEncoderType", passwordEncoderType)
+				.add("passwordAttribute", passwordAttribute)
+				.add("managerDn", managerDn)
+				.add("managerPassword", managerPassword)
+				.toString();
+	}
 }

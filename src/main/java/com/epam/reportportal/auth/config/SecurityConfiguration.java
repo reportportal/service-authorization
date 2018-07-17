@@ -3,12 +3,14 @@ package com.epam.reportportal.auth.config;
 import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.ReportPortalUser;
-import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
+import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.reportportal.auth.store.AuthConfigRepository;
 import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
-import com.epam.reportportal.auth.store.entity.ProjectRole;
-import com.epam.reportportal.auth.store.entity.UserRole;
+import com.epam.ta.reportportal.entity.project.ProjectRole;
+import com.epam.ta.reportportal.entity.user.UserRole;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -35,7 +37,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -59,6 +60,12 @@ public class SecurityConfiguration {
 		public static final String SSO_LOGIN_PATH = "/sso/login";
 
 		@Autowired
+		private AuthConfigRepository authConfigRepository;
+
+		@Autowired
+		private LdapUserReplicator ldapUserReplicator;
+
+		@Autowired
 		private OAuthSuccessHandler successHandler;
 
 		@Override
@@ -76,7 +83,7 @@ public class SecurityConfiguration {
 				.formLogin().disable()
 				.sessionManagement()
                 	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and().authenticationProvider(basicPasswordAuthProvider())
+				.and().authenticationProvider(authenticationProvider())
 					.httpBasic()
 				.and()
 					.oauth2Login().clientRegistrationRepository(clientRegistrationRepository())
@@ -93,12 +100,17 @@ public class SecurityConfiguration {
 		}
 
 		@Bean
-		public AuthenticationProvider basicPasswordAuthProvider() {
-			BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
-			provider.setUserDetailsService(userDetailsService());
-			provider.setPasswordEncoder(passwordEncoder());
-			return provider;
+		public AuthenticationProvider authenticationProvider() {
+			return new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
 		}
+
+//		@Bean
+//		public AuthenticationProvider basicPasswordAuthProvider() {
+//			BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
+//			provider.setUserDetailsService(userDetailsService());
+//			provider.setPasswordEncoder(passwordEncoder());
+//			return provider;
+//		}
 
 		public PasswordEncoder passwordEncoder() {
 			return new MD5PasswordEncoder();
@@ -198,10 +210,9 @@ public class SecurityConfiguration {
 		@Bean
 		public JwtAccessTokenConverter accessTokenConverter() {
 			JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-			converter.setSigningKey("123");
-			DefaultAccessTokenConverter converter1 = new DefaultAccessTokenConverter();
-			converter1.setUserTokenConverter(new ReportPortalAuthenticationConverter());
-			converter.setAccessTokenConverter(converter1);
+			//			DefaultAccessTokenConverter converter1 = new DefaultAccessTokenConverter();
+			//			converter1.setUserTokenConverter(new ReportPortalAuthenticationConverter());
+			//			converter.setAccessTokenConverter(converter1);
 			return converter;
 		}
 

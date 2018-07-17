@@ -18,8 +18,7 @@ eureka:
 
 # MongoDB configuration
 rp:
-   mongo:
-     uri: mongodb://mongodb:27017
-     dbName: reportportal
+  db:
+    url: jdbc:postgresql://postgresql:5432/reportportal?user=rpuser&password=rppass
 #     user:
 #     password:

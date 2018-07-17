@@ -55,7 +55,6 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
 		if (!accountNonLocked) {
 			BusinessRule.fail().withError(ErrorType.ADDRESS_LOCKED);
 		}
-
 		Authentication auth = super.authenticate(authentication);
 		eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
 		return auth;

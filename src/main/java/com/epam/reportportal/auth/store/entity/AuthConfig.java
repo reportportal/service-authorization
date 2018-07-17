@@ -22,23 +22,29 @@ package com.epam.reportportal.auth.store.entity;
 
 import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
 import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import org.springframework.data.annotation.Id;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author Andrei Varabyeu
  */
-//@Entity
-//@Table(name = "authConfig")
-public class AuthConfigEntity {
+@Entity
+@Table(name = "auth_config")
+public class AuthConfig {
 
-//	@Id
-//	@javax.persistence.Id
+	@Id
 	private String id;
+
+	@ManyToOne
+	@JoinColumn(name = "ldap_config_id")
 	private LdapConfig ldap;
+
+	@ManyToOne
+	@JoinColumn(name = "active_directory_config_id")
 	private ActiveDirectoryConfig activeDirectory;
+
+	public AuthConfig() {
+	}
 
 	public String getId() {
 		return id;
@@ -62,5 +68,10 @@ public class AuthConfigEntity {
 
 	public void setActiveDirectory(ActiveDirectoryConfig activeDirectory) {
 		this.activeDirectory = activeDirectory;
+	}
+
+	@Override
+	public String toString() {
+		return "AuthConfig{" + "id='" + id + '\'' + ", ldap=" + ldap + ", activeDirectory=" + activeDirectory + '}';
 	}
 }
