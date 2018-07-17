@@ -26,6 +26,7 @@ import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.meta.MetaData;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.personal.PersonalProjectService;
 import org.apache.tika.io.TikaInputStream;
@@ -127,7 +128,7 @@ public class AbstractUserReplicator {
 
 	private Project generatePersonalProjectByUser(User user) {
 		Project personalProject = personalProjectService.generatePersonalProject(user);
-		projectRepository.save(personalProject);
-		return personalProject;
+		Optional<Project> generatedProject = Optional.of(projectRepository.save(personalProject));
+		return generatedProject.orElseThrow(() -> new ReportPortalException("No default project for user with such name"));
 	}
 }
