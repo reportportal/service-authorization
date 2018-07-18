@@ -1,5 +1,5 @@
 server:
-  port: 9997
+  port: 9999
 #security:
 #  oauth2:
 #    resource:
