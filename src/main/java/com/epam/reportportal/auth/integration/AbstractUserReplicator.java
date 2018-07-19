@@ -20,10 +20,10 @@
  */
 package com.epam.reportportal.auth.integration;
 
-import com.epam.reportportal.auth.integration.ldap.MetaData;
 import com.epam.ta.reportportal.BinaryData;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
+import com.epam.ta.reportportal.entity.meta.MetaData;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.filesystem.DataStore;
@@ -127,7 +127,6 @@ public class AbstractUserReplicator {
 
 	private Project generatePersonalProjectByUser(User user) {
 		Project personalProject = personalProjectService.generatePersonalProject(user);
-		projectRepository.save(personalProject);
-		return personalProject;
+		return projectRepository.save(personalProject);
 	}
 }

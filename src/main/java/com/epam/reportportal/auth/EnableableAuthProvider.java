@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.store.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.AuthConfigRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;

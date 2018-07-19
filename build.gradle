@@ -24,11 +24,10 @@ buildscript {
 plugins {
     id 'net.researchgate.release' version '2.4.1'
     id "com.jfrog.bintray" version "1.7"
-    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
-
 }
 
 apply plugin: 'java'
+apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 apply plugin: 'jacoco'
 
@@ -68,7 +67,7 @@ dependencies {
     if (releaseMode) {
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile 'com.github.reportportal:commons-dao:f634d31'
+        compile 'com.github.reportportal:commons-dao:e44bfc0'
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 
