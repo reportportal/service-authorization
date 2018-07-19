@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration.ldap;
 
+import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.entity.user.User;
@@ -29,6 +30,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * @author Details Context mapper
@@ -49,7 +51,7 @@ class DetailsContextMapper extends LdapUserDetailsMapper {
 
 		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes);
 
-		return new org.springframework.security.core.userdetails.User(
+		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(
 				user.getLogin(),
 				"",
 				true,
@@ -57,6 +59,16 @@ class DetailsContextMapper extends LdapUserDetailsMapper {
 				true,
 				true,
 				AuthUtils.AS_AUTHORITIES.apply(user.getRole())
+		);
+
+		return new ReportPortalUser(u,
+				user.getId(),
+				user.getRole(),
+				user.getProjects()
+						.stream()
+						.collect(Collectors.toMap(p -> p.getProject().getName(),
+								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getRole())
+						))
 		);
 	}
 }

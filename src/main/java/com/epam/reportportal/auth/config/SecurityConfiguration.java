@@ -100,7 +100,9 @@ public class SecurityConfiguration {
 
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicPasswordAuthProvider()).authenticationProvider(activeDirectoryAuthProvider());
+			auth.authenticationProvider(basicPasswordAuthProvider())
+					.authenticationProvider(activeDirectoryAuthProvider())
+					.authenticationProvider(ldapAuthProvider());
 		}
 
 		@Bean
