@@ -24,6 +24,7 @@ import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.entity.user.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -46,7 +47,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		Optional<User> user = userRepository.findByLogin(username);
-		if (!user.isPresent()) {
+		if (!user.isPresent() || UserType.INTERNAL != user.get().getUserType()) {
 			throw new UsernameNotFoundException("User not found");
 		}
 

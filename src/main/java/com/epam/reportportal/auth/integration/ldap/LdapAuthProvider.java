@@ -21,9 +21,9 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
-import com.epam.reportportal.auth.store.AuthConfigRepository;
-import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
+import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
