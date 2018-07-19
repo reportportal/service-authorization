@@ -34,7 +34,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
 @SpringBootApplication
-@ComponentScan("com.epam.ta.reportportal.dao")
+@ComponentScan("com.epam")
 public class AuthServerApplication {
 
 	public static void main(String[] args) {
