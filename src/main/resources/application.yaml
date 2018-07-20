@@ -18,7 +18,7 @@ spring:
     properties:
       hibernate.jdbc.lob.non_contextual_creation: true
       hibernate:
-        dialect: com.epam.ta.reportportal.commons.JsonbAwarePostgresDialect
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
 
 logging:
   level:
