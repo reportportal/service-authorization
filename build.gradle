@@ -14,7 +14,6 @@ buildscript {
     }
     dependencies {
         classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath 'com.bmuschko:gradle-docker-plugin:3.0.12'
         classpath 'org.ajoberstar:grgit:1.6.0-rc.1'
     }
@@ -24,10 +23,10 @@ buildscript {
 plugins {
     id 'net.researchgate.release' version '2.4.1'
     id "com.jfrog.bintray" version "1.7"
+    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
 }
 
 apply plugin: 'java'
-apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 apply plugin: 'jacoco'
 
