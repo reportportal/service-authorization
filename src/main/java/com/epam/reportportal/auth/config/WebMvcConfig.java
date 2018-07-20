@@ -21,6 +21,10 @@
 package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
+import com.epam.reportportal.commons.ContentTypeResolver;
+import com.epam.reportportal.commons.Thumbnailator;
+import com.epam.reportportal.commons.ThumbnailatorImpl;
+import com.epam.reportportal.commons.TikaContentTypeResolver;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
@@ -58,6 +62,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	@Override
 	public void configurePathMatch(PathMatchConfigurer configurer) {
 		configurer.setUseSuffixPatternMatch(false);
+	}
+
+	@Bean
+	public Thumbnailator thumbnailator() {
+		return new ThumbnailatorImpl();
+	}
+
+	@Bean
+	public ContentTypeResolver contentTypeResolver() {
+		return new TikaContentTypeResolver();
 	}
 
 	@Bean

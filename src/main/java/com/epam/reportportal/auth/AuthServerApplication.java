@@ -20,10 +20,9 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.config.DatabaseConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Application entry point
@@ -31,9 +30,11 @@ import org.springframework.context.annotation.Import;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 //@SpringBootApplication(exclude = { JpaRepositoriesAutoConfiguration.class })
-@SpringBootApplication
-@Import({ DatabaseConfiguration.class })
 //@EnableDiscoveryClient
+
+//@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
+@SpringBootApplication
+@ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth" })
 public class AuthServerApplication {
 
 	public static void main(String[] args) {

@@ -6,9 +6,13 @@ import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
-import com.epam.reportportal.auth.store.OAuthRegistrationRepository;
-import com.epam.reportportal.auth.store.entity.ProjectRole;
-import com.epam.reportportal.auth.store.entity.UserRole;
+import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
+import com.epam.ta.reportportal.entity.project.ProjectRole;
+import com.epam.ta.reportportal.entity.user.UserRole;
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -20,6 +24,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -50,6 +55,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+@Configuration
 public class SecurityConfiguration {
 
 	@Configuration
@@ -60,6 +66,12 @@ public class SecurityConfiguration {
 
 		@Autowired
 		private OAuthSuccessHandler successHandler;
+
+		@Autowired
+		private AuthConfigRepository authConfigRepository;
+
+		@Autowired
+		private LdapUserReplicator ldapUserReplicator;
 
 		@Override
 		protected final void configure(HttpSecurity http) throws Exception {
@@ -76,7 +88,7 @@ public class SecurityConfiguration {
 				.formLogin().disable()
 				.sessionManagement()
                 	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and().authenticationProvider(basicPasswordAuthProvider())
+				.and()
 					.httpBasic()
 				.and()
 					.oauth2Login().clientRegistrationRepository(clientRegistrationRepository())
@@ -84,7 +96,22 @@ public class SecurityConfiguration {
 					.authorizationEndpoint().baseUri(SSO_LOGIN_PATH).and()
 //					.loginPage(SSO_LOGIN_PATH + "/{registrationId}")
 					.successHandler(successHandler);
+			//@formatter:on
+		}
 
+		@Override
+		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+			auth.authenticationProvider(basicPasswordAuthProvider()).authenticationProvider(activeDirectoryAuthProvider()).authenticationProvider(ldapAuthProvider());
+		}
+
+		@Bean
+		public AuthenticationProvider activeDirectoryAuthProvider() {
+			return new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
+		}
+
+		@Bean
+		public AuthenticationProvider ldapAuthProvider() {
+			return new LdapAuthProvider(authConfigRepository, ldapUserReplicator);
 		}
 
 		@Bean
@@ -108,9 +135,8 @@ public class SecurityConfiguration {
 		@Primary
 		@Bean
 		public AuthenticationManager authenticationManager() throws Exception {
-			 return super.authenticationManager();
+			return super.authenticationManager();
 		}
-
 
 		@Autowired
 		OAuthRegistrationRepository oAuthRegistrationRepository;
@@ -134,13 +160,13 @@ public class SecurityConfiguration {
 			this.authenticationManager = authenticationManager;
 		}
 
-//		@Override
-//		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-//			endpoints
-//					.tokenStore(tokenStore())
-//					.accessTokenConverter(accessTokenConverter())
-//					.authenticationManager(authenticationManager);
-//		}
+		//		@Override
+		//		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+		//			endpoints
+		//					.tokenStore(tokenStore())
+		//					.accessTokenConverter(accessTokenConverter())
+		//					.authenticationManager(authenticationManager);
+		//		}
 
 		@Override
 		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
@@ -186,7 +212,7 @@ public class SecurityConfiguration {
 		@Override
 		public void configure(AuthorizationServerSecurityConfigurer security) {
 
-			//		security.tokenKeyAccess("hasAuthority('ROLE_INTERNAL')").checkTokenAccess("hasAuthority('ROLE_INTERNAL')");
+			security.tokenKeyAccess("hasAuthority('ROLE_INTERNAL')").checkTokenAccess("hasAuthority('ROLE_INTERNAL')");
 
 		}
 
@@ -271,17 +297,13 @@ public class SecurityConfiguration {
 								)
 						));
 
-				return new UsernamePasswordAuthenticationToken(new ReportPortalUser(
-						user.getName(),
+				return new UsernamePasswordAuthenticationToken(new ReportPortalUser(user.getName(),
 						"N/A",
 						authorities,
 						userId,
 						userRole,
 						collect
-				),
-						user.getCredentials(),
-						authorities
-				);
+				), user.getCredentials(), authorities);
 			}
 
 			return null;

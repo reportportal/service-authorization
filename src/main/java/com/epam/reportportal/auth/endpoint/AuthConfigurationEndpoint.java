@@ -20,29 +20,9 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
-import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.store.AuthConfigRepository;
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
-import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
-import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
-import com.epam.reportportal.auth.util.Encryptor;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.beans.PropertyEditorSupport;
-
-import static java.util.Optional.ofNullable;
-import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @Controller
 @RequestMapping("/settings/auth")
