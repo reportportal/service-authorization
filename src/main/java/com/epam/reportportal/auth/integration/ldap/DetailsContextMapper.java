@@ -68,13 +68,12 @@ class DetailsContextMapper extends LdapUserDetailsMapper {
 		);
 
 		Optional<Set<ProjectUser>> optionalProjectUser = ofNullable(user.getProjects());
+
 		return new ReportPortalUser(u,
-				user.getId(),
-				user.getRole(), optionalProjectUser.orElse(Collections.emptySet())
-						.stream()
+				user.getId(), user.getRole(), optionalProjectUser.map(it -> it.stream()
 						.collect(Collectors.toMap(p -> p.getProject().getName(),
 								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getRole())
-						))
+						))).orElseGet(Collections::emptyMap)
 		);
 	}
 }

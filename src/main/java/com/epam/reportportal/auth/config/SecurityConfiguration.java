@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+@Configuration
 public class SecurityConfiguration {
 
 	@Configuration
@@ -100,9 +101,7 @@ public class SecurityConfiguration {
 
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicPasswordAuthProvider())
-					.authenticationProvider(activeDirectoryAuthProvider())
-					.authenticationProvider(ldapAuthProvider());
+			auth.authenticationProvider(basicPasswordAuthProvider()).authenticationProvider(activeDirectoryAuthProvider()).authenticationProvider(ldapAuthProvider());
 		}
 
 		@Bean
@@ -298,8 +297,7 @@ public class SecurityConfiguration {
 								)
 						));
 
-				return new UsernamePasswordAuthenticationToken(new ReportPortalUser(
-						user.getName(),
+				return new UsernamePasswordAuthenticationToken(new ReportPortalUser(user.getName(),
 						"N/A",
 						authorities,
 						userId,

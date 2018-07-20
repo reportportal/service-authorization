@@ -33,8 +33,6 @@ import com.epam.ta.reportportal.personal.PersonalProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -81,8 +79,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 			ofNullable(attributes.getPhoto()).flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
 					.filter(photo -> photo instanceof byte[])
-					.map(photo -> (byte[]) photo)
-					.ifPresent(photo -> newUser.setPhotoPath(uploadPhoto(login, photo)));
+					.map(photo -> (byte[]) photo).ifPresent(photo -> newUser.setAttachment(uploadPhoto(login, photo)));
 
 			checkEmail(email);
 			newUser.setEmail(email);
