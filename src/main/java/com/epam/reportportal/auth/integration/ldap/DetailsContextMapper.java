@@ -23,6 +23,7 @@ package com.epam.reportportal.auth.integration.ldap;
 import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
+import com.epam.ta.reportportal.entity.user.ProjectUser;
 import com.epam.ta.reportportal.entity.user.User;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,7 +31,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Details Context mapper
@@ -61,14 +67,13 @@ class DetailsContextMapper extends LdapUserDetailsMapper {
 				AuthUtils.AS_AUTHORITIES.apply(user.getRole())
 		);
 
+		Optional<Set<ProjectUser>> optionalProjectUser = ofNullable(user.getProjects());
+
 		return new ReportPortalUser(u,
-				user.getId(),
-				user.getRole(),
-				user.getProjects()
-						.stream()
+				user.getId(), user.getRole(), optionalProjectUser.map(it -> it.stream()
 						.collect(Collectors.toMap(p -> p.getProject().getName(),
 								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getRole())
-						))
+						))).orElseGet(Collections::emptyMap)
 		);
 	}
 }
