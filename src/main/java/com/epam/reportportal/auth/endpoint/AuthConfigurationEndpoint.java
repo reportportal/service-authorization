@@ -22,7 +22,7 @@ package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.util.Encryptor;
-import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
@@ -39,7 +39,6 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
 import java.beans.PropertyEditorSupport;
 
 import static java.util.Optional.ofNullable;
@@ -50,11 +49,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @Api(description = "Main Auth Configuration Endpoint")
 public class AuthConfigurationEndpoint {
 
-	private final AuthConfigRepository repository;
+	private final IntegrationRepository repository;
 	private final Encryptor encryptor;
 
 	@Autowired
-	public AuthConfigurationEndpoint(AuthConfigRepository repository, Encryptor encryptor) {
+	public AuthConfigurationEndpoint(IntegrationRepository repository, Encryptor encryptor) {
 		this.repository = repository;
 		this.encryptor = encryptor;
 	}

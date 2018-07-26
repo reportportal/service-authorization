@@ -21,7 +21,6 @@
 package com.epam.reportportal.auth.integration;
 
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.ldap.AuthConfig;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -35,14 +34,14 @@ public enum AuthIntegrationType {
 
     ACTIVE_DIRECTORY("ad", "activeDirectory") {
         @Override
-        public Optional<Integration> get(AuthConfig entity) {
-            return ofNullable(entity).map(AuthConfig::getActiveDirectory);
+        public Optional<Integration> get(Integration entity) {
+            return ofNullable(entity);
         }
     },
     LDAP("ldap", "ldap") {
         @Override
-        public Optional<Integration> get(AuthConfig entity) {
-            return ofNullable(entity).map(AuthConfig::getLdap);
+        public Optional<Integration> get(Integration entity) {
+            return ofNullable(entity);
         }
     };
 
@@ -54,7 +53,7 @@ public enum AuthIntegrationType {
         this.dbField = dbField;
     }
 
-    public abstract Optional<Integration> get(AuthConfig entity);
+    public abstract Optional<Integration> get(Integration entity);
 
     public String getId() {
         return id;
