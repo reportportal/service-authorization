@@ -9,7 +9,7 @@ import com.epam.reportportal.auth.integration.MutableClientRegistrationRepositor
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
-import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.epam.ta.reportportal.entity.user.UserRole;
@@ -68,7 +68,7 @@ public class SecurityConfiguration {
 		private OAuthSuccessHandler successHandler;
 
 		@Autowired
-		private AuthConfigRepository authConfigRepository;
+		private IntegrationRepository authConfigRepository;
 
 		@Autowired
 		private LdapUserReplicator ldapUserReplicator;
