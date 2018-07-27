@@ -69,6 +69,7 @@ dependencies {
         compile 'com.github.friendkapuzio:commons-dao:6d9cdb7'
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
+
     compile 'javax.inject:javax.inject:1'
     compile 'org.hibernate:hibernate-validator:6.0.7.Final'
 //    compile('io.springfox:springfox-swagger2')
