@@ -23,7 +23,6 @@ package com.epam.reportportal.auth.endpoint;
 import com.epam.reportportal.auth.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
-import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
@@ -52,13 +51,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 public class OAuthConfigurationEndpoint {
 
 	private final MutableClientRegistrationRepository clientRegistrations;
-	private final OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository;
 
 	@Autowired
-	public OAuthConfigurationEndpoint(MutableClientRegistrationRepository clientRegistrations,
-			OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository) {
+	public OAuthConfigurationEndpoint(MutableClientRegistrationRepository clientRegistrations) {
 		this.clientRegistrations = clientRegistrations;
-		this.oAuthRegistrationRestrictionRepository = oAuthRegistrationRestrictionRepository;
 	}
 
 	/**
