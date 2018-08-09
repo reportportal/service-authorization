@@ -22,7 +22,7 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
-import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -47,7 +47,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	private final LdapUserReplicator ldapUserReplicator;
 
-	public LdapAuthProvider(AuthConfigRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
+	public LdapAuthProvider(IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
 		super(authConfigRepository);
 		this.ldapUserReplicator = ldapUserReplicator;
 	}

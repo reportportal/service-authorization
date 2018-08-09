@@ -20,7 +20,7 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -32,9 +32,9 @@ import org.springframework.security.core.AuthenticationException;
  */
 public abstract class EnableableAuthProvider implements AuthenticationProvider {
 
-	protected final AuthConfigRepository authConfigRepository;
+	protected final IntegrationRepository authConfigRepository;
 
-	protected EnableableAuthProvider(AuthConfigRepository authConfigRepository) {
+	protected EnableableAuthProvider(IntegrationRepository authConfigRepository) {
 		this.authConfigRepository = authConfigRepository;
 	}
 

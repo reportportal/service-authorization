@@ -21,7 +21,7 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
-import com.epam.ta.reportportal.dao.AuthConfigRepository;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,7 +37,7 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
 	private final LdapUserReplicator ldapUserReplicator;
 
-	public ActiveDirectoryAuthProvider(AuthConfigRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
+	public ActiveDirectoryAuthProvider(IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
 		super(authConfigRepository);
 		this.ldapUserReplicator = ldapUserReplicator;
 	}
