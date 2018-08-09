@@ -20,21 +20,25 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
-import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.reportportal.auth.converter.OAuthRegistrationConverters;
+import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
+import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
+import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+import static com.epam.reportportal.auth.converter.OAuthRegistrationConverters.RESOURCE_KEY_MAPPER;
+import static com.epam.reportportal.auth.converter.OAuthRegistrationConverters.TO_RESOURCE;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
@@ -48,24 +52,33 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 public class OAuthConfigurationEndpoint {
 
 	private final MutableClientRegistrationRepository clientRegistrations;
+	private final OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository;
 
 	@Autowired
-	public OAuthConfigurationEndpoint(MutableClientRegistrationRepository clientRegistrations) {
+	public OAuthConfigurationEndpoint(MutableClientRegistrationRepository clientRegistrations,
+			OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository) {
 		this.clientRegistrations = clientRegistrations;
+		this.oAuthRegistrationRestrictionRepository = oAuthRegistrationRestrictionRepository;
 	}
 
 	/**
 	 * Updates oauth integration settings
 	 *
-	 * @param clientDetails OAuth configuration
+	 * @param clientRegistration OAuth configuration
 	 * @return All defined OAuth integration settings
 	 */
 	@RequestMapping(value = "/", method = { POST, PUT })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Creates/Updates OAuth Integration Settings")
-	public ClientRegistration updateOAuthSettings(@RequestBody @Validated ClientRegistration clientDetails) {
-		return clientRegistrations.save(clientDetails);
+	public OAuthRegistrationResource updateOAuthSettings(@RequestBody @Validated OAuthRegistrationResource clientRegistration) {
+		OAuthRegistration newRegistration = OAuthRegistrationConverters.FROM_RESOURCE.apply(clientRegistration);
+		if (clientRegistrations.exists(clientRegistration.getId())) {
+			newRegistration = updateRegistration(newRegistration);
+		} else {
+			newRegistration = OAuthProviderFactory.fillOAuthRegistration(newRegistration);
+		}
+		return OAuthRegistrationConverters.TO_RESOURCE.apply(clientRegistrations.save(newRegistration));
 	}
 
 	/**
@@ -92,8 +105,8 @@ public class OAuthConfigurationEndpoint {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
-	public Map<String, ClientRegistration> getOAuthSettings() {
-		return clientRegistrations.findAll().stream().collect(MutableClientRegistrationRepository.KEY_MAPPER);
+	public Map<String, OAuthRegistrationResource> getOAuthSettings() {
+		return clientRegistrations.findAll().stream().map(TO_RESOURCE).collect(RESOURCE_KEY_MAPPER);
 	}
 
 	/**
@@ -106,7 +119,16 @@ public class OAuthConfigurationEndpoint {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
-	public ClientRegistration getOAuthSettings(@PathVariable("authId") String oauthProviderName) {
-		return clientRegistrations.findByRegistrationId(oauthProviderName);
+	public OAuthRegistrationResource getOAuthSettings(@PathVariable("authId") String oauthProviderName) {
+		return TO_RESOURCE.apply(clientRegistrations.findOAuthRegistrationById(oauthProviderName));
+	}
+
+	private OAuthRegistration updateRegistration(OAuthRegistration newRegistration) {
+		OAuthRegistration existingRegistration = clientRegistrations.findOAuthRegistrationById(newRegistration.getId());
+		existingRegistration.setClientId(newRegistration.getClientId());
+		existingRegistration.setClientSecret(newRegistration.getClientSecret());
+		existingRegistration.getRestrictions().removeIf(restriction -> !newRegistration.getRestrictions().contains(restriction));
+		existingRegistration.getRestrictions().addAll(newRegistration.getRestrictions());
+		return existingRegistration;
 	}
 }

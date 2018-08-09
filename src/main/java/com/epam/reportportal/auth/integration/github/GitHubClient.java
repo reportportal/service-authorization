@@ -34,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Simple GitHub client
@@ -73,13 +74,17 @@ public class GitHubClient {
         return this.restTemplate.getForObject(GITHUB_BASE_URL + "/user", UserResource.class);
     }
 
+    public Map<String, Object> getUserAttributes() {
+      return getForObject(GITHUB_BASE_URL + "/user", new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
     public List<EmailResource> getUserEmails() {
         return getForObject(GITHUB_BASE_URL + "/user/emails", new ParameterizedTypeReference<List<EmailResource>>() {
         });
     }
 
     public List<OrganizationResource> getUserOrganizations(String user) {
-        return getForObject(GITHUB_BASE_URL + "/users/{}/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
+        return getForObject(GITHUB_BASE_URL + "/users/{user}/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
         }, user);
     }
 

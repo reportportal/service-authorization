@@ -5,12 +5,15 @@ import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
-import com.epam.reportportal.auth.integration.MutableClientRegistrationRepository;
+import com.epam.reportportal.auth.integration.github.GitHubOAuth2UserService;
+import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
+import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.google.common.base.Charsets;
@@ -32,7 +35,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -40,6 +45,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
@@ -49,6 +55,8 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -91,17 +99,42 @@ public class SecurityConfiguration {
 				.and()
 					.httpBasic()
 				.and()
-					.oauth2Login().clientRegistrationRepository(clientRegistrationRepository())
-					.redirectionEndpoint().baseUri(SSO_LOGIN_PATH).and()
-					.authorizationEndpoint().baseUri(SSO_LOGIN_PATH).and()
-//					.loginPage(SSO_LOGIN_PATH + "/{registrationId}")
-					.successHandler(successHandler);
-			//@formatter:on
+					.oauth2Login()
+					  .authorizationEndpoint()
+						.baseUri(SSO_LOGIN_PATH)
+						  .and()
+						.userInfoEndpoint()
+						.userService(oauth2UserService())
+						  .and()
+						.successHandler(successHandler);
+        //@formatter:on
+		}
+
+		@Autowired
+		private OAuthRegistrationRepository oAuthRegistrationRepository;
+
+		@Bean
+		public MutableClientRegistrationRepository clientRegistrationRepository() {
+			return new MutableClientRegistrationRepository(oAuthRegistrationRepository);
+		}
+
+		@Autowired
+		private GitHubUserReplicator gitHubUserReplicator;
+
+		@Autowired
+		private OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository;
+
+		private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
+			List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> services = new LinkedList<>();
+			services.add(new GitHubOAuth2UserService(gitHubUserReplicator, oAuthRegistrationRestrictionRepository));
+			return new DelegatingOAuth2UserService<>(services);
 		}
 
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicPasswordAuthProvider()).authenticationProvider(activeDirectoryAuthProvider()).authenticationProvider(ldapAuthProvider());
+			auth.authenticationProvider(basicPasswordAuthProvider())
+					.authenticationProvider(activeDirectoryAuthProvider())
+					.authenticationProvider(ldapAuthProvider());
 		}
 
 		@Bean
@@ -137,15 +170,6 @@ public class SecurityConfiguration {
 		public AuthenticationManager authenticationManager() throws Exception {
 			return super.authenticationManager();
 		}
-
-		@Autowired
-		OAuthRegistrationRepository oAuthRegistrationRepository;
-
-		@Bean
-		public ClientRegistrationRepository clientRegistrationRepository() {
-			return new MutableClientRegistrationRepository(oAuthRegistrationRepository);
-		}
-
 	}
 
 	@Configuration
