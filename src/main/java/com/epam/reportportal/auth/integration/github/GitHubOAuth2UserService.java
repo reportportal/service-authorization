@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 EPAM Systems
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.epam.reportportal.auth.integration.github;
 
 import java.util.HashSet;
@@ -9,6 +25,7 @@ import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -19,13 +36,21 @@ import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+/**
+ * Implementation of {@link OAuth2UserService}. Very similar to {@link DefaultOAuth2UserService},
+ * but also checks user for defined restrictions (e.g. belonging to organisations) and replicates
+ * user info to the ReportPortal database.
+ *
+ * @author Anton Machulski
+ */
 public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 	private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
 	private static final String MISSING_USER_NAME_ATTRIBUTE_ERROR_CODE = "missing_user_name_attribute";
 	private GitHubUserReplicator userReplicator;
 	private OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository;
 
-	public GitHubOAuth2UserService(GitHubUserReplicator userReplicator, OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository) {
+	public GitHubOAuth2UserService(GitHubUserReplicator userReplicator,
+			OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository) {
 		this.userReplicator = userReplicator;
 		this.oAuthRegistrationRestrictionRepository = oAuthRegistrationRestrictionRepository;
 	}
@@ -61,7 +86,8 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 		GitHubClient gitHubClient = GitHubClient.withAccessToken(userRequest.getAccessToken().getTokenValue());
 		UserResource gitHubUser = gitHubClient.getUser();
 		Map<String, Object> userAttributes = gitHubClient.getUserAttributes();
-		Set<String> allowedOrganizations = oAuthRegistrationRestrictionRepository.findByRegistrationId(userRequest.getClientRegistration().getRegistrationId())
+		Set<String> allowedOrganizations = oAuthRegistrationRestrictionRepository.findByRegistrationId(userRequest.getClientRegistration()
+				.getRegistrationId())
 				.stream()
 				.filter(restriction -> "organization".equalsIgnoreCase(restriction.getType()))
 				.map(OAuthRegistrationRestriction::getValue)
