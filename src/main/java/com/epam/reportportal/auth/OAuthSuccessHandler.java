@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -62,25 +62,20 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
 	@Override
 	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-				OAuth2Authentication oauth = (OAuth2Authentication) authentication;
-				OAuth2AccessToken accessToken = tokenServicesFacade.get()
-						.createToken(ReportPortalClient.ui,
-								oauth.getName(),
-								oauth.getUserAuthentication(),
-								oauth.getOAuth2Request().getExtensions()
-						);
+		OAuth2AuthenticationToken oauth = (OAuth2AuthenticationToken) authentication;
+		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, oauth.getName(), oauth);
 
-				MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
-				query.add("token", accessToken.getValue());
-				query.add("token_type", accessToken.getTokenType());
-				URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-						.replacePath("/ui/authSuccess.html")
-						.replaceQueryParams(query)
-						.build()
-						.toUri();
+		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
+		query.add("token", accessToken.getValue());
+		query.add("token_type", accessToken.getTokenType());
+		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+				.replacePath("/ui/authSuccess.html")
+				.replaceQueryParams(query)
+				.build()
+				.toUri();
 
-				eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
+		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-				getRedirectStrategy().sendRedirect(request, response, rqUrl.toString());
+		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString());
 	}
 }
