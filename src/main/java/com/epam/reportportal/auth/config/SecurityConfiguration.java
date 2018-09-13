@@ -100,6 +100,7 @@ public class SecurityConfiguration {
 					.httpBasic()
 				.and()
 					.oauth2Login()
+				.clientRegistrationRepository(clientRegistrationRepository())
 					  .authorizationEndpoint()
 						.baseUri(SSO_LOGIN_PATH)
 						  .and()
