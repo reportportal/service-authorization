@@ -66,7 +66,8 @@ dependencies {
     if (releaseMode) {
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile 'com.github.reportportal:commons-dao:7663173'
+        compile 'com.github.reportportal:commons-dao:35028bd'
+        compile 'com.github.reportportal:commons-model:ede437e'
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 
@@ -106,6 +107,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
 //    compile 'org.springframework.cloud:spring-cloud-starter-security'
     compile 'org.postgresql:postgresql:42.2.2'
+    compile group: 'org.jooq', name: 'jooq', version: '3.11.4'
     compile 'commons-beanutils:commons-beanutils:1.9.3'
 
     testCompile 'org.hamcrest:hamcrest-all:1.3'
