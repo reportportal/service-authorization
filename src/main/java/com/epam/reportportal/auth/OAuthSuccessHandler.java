@@ -68,7 +68,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
 		query.add("token", accessToken.getValue());
 		query.add("token_type", accessToken.getTokenType());
-		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+		//TODO replace hard-coded port with custom value
+		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request)).port(8080)
 				.replacePath("/ui/authSuccess.html")
 				.replaceQueryParams(query)
 				.build()
