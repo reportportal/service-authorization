@@ -192,6 +192,7 @@ public class SecurityConfiguration {
 		@Override
 		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
 			//@formatter:off
+
 			endpoints
 					.pathMapping("/oauth/token", "/sso/oauth/token")
 					.pathMapping("/oauth/token_key", "/sso/oauth/token_key")
