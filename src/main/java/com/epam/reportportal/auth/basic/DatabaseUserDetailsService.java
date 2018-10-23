@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	private UserRepository userRepository;
 
 	@Override
+	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		Optional<User> user = userRepository.findByLogin(username);
 		if (!user.isPresent() || UserType.INTERNAL != user.get().getUserType()) {
@@ -71,7 +73,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 						.getProjects()
 						.stream()
 						.collect(Collectors.toMap(p -> p.getProject().getName(),
-								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getRole())
+								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getProjectRole())
 						))
 		);
 	}

@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.epam.ta.reportportal.entity.JsonMap;
+import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +50,7 @@ import org.springframework.stereotype.Component;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Optional.ofNullable;
 
 /**
  * Replicates GitHub account info with internal ReportPortal's database
@@ -72,7 +75,9 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		BusinessRule.expect(user.getUserType(), userType -> Objects.equals(userType, UserType.GITHUB))
 				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userResource.login + "' is not GitHUB user");
 		user.setFullName(userResource.name);
-		user.getMetadata().getMetadata().put("synchronizationDate", Date.from(ZonedDateTime.now().toInstant()));
+		JsonMap<Object, Object> metaData = ofNullable(user.getMetadata()).orElseGet(() -> new JsonMap<>(Maps.newHashMap()));
+		metaData.put("synchronizationDate", Date.from(ZonedDateTime.now().toInstant()));
+		user.setMetadata(metaData);
 
 		String newPhotoId = uploadAvatar(gitHubClient, userResource.login, userResource.avatarUrl);
 		if (!Strings.isNullOrEmpty(newPhotoId)) {

@@ -10,8 +10,8 @@ import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.project.ProjectRole;
@@ -53,11 +53,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -196,6 +192,7 @@ public class SecurityConfiguration {
 		@Override
 		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
 			//@formatter:off
+
 			endpoints
 					.pathMapping("/oauth/token", "/sso/oauth/token")
 					.pathMapping("/oauth/token_key", "/sso/oauth/token_key")

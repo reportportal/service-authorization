@@ -72,7 +72,7 @@ class DetailsContextMapper extends LdapUserDetailsMapper {
 		return new ReportPortalUser(u,
 				user.getId(), user.getRole(), optionalProjectUser.map(it -> it.stream()
 						.collect(Collectors.toMap(p -> p.getProject().getName(),
-								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getRole())
+								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getProjectRole())
 						))).orElseGet(Collections::emptyMap)
 		);
 	}
