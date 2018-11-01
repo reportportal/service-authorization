@@ -146,7 +146,9 @@ public class SecurityConfiguration {
 
 		@Bean
 		protected UserDetailsService userDetailsService() {
-			return new DatabaseUserDetailsService();
+			DatabaseUserDetailsService service = new DatabaseUserDetailsService();
+
+			return service;
 		}
 
 		@Bean
@@ -260,6 +262,7 @@ public class SecurityConfiguration {
 			defaultTokenServices.setTokenStore(tokenStore());
 			defaultTokenServices.setSupportRefreshToken(true);
 			defaultTokenServices.setAuthenticationManager(authenticationManager);
+			defaultTokenServices.setTokenEnhancer(accessTokenConverter());
 			return defaultTokenServices;
 		}
 

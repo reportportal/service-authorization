@@ -20,6 +20,9 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
+  profiles:
+    ## Profiles list
+    active: ${rp.profiles:default}
 
 logging:
   level:
