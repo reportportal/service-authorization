@@ -7,9 +7,9 @@ spring:
       host: localhost
 
 rp:
-  mongo:
-    uri: mongodb://localhost:27017
-  uat:
-    serviceUrl: http://localhost:8080/uat
+  amqp:
+    addresses: amqp://rabbitmq:rabbitmq@localhost:5672
+  db:
+    url: jdbc:postgresql://localhost:5432/reportportal?user=rpuser&password=rppass
 server:
   port: 9999
