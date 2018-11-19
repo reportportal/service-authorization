@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.epam.ta.reportportal.entity.Metadata;
+import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -43,7 +44,6 @@ import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.filesystem.DataStore;
-import com.epam.ta.reportportal.personal.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import org.springframework.stereotype.Component;
@@ -111,7 +111,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		String login = normalizeId(userResource.login);
 		Optional<User> userOptional = userRepository.findByLogin(login);
 		boolean isExist = userOptional.isPresent();
-		User user = null;
+		User user;
 		if (!isExist) {
 			user = new User();
 			fillUserData(user, userResource, gitHubClient);

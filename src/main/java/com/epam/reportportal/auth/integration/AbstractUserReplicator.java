@@ -26,7 +26,7 @@ import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.filesystem.DataStore;
-import com.epam.ta.reportportal.personal.PersonalProjectService;
+import com.epam.ta.reportportal.util.PersonalProjectService;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;

@@ -29,7 +29,7 @@ import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.filesystem.DataStore;
-import com.epam.ta.reportportal.personal.PersonalProjectService;
+import com.epam.ta.reportportal.util.PersonalProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
