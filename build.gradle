@@ -1,8 +1,8 @@
 buildscript {
 
     ext {
-        springBootVersion = '2.0.3.RELEASE'
-        springCloudVersion = 'Finchley.RC2'
+        springBootVersion = '2.1.0.RELEASE'
+        springCloudVersion = 'Finchley.SR2'
     }
 
     repositories {
@@ -23,7 +23,7 @@ buildscript {
 plugins {
     id 'net.researchgate.release' version '2.4.1'
     id "com.jfrog.bintray" version "1.7"
-    id 'org.springframework.boot' version '2.0.3.RELEASE' apply false
+    id 'org.springframework.boot' version '2.1.0.RELEASE' apply false
 }
 
 apply plugin: 'java'
