@@ -8,14 +8,14 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
-//        maven {
-//            url 'https://repo.spring.io/libs-milestone'
-//        }
+        maven {
+            url 'https://repo.spring.io/libs-milestone'
+        }
     }
     dependencies {
         classpath "io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE"
-        classpath 'com.bmuschko:gradle-docker-plugin:3.0.12'
-        classpath 'org.ajoberstar:grgit:1.6.0-rc.1'
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+//        classpath 'com.bmuschko:gradle-docker-plugin:3.0.12'
     }
 }
 
@@ -58,7 +58,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+        mavenBom "com.github.reportportal:commons-bom:8706fef"
     }
 }
 
@@ -73,7 +73,7 @@ dependencies {
 
     compile 'javax.inject:javax.inject:1'
     compile 'org.hibernate:hibernate-validator:6.0.7.Final'
-//    compile('io.springfox:springfox-swagger2')
+    compile('io.springfox:springfox-swagger2')
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-security'
@@ -81,7 +81,6 @@ dependencies {
     compile 'org.springframework.security:spring-security-oauth2-client'
     compile 'org.springframework.security:spring-security-jwt'
     compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
-
 
 //    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 
