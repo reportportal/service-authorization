@@ -34,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+
 /**
  * Spring's {@link UserDetailsService} implementation. Uses {@link Users} entity
  * from ReportPortal database
@@ -48,7 +50,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Optional<User> user = userRepository.findByLogin(username);
+		Optional<User> user = userRepository.findByLogin(normalizeId(username));
 		if (!user.isPresent() || UserType.INTERNAL != user.get().getUserType()) {
 			throw new UsernameNotFoundException("User not found");
 		}
