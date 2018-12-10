@@ -54,12 +54,13 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		return authConfigRepository.findLdap(true).isPresent();
+		return integrationRepository.findLdap(true).isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
-		LdapConfig ldap = authConfigRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
+		LdapConfig ldap = integrationRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException(
+				"LDAP is not configured"));
 
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn()

@@ -32,10 +32,10 @@ import org.springframework.security.core.AuthenticationException;
  */
 public abstract class EnableableAuthProvider implements AuthenticationProvider {
 
-	protected final IntegrationRepository authConfigRepository;
+	protected final IntegrationRepository integrationRepository;
 
-	protected EnableableAuthProvider(IntegrationRepository authConfigRepository) {
-		this.authConfigRepository = authConfigRepository;
+	protected EnableableAuthProvider(IntegrationRepository integrationRepository) {
+		this.integrationRepository = integrationRepository;
 	}
 
 	protected abstract boolean isEnabled();
