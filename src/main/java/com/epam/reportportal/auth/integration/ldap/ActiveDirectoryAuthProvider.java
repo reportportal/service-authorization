@@ -44,14 +44,14 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		return authConfigRepository.findActiveDirectory(true).isPresent();
+		return integrationRepository.findActiveDirectory(true).isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
 
-		ActiveDirectoryConfig adConfig = authConfigRepository.findActiveDirectory(true)
-				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
+		ActiveDirectoryConfig adConfig = integrationRepository.findActiveDirectory(true).orElseThrow(() -> new BadCredentialsException(
+				"Active Directory is not configured"));
 
 		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
 				adConfig.getUrl(),
