@@ -21,19 +21,23 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
+import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
+import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.util.Encryptor;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
-import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateActiveDirectoryRQ;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -44,81 +48,88 @@ import java.beans.PropertyEditorSupport;
 import static java.util.Optional.ofNullable;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-@Controller
+@RestController
 @RequestMapping("/settings/auth")
 @Api(description = "Main Auth Configuration Endpoint")
 public class AuthConfigurationEndpoint {
 
-	private final IntegrationRepository repository;
+	private final CreateAuthIntegrationHandler createAuthIntegrationHandler;
+
+	private final DeleteAuthIntegrationHandler deleteAuthIntegrationHandler;
+
+	private final GetAuthIntegrationHandler getAuthIntegrationHandler;
+
 	private final Encryptor encryptor;
 
 	@Autowired
-	public AuthConfigurationEndpoint(IntegrationRepository repository, Encryptor encryptor) {
-		this.repository = repository;
+	public AuthConfigurationEndpoint(CreateAuthIntegrationHandler createAuthIntegrationHandler,
+			DeleteAuthIntegrationHandler deleteAuthIntegrationHandler, GetAuthIntegrationHandler getAuthIntegrationHandler,
+			Encryptor encryptor) {
+		this.createAuthIntegrationHandler = createAuthIntegrationHandler;
+		this.deleteAuthIntegrationHandler = deleteAuthIntegrationHandler;
+		this.getAuthIntegrationHandler = getAuthIntegrationHandler;
 		this.encryptor = encryptor;
 	}
 
 	/**
 	 * Updates LDAP auth settings
 	 *
-	 * @param ldapConfig LDAP configuration
+	 * @param updateLdapRQ LDAP configuration
 	 * @return Successful message or an error
 	 */
+	@Transactional
 	@RequestMapping(value = "/ldap", method = { POST, PUT })
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public LdapConfig updateLdapSettings(@RequestBody @Valid LdapConfig ldapConfig) {
-		encyptPasswords(ldapConfig);
-		repository.updateLdap(ldapConfig);
-		return repository.findLdap(true)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, ldapConfig.getId()));
+	public LdapResource updateLdapSettings(@RequestBody @Valid UpdateLdapRQ updateLdapRQ) {
+
+		encryptPasswords(updateLdapRQ);
+		return createAuthIntegrationHandler.updateLdapSettings(updateLdapRQ);
 	}
 
 	/**
 	 * Updates LDAP auth settings
 	 *
-	 * @param adConfig Active Directory configuration
+	 * @param updateActiveDirectoryRQ Active Directory configuration
 	 * @return Successful message or an error
 	 */
+	@Transactional
 	@RequestMapping(value = "/ad", method = { POST, PUT })
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public ActiveDirectoryConfig updateADSettings(@RequestBody @Validated ActiveDirectoryConfig adConfig) {
-		repository.updateActiveDirectory(adConfig);
-		return repository.findActiveDirectory(true)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, adConfig.getId()));
+	public ActiveDirectoryResource updateADSettings(@RequestBody @Validated UpdateActiveDirectoryRQ updateActiveDirectoryRQ) {
+
+		return createAuthIntegrationHandler.updateActiveDirectorySettings(updateActiveDirectoryRQ);
 	}
 
-	//	/**
-	//	 * Updates LDAP auth settings
-	//	 *
-	//	 * @param authType Type of Auth
-	//	 * @return Successful message or an error
-	//	 */
-	//	@RequestMapping(value = "/{authType}", method = { GET })
-	//	@ResponseBody
-	//	@ResponseStatus(HttpStatus.OK)
-	//	@ApiOperation(value = "Retrieves auth settings")
-	//	public Integration getSettings(@PathVariable AuthIntegrationType authType) {
-	//		return authType.get(repository.findDefault())
-	//				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, authType.getId()));
-	//	}
+	/**
+	 * Updates LDAP auth settings
+	 *
+	 * @param authType Type of Auth
+	 * @return Successful message or an error
+	 */
+	@Transactional(readOnly = true)
+	@GetMapping(value = "/{authType}")
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Retrieves auth settings")
+	public Integration getSettings(@PathVariable AuthIntegrationType authType) {
+
+		return getAuthIntegrationHandler.getIntegrationByType(authType);
+	}
 
 	/**
 	 * Deletes LDAP auth settings
 	 *
-	 * @param integration Type of Auth
+	 * @param integrationId Type of Auth
 	 * @return Successful message or an error
 	 */
-	@RequestMapping(value = "/{integration}", method = { DELETE })
-	@ResponseBody
+	@Transactional
+	@DeleteMapping(value = "/{integrationId}")
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Retrieves auth settings")
-	public OperationCompletionRS deleteSettings(@PathVariable Integration integration) {
-		repository.deleteSettings(integration);
-		return new OperationCompletionRS(String.format("Auth config %s successfully deleted", integration));
+	public OperationCompletionRS deleteSettings(@PathVariable Long integrationId) {
+
+		return deleteAuthIntegrationHandler.deleteAuthIntegrationById(integrationId);
 	}
 
 	@InitBinder
@@ -126,13 +137,14 @@ public class AuthConfigurationEndpoint {
 		webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport() {
 			@Override
 			public void setAsText(String text) throws IllegalArgumentException {
-				setValue(AuthIntegrationType.fromId(text).orElse(null));
+				setValue(AuthIntegrationType.fromId(text)
+						.orElseThrow(() -> new ReportPortalException(ErrorType.INCORRECT_AUTHENTICATION_TYPE, text)));
 			}
 		});
 	}
 
-	private void encyptPasswords(LdapConfig ldapConfig) {
-		ofNullable(ldapConfig).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
-				.ifPresent(pwd -> ldapConfig.setManagerPassword(encryptor.encrypt(ldapConfig.getManagerPassword())));
+	private void encryptPasswords(UpdateLdapRQ updateLdapRQ) {
+		ofNullable(updateLdapRQ).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
+				.ifPresent(pwd -> updateLdapRQ.setManagerPassword(encryptor.encrypt(updateLdapRQ.getManagerPassword())));
 	}
 }
