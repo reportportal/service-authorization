@@ -20,8 +20,15 @@
  */
 package com.epam.reportportal.auth.event;
 
+import com.epam.ta.reportportal.dao.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Updates Last Login field in database User entity
@@ -31,14 +38,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class UiAuthenticationSuccessEventHandler implements ApplicationListener<UiUserSignedInEvent> {
 
-	//    @Autowired
-	//    private UserRepository userRepository;
-	//	@Autowired
-	//	private DSLContext dsl;
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
+	@Transactional
 	public void onApplicationEvent(UiUserSignedInEvent event) {
-		//		dsl.update(Users.USERS).set(Users.USERS.)
-		//        userRepository.updateLastLoginDate(event.getAuthentication().getName(), new Date(event.getTimestamp()));
+		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
+				event.getAuthentication().getName()
+		);
 	}
 }
