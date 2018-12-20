@@ -10,9 +10,7 @@ import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
-import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.epam.ta.reportportal.entity.user.UserRole;
@@ -20,6 +18,7 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -35,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -96,7 +96,7 @@ public class SecurityConfiguration {
 					.httpBasic()
 				.and()
 					.oauth2Login()
-				.clientRegistrationRepository(clientRegistrationRepository())
+				.clientRegistrationRepository(clientRegistrationRepository)
 					  .authorizationEndpoint()
 						.baseUri(SSO_LOGIN_PATH)
 						  .and()
@@ -108,12 +108,8 @@ public class SecurityConfiguration {
 		}
 
 		@Autowired
-		private OAuthRegistrationRepository oAuthRegistrationRepository;
-
-		@Bean
-		public MutableClientRegistrationRepository clientRegistrationRepository() {
-			return new MutableClientRegistrationRepository(oAuthRegistrationRepository);
-		}
+		@Qualifier(value = "mutableClientRegistrationRepository")
+		private ClientRegistrationRepository clientRegistrationRepository;
 
 		@Autowired
 		private GitHubUserReplicator gitHubUserReplicator;
@@ -172,7 +168,7 @@ public class SecurityConfiguration {
 	}
 
 	@Configuration
-	@Order(3)
+	@Order(5)
 	@EnableAuthorizationServer
 	public static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
