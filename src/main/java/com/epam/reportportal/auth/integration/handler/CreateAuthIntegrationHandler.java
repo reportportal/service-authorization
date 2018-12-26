@@ -10,7 +10,7 @@ import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
  */
 public interface CreateAuthIntegrationHandler {
 
-	public LdapResource updateLdapSettings(UpdateLdapRQ updateLdapRQ);
+	LdapResource updateLdapSettings(UpdateLdapRQ updateLdapRQ);
 
-	public ActiveDirectoryResource updateActiveDirectorySettings(UpdateActiveDirectoryRQ updateActiveDirectoryRQ);
+	ActiveDirectoryResource updateActiveDirectorySettings(UpdateActiveDirectoryRQ updateActiveDirectoryRQ);
 }
