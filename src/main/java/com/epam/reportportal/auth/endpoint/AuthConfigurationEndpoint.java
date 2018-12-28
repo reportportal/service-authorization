@@ -25,14 +25,10 @@ import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandl
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.util.Encryptor;
-import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
-import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateActiveDirectoryRQ;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
+import com.epam.ta.reportportal.ws.model.integration.auth.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +42,8 @@ import javax.validation.Valid;
 import java.beans.PropertyEditorSupport;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.web.bind.annotation.RequestMethod.*;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @RestController
 @RequestMapping("/settings/auth")
@@ -112,7 +109,7 @@ public class AuthConfigurationEndpoint {
 	@GetMapping(value = "/{authType}")
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Retrieves auth settings")
-	public Integration getSettings(@PathVariable AuthIntegrationType authType) {
+	public AbstractLdapResource getSettings(@PathVariable AuthIntegrationType authType) {
 
 		return getAuthIntegrationHandler.getIntegrationByType(authType);
 	}

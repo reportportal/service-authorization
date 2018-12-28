@@ -6,6 +6,7 @@ import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractLdapResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
 	}
 
 	@Override
-	public Integration getIntegrationByType(AuthIntegrationType integrationType) {
+	public AbstractLdapResource getIntegrationByType(AuthIntegrationType integrationType) {
 		return ofNullable(authIntegrationStrategyMapping.get(integrationType)).orElseThrow(() -> new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
 				"Unable to find suitable auth integration strategy for type= " + integrationType
 		))

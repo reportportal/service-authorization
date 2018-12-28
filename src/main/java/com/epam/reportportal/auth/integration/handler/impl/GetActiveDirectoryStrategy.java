@@ -1,9 +1,10 @@
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
+import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +22,10 @@ public class GetActiveDirectoryStrategy implements GetAuthIntegrationStrategy {
 	}
 
 	@Override
-	public Integration getIntegration() {
+	public ActiveDirectoryResource getIntegration() {
 
 		//or else empty integration with default 'enabled = false' flag
-		return integrationRepository.findActiveDirectory().orElseGet(ActiveDirectoryConfig::new);
+		return ActiveDirectoryConverter.TO_RESOURCE.apply(integrationRepository.findActiveDirectory()
+				.orElseGet(ActiveDirectoryConfig::new));
 	}
 }
