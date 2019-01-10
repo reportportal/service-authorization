@@ -23,11 +23,10 @@ package com.epam.reportportal.auth.integration;
 import com.epam.ta.reportportal.BinaryData;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.JsonMap;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.filesystem.DataStore;
-import com.epam.ta.reportportal.personal.PersonalProjectService;
+import com.epam.ta.reportportal.util.PersonalProjectService;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -84,12 +83,12 @@ public class AbstractUserReplicator {
 	 *
 	 * @return Default meta info
 	 */
-	protected JsonMap<Object, Object> defaultMetaData() {
+	protected com.epam.ta.reportportal.entity.Metadata defaultMetaData() {
 		Map<String, Object> metaDataMap = new HashMap<>();
 		Date now = Date.from(ZonedDateTime.now().toInstant());
 		metaDataMap.put("last login", now);
 		metaDataMap.put("synchronization date", now);
-		return new JsonMap<Object, Object>(metaDataMap);
+		return new com.epam.ta.reportportal.entity.Metadata(metaDataMap);
 	}
 
 	/**

@@ -2,8 +2,10 @@ package com.epam.reportportal.auth.store;
 
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -11,10 +13,12 @@ import java.util.stream.StreamSupport;
 
 import static com.epam.reportportal.auth.converter.OAuthRegistrationConverters.TO_SPRING;
 
+@Component("mutableClientRegistrationRepository")
 public class MutableClientRegistrationRepository implements ClientRegistrationRepository {
 
-	private OAuthRegistrationRepository oAuthRegistrationRepository;
+	private final OAuthRegistrationRepository oAuthRegistrationRepository;
 
+	@Autowired
 	public MutableClientRegistrationRepository(OAuthRegistrationRepository oAuthRegistrationRepository) {
 		this.oAuthRegistrationRepository = oAuthRegistrationRepository;
 	}

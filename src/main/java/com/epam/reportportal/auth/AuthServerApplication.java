@@ -21,6 +21,7 @@
 package com.epam.reportportal.auth;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.ldap.LdapHealthIndicatorAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -29,11 +30,8 @@ import org.springframework.context.annotation.ComponentScan;
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-//@SpringBootApplication(exclude = { JpaRepositoriesAutoConfiguration.class })
-//@EnableDiscoveryClient
-
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
-@SpringBootApplication
+@SpringBootApplication(exclude = LdapHealthIndicatorAutoConfiguration.class)
 @ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth" })
 public class AuthServerApplication {
 

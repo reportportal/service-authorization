@@ -20,11 +20,6 @@
  */
 package com.epam.reportportal.auth.config;
 
-import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
-import com.epam.reportportal.commons.ContentTypeResolver;
-import com.epam.reportportal.commons.Thumbnailator;
-import com.epam.reportportal.commons.ThumbnailatorImpl;
-import com.epam.reportportal.commons.TikaContentTypeResolver;
 import com.epam.ta.reportportal.commons.ExceptionMappings;
 import com.epam.ta.reportportal.commons.exception.message.DefaultExceptionMessageBuilder;
 import com.epam.ta.reportportal.commons.exception.rest.DefaultErrorResolver;
@@ -35,12 +30,10 @@ import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -64,20 +57,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		configurer.setUseSuffixPatternMatch(false);
 	}
 
-	@Bean
-	public Thumbnailator thumbnailator() {
-		return new ThumbnailatorImpl();
-	}
+//	@Bean
+//	public Thumbnailator thumbnailator() {
+//		return new ThumbnailatorImpl();
+//	}
+//
+//	@Bean
+//	public ContentTypeResolver contentTypeResolver() {
+//		return new TikaContentTypeResolver();
+//	}
 
-	@Bean
-	public ContentTypeResolver contentTypeResolver() {
-		return new TikaContentTypeResolver();
-	}
-
-	@Bean
-	public UserDetailsService userDetailsService() {
-		return new DatabaseUserDetailsService();
-	}
+//	@Bean
+//	public UserDetailsService userDetailsService() {
+//		return new DatabaseUserDetailsService();
+//	}
 
 	@Override
 	public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
