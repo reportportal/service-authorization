@@ -246,6 +246,7 @@ public class SecurityConfiguration {
 		@Bean
 		public JwtAccessTokenConverter accessTokenConverter() {
 			JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+			//TODO: change and move token signing key
 			converter.setSigningKey("123");
 			DefaultAccessTokenConverter converter1 = new DefaultAccessTokenConverter();
 			converter1.setUserTokenConverter(new ReportPortalAuthenticationConverter());
