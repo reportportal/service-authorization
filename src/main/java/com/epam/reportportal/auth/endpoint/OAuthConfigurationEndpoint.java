@@ -46,7 +46,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Controller
-@RequestMapping("/settings/{profileId}/oauth")
+@RequestMapping("/settings/oauth")
 @Api(description = "OAuth Configuration Endpoint")
 public class OAuthConfigurationEndpoint {
 
