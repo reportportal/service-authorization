@@ -34,6 +34,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -160,7 +161,7 @@ public class SecurityConfiguration {
 		}
 
 		public PasswordEncoder passwordEncoder() {
-			return new MD5PasswordEncoder();
+			return new BCryptPasswordEncoder();
 		}
 
 		@Override
@@ -177,6 +178,9 @@ public class SecurityConfiguration {
 	public static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
 		private final AuthenticationManager authenticationManager;
+
+		@Autowired
+		private DatabaseUserDetailsService userDetailsService;
 
 		@Autowired
 		public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
@@ -249,9 +253,15 @@ public class SecurityConfiguration {
 		public JwtAccessTokenConverter accessTokenConverter() {
 			JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
 			converter.setSigningKey("123");
+
+			DefaultUserAuthenticationConverter defaultUserAuthenticationConverter = new DefaultUserAuthenticationConverter();
+			defaultUserAuthenticationConverter.setUserDetailsService(userDetailsService);
+
 			DefaultAccessTokenConverter converter1 = new DefaultAccessTokenConverter();
-			converter1.setUserTokenConverter(new ReportPortalAuthenticationConverter());
+			converter1.setUserTokenConverter(defaultUserAuthenticationConverter);
+
 			converter.setAccessTokenConverter(converter1);
+
 			return converter;
 		}
 
@@ -291,74 +301,4 @@ public class SecurityConfiguration {
 
 	}
 
-	static class ReportPortalAuthenticationConverter extends DefaultUserAuthenticationConverter {
-		@Override
-		public Map<String, ?> convertUserAuthentication(Authentication authentication) {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> claims = (Map<String, Object>) super.convertUserAuthentication(authentication);
-			ReportPortalUser principal = (ReportPortalUser) authentication.getPrincipal();
-			claims.put("userId", principal.getUserId());
-			claims.put("userRole", principal.getUserRole());
-			claims.put("projects", principal.getProjectDetails());
-			return claims;
-		}
-
-		@Override
-		public Authentication extractAuthentication(Map<String, ?> map) {
-			Authentication auth = super.extractAuthentication(map);
-			if (null != auth) {
-				UsernamePasswordAuthenticationToken user = ((UsernamePasswordAuthenticationToken) auth);
-				Collection<GrantedAuthority> authorities = user.getAuthorities();
-
-				Long userId = map.containsKey("userId") ? parseId(map.get("userId")) : null;
-				UserRole userRole = map.containsKey("userRole") ? UserRole.valueOf(map.get("userRole").toString()) : null;
-				Map<String, Map> projects = map.containsKey("projects") ? (Map) map.get("projects") : Collections.emptyMap();
-
-				Map<String, ReportPortalUser.ProjectDetails> collect = projects.entrySet()
-						.stream()
-						.collect(Collectors.toMap(Map.Entry::getKey,
-								e -> new ReportPortalUser.ProjectDetails(parseId(e.getValue().get("projectId")),
-										ProjectRole.valueOf((String) e.getValue().get("projectRole"))
-								)
-						));
-
-				return new UsernamePasswordAuthenticationToken(new ReportPortalUser(user.getName(),
-						"N/A",
-						authorities,
-						userId,
-						userRole,
-						collect
-				), user.getCredentials(), authorities);
-			}
-
-			return null;
-
-		}
-
-		private Long parseId(Object id) {
-			if (id instanceof Integer) {
-				return Long.valueOf((Integer) id);
-			}
-			return (Long) id;
-		}
-	}
-
-	public static class MD5PasswordEncoder implements PasswordEncoder {
-
-		private HashFunction hasher = Hashing.md5();
-
-		@Override
-		public String encode(CharSequence rawPassword) {
-			return hasher.newHasher().putString(rawPassword, Charsets.UTF_8).hash().toString();
-		}
-
-		@Override
-		public boolean matches(CharSequence rawPassword, String encodedPassword) {
-			if (isNullOrEmpty(encodedPassword)) {
-				return false;
-			}
-			return encodedPassword.equals(hasher.newHasher().putString(rawPassword, Charsets.UTF_8).hash().toString());
-		}
-
-	}
 }
