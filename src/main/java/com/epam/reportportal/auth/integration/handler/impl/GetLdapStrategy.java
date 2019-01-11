@@ -1,9 +1,10 @@
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.integration.converter.LdapConverter;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractLdapResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +22,9 @@ public class GetLdapStrategy implements GetAuthIntegrationStrategy {
 	}
 
 	@Override
-	public Integration getIntegration() {
+	public AbstractLdapResource getIntegration() {
 
 		//or else empty integration with default 'enabled = false' flag
-		return integrationRepository.findLdap().orElseGet(LdapConfig::new);
+		return LdapConverter.TO_RESOURCE.apply(integrationRepository.findLdap().orElseGet(LdapConfig::new));
 	}
 }
