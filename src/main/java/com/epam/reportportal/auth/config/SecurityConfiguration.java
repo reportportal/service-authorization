@@ -1,5 +1,6 @@
 package com.epam.reportportal.auth.config;
 
+import com.drew.lang.Charsets;
 import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.ReportPortalUser;
@@ -16,7 +17,6 @@ import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.epam.ta.reportportal.entity.user.UserRole;
-import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,6 +179,9 @@ public class SecurityConfiguration {
 		private final AuthenticationManager authenticationManager;
 
 		@Autowired
+		private DatabaseUserDetailsService userDetailsService;
+
+		@Autowired
 		public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
 			this.authenticationManager = authenticationManager;
 		}
@@ -249,9 +252,15 @@ public class SecurityConfiguration {
 		public JwtAccessTokenConverter accessTokenConverter() {
 			JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
 			converter.setSigningKey("123");
+
+			DefaultUserAuthenticationConverter defaultUserAuthenticationConverter = new DefaultUserAuthenticationConverter();
+			defaultUserAuthenticationConverter.setUserDetailsService(userDetailsService);
+
 			DefaultAccessTokenConverter converter1 = new DefaultAccessTokenConverter();
-			converter1.setUserTokenConverter(new ReportPortalAuthenticationConverter());
+			converter1.setUserTokenConverter(defaultUserAuthenticationConverter);
+
 			converter.setAccessTokenConverter(converter1);
+
 			return converter;
 		}
 
@@ -361,4 +370,5 @@ public class SecurityConfiguration {
 		}
 
 	}
+
 }
