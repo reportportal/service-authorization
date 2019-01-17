@@ -41,12 +41,9 @@ springfox:
 #### Custom ReportPortal Properties ######
 ##########################################
 rp:
-  amqp:
-    addresses: amqp://rabbitmq:rabbitmq@rabbitmq:5672
   db:
-    url: jdbc:postgresql://postgres:5432/reportportal?user=rpuser&password=rppass
-  upload:
-    maxUploadSize: 128MB
-    maxFileSize: 64MB
-  analytics:
-    enableByDefault: true
+    url: jdbc:postgresql://${rp.db.host}:${rp.db.port}/reportportal?user${rp.db.user}=&password=${rp.db.pass}
+    host: postgresql
+    port: 5432
+    user: rpuser
+    pass: rppass
