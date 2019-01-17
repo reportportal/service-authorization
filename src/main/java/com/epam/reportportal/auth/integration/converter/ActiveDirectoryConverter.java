@@ -21,6 +21,7 @@ public final class ActiveDirectoryConverter {
 
 		ActiveDirectoryResource resource = new ActiveDirectoryResource();
 		resource.setLdapAttributes(attributes);
+		resource.setId(activeDirectoryConfig.getId());
 		resource.setDomain(activeDirectoryConfig.getDomain());
 
 		return resource;

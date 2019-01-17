@@ -36,6 +36,7 @@ public final class LdapConverter {
 	public static final Function<LdapConfig, LdapResource> TO_RESOURCE = ldapConfig -> {
 
 		LdapResource ldapResource = new LdapResource();
+		ldapResource.setId(ldapConfig.getId());
 		ldapResource.setLdapAttributes(LDAP_ATTRIBUTES_TO_RESOURCE.apply(ldapConfig));
 		ldapResource.setGroupSearchFilter(ldapConfig.getGroupSearchFilter());
 		ldapResource.setGroupSearchBase(ldapConfig.getGroupSearchBase());

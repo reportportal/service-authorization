@@ -97,7 +97,7 @@ public class OAuthConfigurationEndpoint {
 	 *
 	 * @return All defined OAuth integration settings
 	 */
-	@RequestMapping(value = "/", method = { GET })
+	@GetMapping
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")

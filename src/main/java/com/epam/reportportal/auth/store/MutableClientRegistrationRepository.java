@@ -1,7 +1,10 @@
 package com.epam.reportportal.auth.store;
 
+import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -25,11 +28,17 @@ public class MutableClientRegistrationRepository implements ClientRegistrationRe
 
 	@Override
 	public ClientRegistration findByRegistrationId(String registrationId) {
-		return this.oAuthRegistrationRepository.findById(registrationId).map(TO_SPRING).orElse(null);
+		return this.oAuthRegistrationRepository.findById(registrationId).map(TO_SPRING).orElseThrow(() -> new ReportPortalException(
+				ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+				Suppliers.formattedSupplier("Client registration with id = {} has not been found.", registrationId).get()
+		));
 	}
 
 	public OAuthRegistration findOAuthRegistrationById(String registrationId) {
-		return this.oAuthRegistrationRepository.findById(registrationId).orElse(null);
+		return this.oAuthRegistrationRepository.findById(registrationId).orElseThrow(() -> new ReportPortalException(
+				ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+				Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", registrationId).get()
+		));
 	}
 
 	public boolean exists(String id) {
@@ -45,7 +54,6 @@ public class MutableClientRegistrationRepository implements ClientRegistrationRe
 	}
 
 	public Collection<OAuthRegistration> findAll() {
-		return StreamSupport.stream(this.oAuthRegistrationRepository.findAll().spliterator(), false)
-				.collect(Collectors.toList());
+		return StreamSupport.stream(this.oAuthRegistrationRepository.findAll().spliterator(), false).collect(Collectors.toList());
 	}
 }

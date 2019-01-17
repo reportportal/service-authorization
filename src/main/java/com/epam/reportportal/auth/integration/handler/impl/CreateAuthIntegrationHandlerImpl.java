@@ -1,5 +1,6 @@
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.builder.ActiveDirectoryBuilder;
 import com.epam.reportportal.auth.integration.builder.LdapBuilder;
 import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
@@ -35,7 +36,8 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 	private final IntegrationTypeRepository integrationTypeRepository;
 
 	@Autowired
-	public CreateAuthIntegrationHandlerImpl(IntegrationRepository integrationRepository, IntegrationTypeRepository integrationTypeRepository) {
+	public CreateAuthIntegrationHandlerImpl(IntegrationRepository integrationRepository,
+			IntegrationTypeRepository integrationTypeRepository) {
 		this.integrationRepository = integrationRepository;
 		this.integrationTypeRepository = integrationTypeRepository;
 	}
@@ -47,9 +49,9 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 					.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION, "Wrong integration group");
 			return new LdapBuilder(lc).addUpdateRq(updateLdapRQ).build();
 		}).orElseGet(() -> {
-			LdapConfig lc = new LdapBuilder().addUpdateRq(updateLdapRQ).build();
-			updateWithAuthIntegrationParameters(lc);
-			return lc;
+			LdapConfig config = new LdapBuilder().addUpdateRq(updateLdapRQ).build();
+			updateWithAuthIntegrationParameters(config);
+			return config;
 		});
 
 		return LdapConverter.TO_RESOURCE.apply(integrationRepository.save(ldapConfig));
@@ -74,7 +76,10 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 
 	private void updateWithAuthIntegrationParameters(Integration integration) {
 
-		IntegrationType integrationType = integrationTypeRepository.findByIntegrationGroup(IntegrationGroupEnum.AUTH)
+		IntegrationType integrationType = integrationTypeRepository.findAllByIntegrationGroup(IntegrationGroupEnum.AUTH)
+				.stream()
+				.filter(it -> AuthIntegrationType.LDAP.name().equalsIgnoreCase(it.getName()))
+				.findAny()
 				.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND,
 						"Authentication integrations haven't been found"
 				));
