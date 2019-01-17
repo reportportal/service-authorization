@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.converter;
+package com.epam.reportportal.auth.integration.converter;
 
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 import java.util.*;
 import java.util.function.Function;
@@ -32,7 +33,7 @@ import static java.util.Optional.ofNullable;
  *
  * @author Anton Machulski
  */
-class OAuthRestrictionConverter {
+public class OAuthRestrictionConverter {
 	public final static Function<OAuthRegistrationResource, List<OAuthRegistrationRestriction>> FROM_RESOURCE = resource -> {
 		List<OAuthRegistrationRestriction> restrictions = organizationsFromResource(resource);
 		return restrictions;
@@ -47,7 +48,7 @@ class OAuthRestrictionConverter {
 	private static List<OAuthRegistrationRestriction> organizationsFromResource(OAuthRegistrationResource resource) {
 		return ofNullable(resource.getRestrictions()).flatMap(restrictions -> ofNullable(restrictions.get("organizations")))
 				.map(it -> Splitter.on(",").omitEmptyStrings().splitToList(it))
-				.orElse(new ArrayList<>())
+				.orElseGet(Lists::newArrayList)
 				.stream()
 				.map(organization -> {
 					OAuthRegistrationRestriction restriction = new OAuthRegistrationRestriction();

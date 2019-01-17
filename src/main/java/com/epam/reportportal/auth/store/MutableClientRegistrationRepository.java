@@ -11,10 +11,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.Optional;
 
-import static com.epam.reportportal.auth.converter.OAuthRegistrationConverters.TO_SPRING;
+import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.TO_SPRING;
 
 @Component("mutableClientRegistrationRepository")
 public class MutableClientRegistrationRepository implements ClientRegistrationRepository {
@@ -34,26 +33,23 @@ public class MutableClientRegistrationRepository implements ClientRegistrationRe
 		));
 	}
 
-	public OAuthRegistration findOAuthRegistrationById(String registrationId) {
-		return this.oAuthRegistrationRepository.findById(registrationId).orElseThrow(() -> new ReportPortalException(
-				ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
-				Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", registrationId).get()
-		));
+	public Optional<OAuthRegistration> findOAuthRegistrationById(String registrationId) {
+		return this.oAuthRegistrationRepository.findById(registrationId);
 	}
 
-	public boolean exists(String id) {
-		return this.oAuthRegistrationRepository.existsById(id);
+	public boolean existsById(String oauthProviderId) {
+		return this.oAuthRegistrationRepository.existsById(oauthProviderId);
 	}
 
 	public OAuthRegistration save(OAuthRegistration registration) {
 		return this.oAuthRegistrationRepository.save(registration);
 	}
 
-	public void delete(String id) {
-		oAuthRegistrationRepository.deleteById(id);
+	public void deleteById(String oauthProviderId) {
+		oAuthRegistrationRepository.deleteById(oauthProviderId);
 	}
 
 	public Collection<OAuthRegistration> findAll() {
-		return StreamSupport.stream(this.oAuthRegistrationRepository.findAll().spliterator(), false).collect(Collectors.toList());
+		return oAuthRegistrationRepository.findAll();
 	}
 }

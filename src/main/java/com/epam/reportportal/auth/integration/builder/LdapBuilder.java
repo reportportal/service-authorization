@@ -1,11 +1,8 @@
 package com.epam.reportportal.auth.integration.builder;
 
-import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.entity.ldap.PasswordEncoderType;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttributesResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
 
@@ -30,11 +27,8 @@ public final class LdapBuilder {
 
 	public LdapBuilder addUpdateRq(UpdateLdapRQ updateLdapRQ) {
 		ldapConfig.setEnabled(updateLdapRQ.getLdapAttributes().getEnabled());
-		ldapConfig.setPasswordEncoderType(PasswordEncoderType.findByType(updateLdapRQ.getPasswordEncoderType())
-				.orElseThrow(() -> new ReportPortalException(
-						ErrorType.BAD_REQUEST_ERROR,
-						Suppliers.formattedSupplier("Unsupported password encoder type - {}", updateLdapRQ.getPasswordEncoderType()).get()
-				)));
+
+		PasswordEncoderType.findByType(updateLdapRQ.getPasswordEncoderType()).ifPresent(ldapConfig::setPasswordEncoderType);
 		ldapConfig.setManagerPassword(updateLdapRQ.getManagerPassword());
 		ldapConfig.setGroupSearchBase(updateLdapRQ.getGroupSearchBase());
 		ldapConfig.setGroupSearchFilter(updateLdapRQ.getGroupSearchFilter());

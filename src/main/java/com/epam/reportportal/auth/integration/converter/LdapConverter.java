@@ -8,6 +8,8 @@ import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttribu
 
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
@@ -19,16 +21,18 @@ public final class LdapConverter {
 
 	public static final Function<? super AbstractLdapIntegration, LdapAttributes> LDAP_ATTRIBUTES_TO_RESOURCE = ldapIntegration -> {
 
-		SynchronizationAttributesResource attributes = new SynchronizationAttributesResource();
-		attributes.setPhoto(ldapIntegration.getSynchronizationAttributes().getPhoto());
-		attributes.setEmail(ldapIntegration.getSynchronizationAttributes().getEmail());
-		attributes.setFullName(ldapIntegration.getSynchronizationAttributes().getFullName());
-
 		LdapAttributes ldapAttributes = new LdapAttributes();
-		ldapAttributes.setSynchronizationAttributes(attributes);
 		ldapAttributes.setBaseDn(ldapIntegration.getBaseDn());
 		ldapAttributes.setEnabled(ldapIntegration.isEnabled());
 		ldapAttributes.setUrl(ldapIntegration.getUrl());
+
+		ofNullable(ldapIntegration.getSynchronizationAttributes()).ifPresent(synchronizationAttributes -> {
+			SynchronizationAttributesResource attributes = new SynchronizationAttributesResource();
+			attributes.setPhoto(synchronizationAttributes.getPhoto());
+			attributes.setEmail(synchronizationAttributes.getEmail());
+			attributes.setFullName(synchronizationAttributes.getFullName());
+			ldapAttributes.setSynchronizationAttributes(attributes);
+		});
 
 		return ldapAttributes;
 	};
@@ -43,7 +47,7 @@ public final class LdapConverter {
 		ldapResource.setManagerDn(ldapConfig.getManagerDn());
 		ldapResource.setManagerPassword(ldapConfig.getManagerPassword());
 		ldapResource.setPasswordAttribute(ldapConfig.getPasswordAttribute());
-		ldapResource.setPasswordEncoderType(ldapConfig.getPasswordEncoderType().name());
+		ofNullable(ldapConfig.getPasswordEncoderType()).ifPresent(type -> ldapResource.setPasswordEncoderType(type.name()));
 		ldapResource.setUserDnPattern(ldapConfig.getUserDnPattern());
 		ldapResource.setUserSearchFilter(ldapConfig.getUserSearchFilter());
 
