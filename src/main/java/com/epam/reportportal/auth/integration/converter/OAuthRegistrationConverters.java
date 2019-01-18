@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.converter;
+package com.epam.reportportal.auth.integration.converter;
 
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;

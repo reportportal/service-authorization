@@ -1,18 +1,23 @@
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
-import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.AbstractLdapResource;
+import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.RESOURCE_KEY_MAPPER;
+import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.TO_RESOURCE;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -23,10 +28,14 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
 
 	private final Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping;
 
+	private final MutableClientRegistrationRepository clientRegistrationRepository;
+
 	@Autowired
 	public GetAuthIntegrationHandlerImpl(@Qualifier(value = "authIntegrationStrategyMapping")
-			Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping) {
+			Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping,
+			MutableClientRegistrationRepository clientRegistrationRepository) {
 		this.authIntegrationStrategyMapping = authIntegrationStrategyMapping;
+		this.clientRegistrationRepository = clientRegistrationRepository;
 	}
 
 	@Override
@@ -35,5 +44,19 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
 				"Unable to find suitable auth integration strategy for type= " + integrationType
 		))
 				.getIntegration();
+	}
+
+	@Override
+	public Map<String, OAuthRegistrationResource> getAllOauthIntegrations() {
+		return clientRegistrationRepository.findAll().stream().map(TO_RESOURCE).collect(RESOURCE_KEY_MAPPER);
+	}
+
+	@Override
+	public OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId) {
+		return clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
+				.map(OAuthRegistrationConverters.TO_RESOURCE)
+				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+						Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", oauthProviderId).get()
+				));
 	}
 }

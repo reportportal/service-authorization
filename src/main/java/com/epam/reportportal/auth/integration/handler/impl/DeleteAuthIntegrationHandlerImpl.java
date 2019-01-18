@@ -1,10 +1,13 @@
 package com.epam.reportportal.auth.integration.handler.impl;
 
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
+import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.enums.IntegrationGroupEnum;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
@@ -21,9 +24,13 @@ public class DeleteAuthIntegrationHandlerImpl implements DeleteAuthIntegrationHa
 
 	private final IntegrationRepository integrationRepository;
 
+	private final MutableClientRegistrationRepository clientRegistrationRepository;
+
 	@Autowired
-	public DeleteAuthIntegrationHandlerImpl(IntegrationRepository integrationRepository) {
+	public DeleteAuthIntegrationHandlerImpl(IntegrationRepository integrationRepository,
+			MutableClientRegistrationRepository clientRegistrationRepository) {
 		this.integrationRepository = integrationRepository;
+		this.clientRegistrationRepository = clientRegistrationRepository;
 	}
 
 	@Override
@@ -38,5 +45,20 @@ public class DeleteAuthIntegrationHandlerImpl implements DeleteAuthIntegrationHa
 
 		return new OperationCompletionRS("Auth integration with id= " + integrationId + " has been successfully removed.");
 
+	}
+
+	@Override
+	public OperationCompletionRS deleteOauthSettingsById(String oauthProviderId) {
+
+		OAuthRegistration oAuthRegistration = clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
+				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+						Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", oauthProviderId).get()
+				));
+
+		clientRegistrationRepository.deleteById(oAuthRegistration.getId());
+
+		return new OperationCompletionRS(Suppliers.formattedSupplier("Oauth settings with id = '{}' have been successfully removed.",
+				oauthProviderId
+		).get());
 	}
 }
