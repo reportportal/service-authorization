@@ -41,7 +41,6 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Andrei Varabyeu
@@ -70,12 +69,8 @@ public class AbstractUserReplicator {
 	 * @return Created project name
 	 */
 	protected Project generatePersonalProject(User user) {
-		Optional<String> projectName = projectRepository.findPersonalProjectName(user.getLogin());
-		if (projectName.isPresent()) {
-			return projectRepository.findByName(projectName.get()).orElseGet(() -> generatePersonalProjectByUser(user));
-		} else {
-			return generatePersonalProjectByUser(user);
-		}
+		return projectRepository.findByName(personalProjectService.getProjectPrefix(user.getLogin()))
+				.orElse(generatePersonalProjectByUser(user));
 	}
 
 	/**

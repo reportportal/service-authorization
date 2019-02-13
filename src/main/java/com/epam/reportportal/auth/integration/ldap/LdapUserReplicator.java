@@ -79,7 +79,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 			ofNullable(attributes.getPhoto()).flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
 					.filter(photo -> photo instanceof byte[])
-					.map(photo -> (byte[]) photo).ifPresent(photo -> newUser.setAttachment(uploadPhoto(login, photo)));
+					.map(photo -> (byte[]) photo)
+					.ifPresent(photo -> newUser.setAttachment(uploadPhoto(login, photo)));
 
 			checkEmail(email);
 			newUser.setEmail(email);
@@ -89,7 +90,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			newUser.setRole(UserRole.USER);
 			newUser.setExpired(false);
 
-			newUser.setDefaultProject(generatePersonalProject(newUser));
+			generatePersonalProject(newUser).getUsers().stream().findFirst().ifPresent(it -> newUser.getProjects().add(it));
 			userRepository.save(newUser);
 
 			return newUser;
