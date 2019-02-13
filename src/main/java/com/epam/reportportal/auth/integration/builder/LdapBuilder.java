@@ -5,6 +5,7 @@ import com.epam.ta.reportportal.entity.ldap.PasswordEncoderType;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttributesResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,8 +28,11 @@ public final class LdapBuilder {
 
 	public LdapBuilder addUpdateRq(UpdateLdapRQ updateLdapRQ) {
 		ldapConfig.setEnabled(updateLdapRQ.getLdapAttributes().getEnabled());
-
-		PasswordEncoderType.findByType(updateLdapRQ.getPasswordEncoderType()).ifPresent(ldapConfig::setPasswordEncoderType);
+		if (StringUtils.isBlank(updateLdapRQ.getPasswordEncoderType())) {
+			ldapConfig.setPasswordEncoderType(null);
+		} else {
+			PasswordEncoderType.findByType(updateLdapRQ.getPasswordEncoderType()).ifPresent(ldapConfig::setPasswordEncoderType);
+		}
 		ldapConfig.setManagerPassword(updateLdapRQ.getManagerPassword());
 		ldapConfig.setGroupSearchBase(updateLdapRQ.getGroupSearchBase());
 		ldapConfig.setGroupSearchFilter(updateLdapRQ.getGroupSearchFilter());
