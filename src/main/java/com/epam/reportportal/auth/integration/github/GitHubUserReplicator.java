@@ -27,6 +27,7 @@ import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.Metadata;
+import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
@@ -155,7 +156,8 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		user.setUserType(UserType.GITHUB);
 		user.setRole(UserRole.USER);
 		user.setExpired(false);
-		generatePersonalProject(user).getUsers().stream().findFirst().ifPresent(it -> user.getProjects().add(it));
+		final Project project = generatePersonalProject(user);
+		user.getProjects().add(project.getUsers().iterator().next());
 	}
 
 	private String uploadAvatar(GitHubClient gitHubClient, String login, Object avatarUrl) {

@@ -25,6 +25,7 @@ import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
+import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
@@ -90,7 +91,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			newUser.setRole(UserRole.USER);
 			newUser.setExpired(false);
 
-			generatePersonalProject(newUser).getUsers().stream().findFirst().ifPresent(it -> newUser.getProjects().add(it));
+			final Project project = generatePersonalProject(newUser);
+			newUser.getProjects().add(project.getUsers().iterator().next());
 			userRepository.save(newUser);
 
 			return newUser;
