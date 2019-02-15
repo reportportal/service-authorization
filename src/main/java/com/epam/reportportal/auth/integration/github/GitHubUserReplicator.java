@@ -20,33 +20,33 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
-
-import com.epam.ta.reportportal.entity.Metadata;
-import com.epam.ta.reportportal.util.PersonalProjectService;
-import com.google.common.collect.Maps;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.BinaryData;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
+import com.epam.ta.reportportal.entity.Metadata;
+import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.filesystem.DataStore;
+import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -156,7 +156,8 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		user.setUserType(UserType.GITHUB);
 		user.setRole(UserRole.USER);
 		user.setExpired(false);
-		user.setDefaultProject(generatePersonalProject(user));
+		final Project project = generatePersonalProject(user);
+		user.getProjects().add(project.getUsers().iterator().next());
 	}
 
 	private String uploadAvatar(GitHubClient gitHubClient, String login, Object avatarUrl) {
