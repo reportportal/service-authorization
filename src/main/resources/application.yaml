@@ -47,3 +47,5 @@ rp:
     port: 5432
     user: rpuser
     pass: rppass
+  jwt:
+    signing-key: 123

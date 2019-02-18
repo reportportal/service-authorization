@@ -21,8 +21,8 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.ReportPortalClient;
-import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.TokenServicesFacade;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableMap;
@@ -32,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @RestController
+@Transactional
 public class SsoEndpoint {
 
 	private final TokenServicesFacade tokenServicesFacade;
@@ -80,6 +82,7 @@ public class SsoEndpoint {
 	@RequestMapping(value = { "/sso/me/apitoken" }, method = RequestMethod.POST)
 	@ApiOperation(value = "Create api token")
 	public OAuth2AccessToken createApiToken(OAuth2Authentication user) {
+		tokenServicesFacade.revokeUserTokens(user.getName(), ReportPortalClient.api);
 		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication());
 	}
 

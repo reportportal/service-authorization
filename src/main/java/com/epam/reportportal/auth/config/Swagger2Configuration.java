@@ -1,6 +1,6 @@
 package com.epam.reportportal.auth.config;
 
-import com.epam.reportportal.auth.ReportPortalUser;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
