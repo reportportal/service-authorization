@@ -5,7 +5,10 @@ import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
+import java.util.stream.Collectors;
+
 import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.FROM_SPRING;
+import static java.util.Optional.ofNullable;
 
 public class OAuthProviderFactory {
 	public static OAuthRegistration fillOAuthRegistration(String oauthProviderId, OAuthRegistration registration) {
@@ -18,7 +21,9 @@ public class OAuthProviderFactory {
 				throw new ReportPortalException("Unsupported OAuth provider.");
 		}
 		OAuthRegistration filledRegistration = FROM_SPRING.apply(springRegistration);
-		filledRegistration.setRestrictions(registration.getRestrictions());
+		ofNullable(registration.getRestrictions()).ifPresent(restrictions -> filledRegistration.setRestrictions(restrictions.stream()
+				.peek(r -> r.setRegistration(filledRegistration))
+				.collect(Collectors.toSet())));
 		return filledRegistration;
 	}
 

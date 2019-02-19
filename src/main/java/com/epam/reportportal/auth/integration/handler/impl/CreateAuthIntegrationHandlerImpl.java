@@ -1,11 +1,11 @@
 package com.epam.reportportal.auth.integration.handler.impl;
 
-import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
-import com.epam.reportportal.auth.integration.converter.OAuthRestrictionConverter;
 import com.epam.reportportal.auth.integration.builder.ActiveDirectoryBuilder;
 import com.epam.reportportal.auth.integration.builder.LdapBuilder;
 import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
 import com.epam.reportportal.auth.integration.converter.LdapConverter;
+import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
+import com.epam.reportportal.auth.integration.converter.OAuthRestrictionConverter;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
@@ -29,9 +29,9 @@ import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.stream.Collectors;
-
 import static com.epam.ta.reportportal.commons.Predicates.equalTo;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -115,7 +115,11 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 		existingRegistration.setRestrictions(OAuthRestrictionConverter.FROM_RESOURCE.apply(clientRegistrationResource)
 				.stream()
 				.peek(restriction -> restriction.setRegistration(existingRegistration))
-				.collect(Collectors.toSet()));
+				.collect(toSet()));
+		ofNullable(clientRegistrationResource.getScopes()).ifPresent(scopes -> existingRegistration.setScopes(scopes.stream()
+				.map(OAuthRegistrationConverters.SCOPE_FROM_RESOURCE)
+				.peek(scope -> scope.setRegistration(existingRegistration))
+				.collect(toSet())));
 		return existingRegistration;
 	}
 }
