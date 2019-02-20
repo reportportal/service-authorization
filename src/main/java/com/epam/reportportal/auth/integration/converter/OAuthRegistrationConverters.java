@@ -26,7 +26,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -47,6 +49,12 @@ public class OAuthRegistrationConverters {
 			r -> r
 	);
 
+	public static final Function<String, OAuthRegistrationScope> SCOPE_FROM_RESOURCE = s -> {
+		OAuthRegistrationScope oAuthRegistrationScope = new OAuthRegistrationScope();
+		oAuthRegistrationScope.setScope(s);
+		return oAuthRegistrationScope;
+	};
+
 	public final static Function<OAuthRegistrationResource, OAuthRegistration> FROM_RESOURCE = resource -> {
 		Preconditions.checkNotNull(resource);
 		OAuthRegistration db = new OAuthRegistration();
@@ -62,12 +70,10 @@ public class OAuthRegistrationConverters {
 		db.setUserInfoEndpointNameAttribute(resource.getUserInfoEndpointNameAttribute());
 		db.setJwkSetUri(resource.getJwkSetUri());
 		db.setClientName(resource.getClientName());
-		db.setScopes(ofNullable(resource.getScopes()).orElse(Collections.emptySet()).stream().map(scopeStr -> {
-			OAuthRegistrationScope scope = new OAuthRegistrationScope();
-			scope.setRegistration(db);
-			scope.setScope(scopeStr);
-			return scope;
-		}).collect(Collectors.toSet()));
+		db.setScopes(ofNullable(resource.getScopes()).map(scopes -> scopes.stream()
+				.map(SCOPE_FROM_RESOURCE)
+				.peek(scope -> scope.setRegistration(db))
+				.collect(Collectors.toSet())).orElse(Collections.emptySet()));
 		List<OAuthRegistrationRestriction> restrictions = OAuthRestrictionConverter.FROM_RESOURCE.apply(resource);
 		db.setRestrictions(restrictions.stream().peek(restriction -> restriction.setRegistration(db)).collect(Collectors.toSet()));
 		return db;
@@ -88,8 +94,10 @@ public class OAuthRegistrationConverters {
 		resource.setUserInfoEndpointNameAttribute(db.getUserInfoEndpointNameAttribute());
 		resource.setJwkSetUri(db.getJwkSetUri());
 		resource.setClientName(db.getClientName());
-		resource.setScopes(db.getScopes().stream().map(OAuthRegistrationScope::getScope).collect(Collectors.toSet()));
-		resource.setRestrictions(OAuthRestrictionConverter.TO_RESOURCE.apply(db));
+		ofNullable(db.getScopes()).ifPresent(scopes -> resource.setScopes(scopes.stream()
+				.map(OAuthRegistrationScope::getScope)
+				.collect(Collectors.toSet())));
+		ofNullable(db.getRestrictions()).ifPresent(r -> resource.setRestrictions(OAuthRestrictionConverter.TO_RESOURCE.apply(db)));
 		return resource;
 	};
 
