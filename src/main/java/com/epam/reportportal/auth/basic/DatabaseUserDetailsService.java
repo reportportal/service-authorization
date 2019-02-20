@@ -20,8 +20,8 @@
  */
 package com.epam.reportportal.auth.basic;
 
-import com.epam.reportportal.auth.ReportPortalUser;
 import com.epam.reportportal.auth.util.AuthUtils;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserType;
@@ -67,16 +67,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 				AuthUtils.AS_AUTHORITIES.apply(user.get().getRole())
 		);
 
-		return new ReportPortalUser(
-				u,
-				user.get().getId(),
-				user.get().getRole(),
-				user.get()
-						.getProjects()
-						.stream()
-						.collect(Collectors.toMap(p -> p.getProject().getName(),
-								p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getProjectRole())
-						))
-		);
+		return new ReportPortalUser(u, user.get().getId(), user.get().getRole(), user.get().getProjects().stream().collect(Collectors.toMap(
+				p -> p.getProject().getName(),
+				p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getProject().getName(), p.getProjectRole())
+		)), user.get().getEmail());
 	}
 }

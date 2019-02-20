@@ -23,13 +23,15 @@ package com.epam.reportportal.auth;
 //import org.springframework.security.oauth2.provider.*;
 //import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 
+import com.epam.ta.reportportal.dao.OAuth2AccessTokenRepository;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.stereotype.Service;
 
@@ -49,16 +51,20 @@ public class TokenServicesFacade {
 	private final DefaultTokenServices tokenServices;
 	private final OAuth2RequestFactory oAuth2RequestFactory;
 	private final ClientDetailsService clientDetailsService;
+	private final OAuth2AccessTokenRepository tokenRepository;
 
 	@Autowired
-	public TokenServicesFacade(AuthorizationServerTokenServices tokenServices, ClientDetailsService clientDetailsService) {
-		this.tokenServices = (DefaultTokenServices) tokenServices;
+	public TokenServicesFacade(@Qualifier(value = "databaseTokenServices") DefaultTokenServices tokenServices,
+			ClientDetailsService clientDetailsService, OAuth2AccessTokenRepository tokenRepository) {
+		this.tokenServices = tokenServices;
 		this.clientDetailsService = clientDetailsService;
 		this.oAuth2RequestFactory = new DefaultOAuth2RequestFactory(clientDetailsService);
+		this.tokenRepository = tokenRepository;
 	}
 
 	public Stream<OAuth2AccessToken> getTokens(String username, ReportPortalClient client) {
-		return Stream.empty();
+		return tokenRepository.findByClientIdAndUserName(client.name(), username)
+				.map(token -> SerializationUtils.deserialize(token.getToken()));
 	}
 
 	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication) {
@@ -82,5 +88,9 @@ public class TokenServicesFacade {
 
 	public OAuth2AccessToken getAccessToken(Authentication userAuthentication) {
 		return tokenServices.getAccessToken((OAuth2Authentication) userAuthentication);
+	}
+
+	public void revokeUserTokens(String user, ReportPortalClient client) {
+		this.tokenRepository.findByClientIdAndUserName(client.name(), user).forEach(token -> tokenServices.revokeToken(token.getTokenId()));
 	}
 }
