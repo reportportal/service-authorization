@@ -14,9 +14,12 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 /**
+ * Implementation of custom token store. It is used to store unexpired api token
+ * in the database. It is a dirty hack to use it with test frameworks.
+ * It just stores an {@link AccessTokenStore} and retrieves it from db.
+ *
  * @author <a href="mailto:pavel_bortnik@epam.com">Pavel Bortnik</a>
  */
 @Component(value = "accessTokenStore")
@@ -26,16 +29,6 @@ public class AccessTokenStore implements TokenStore {
 	private OAuth2AccessTokenRepository oAuth2AccessTokenRepository;
 
 	private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
-
-	@Override
-	public OAuth2Authentication readAuthentication(OAuth2AccessToken token) {
-		return null;
-	}
-
-	@Override
-	public OAuth2Authentication readAuthentication(String token) {
-		return null;
-	}
 
 	@Override
 	public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
@@ -69,51 +62,52 @@ public class AccessTokenStore implements TokenStore {
 	}
 
 	@Override
+	public OAuth2Authentication readAuthentication(OAuth2AccessToken token) {
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
+	}
+
+	@Override
+	public OAuth2Authentication readAuthentication(String token) {
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
+	}
+
+	@Override
 	public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
-		//not used
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public OAuth2RefreshToken readRefreshToken(String tokenValue) {
-		//not used
-		return null;
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
-		//not used
-		return null;
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public void removeRefreshToken(OAuth2RefreshToken token) {
-		//not used
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public void removeAccessTokenUsingRefreshToken(OAuth2RefreshToken refreshToken) {
-		oAuth2AccessTokenRepository.delete(oAuth2AccessTokenRepository.findByRefreshToken(refreshToken.getValue()));
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
-		StoredAccessToken token = oAuth2AccessTokenRepository.findByAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
-		return token == null ? null : SerializationUtils.deserialize(token.getToken());
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public Collection<OAuth2AccessToken> findTokensByClientId(String clientId) {
-		return oAuth2AccessTokenRepository.findByClientId(clientId).map(this::extractAccessToken).collect(Collectors.toList());
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 
 	@Override
 	public Collection<OAuth2AccessToken> findTokensByClientIdAndUserName(String clientId, String userName) {
-		return oAuth2AccessTokenRepository.findByClientIdAndUserName(clientId, userName)
-				.map(this::extractAccessToken)
-				.collect(Collectors.toList());
-	}
-
-	private OAuth2AccessToken extractAccessToken(StoredAccessToken token) {
-		return (OAuth2AccessToken) SerializationUtils.deserialize(token.getToken());
+		throw new UnsupportedOperationException("Access token store doesn't use this.");
 	}
 }
