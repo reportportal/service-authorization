@@ -98,7 +98,8 @@ public class AccessTokenStore implements TokenStore {
 
 	@Override
 	public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
-		throw new UnsupportedOperationException("Access token store doesn't use this.");
+		StoredAccessToken token = oAuth2AccessTokenRepository.findByAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
+		return token == null ? null : SerializationUtils.deserialize(token.getToken());
 	}
 
 	@Override
