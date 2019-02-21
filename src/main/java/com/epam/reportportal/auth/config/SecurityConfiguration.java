@@ -42,6 +42,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
@@ -265,9 +266,11 @@ public class SecurityConfiguration {
 		}
 
 		@Bean(value = "databaseTokenServices")
-		public DefaultTokenServices databaseTokenServices(@Autowired AccessTokenStore accessTokenStore) {
+		public DefaultTokenServices databaseTokenServices(@Autowired AccessTokenStore accessTokenStore,
+				@Autowired ClientDetailsService clientDetailsService) {
 			DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
 			defaultTokenServices.setTokenStore(accessTokenStore);
+			defaultTokenServices.setClientDetailsService(clientDetailsService);
 			defaultTokenServices.setSupportRefreshToken(false);
 			defaultTokenServices.setAuthenticationManager(authenticationManager);
 			return defaultTokenServices;
