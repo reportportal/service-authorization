@@ -40,7 +40,6 @@ RUN tar -C . -xzf telegraf-1.8.3-static_linux_amd64.tar.gz && \
         cp telegraf/telegraf /usr/bin/ && \
         rm -rf *.tar.gz* telegraf/
 COPY docker/telegraf.conf /etc/telegraf/telegraf.conf
-COPY docker/jolokia.conf /opt
 
 
 RUN echo $'#!/bin/sh \n\
