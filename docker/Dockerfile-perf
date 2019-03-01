@@ -27,7 +27,7 @@ RUN apk update \
   && rm -rf /var/lib/apt/lists/*
 
 # Installing Java Jolokia
-RUN  mkdir /opt/java && cd /opt/java \
+RUN mkdir -p /opt/java && cd /opt/java \
  && wget -O jolokia-jvm-1.6.0-agent.jar \
  http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/1.6.0/jolokia-jvm-1.6.0-agent.jar
 
