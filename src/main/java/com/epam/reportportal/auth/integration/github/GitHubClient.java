@@ -35,6 +35,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Simple GitHub client
  *
@@ -44,7 +46,7 @@ public class GitHubClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHubClient.class);
 
-    private static final String GITHUB_BASE_URL = "https://api.github.com";
+    private static final String GITHUB_BASE_URL = ofNullable(System.getenv("GITHUB_API_URL")).orElse("https://api.github.com");
 
     private final RestTemplate restTemplate;
 

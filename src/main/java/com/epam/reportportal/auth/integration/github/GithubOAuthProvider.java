@@ -56,10 +56,12 @@ public class GithubOAuthProvider extends com.epam.reportportal.auth.oauth.OAuthP
     public void applyDefaults(OAuth2LoginDetails details) {
         details.setScope(ofNullable(details.getScope()).orElse(Arrays.asList("read:user", "user:email")));
         details.setGrantType(ofNullable(details.getGrantType()).orElse("authorization_code"));
+        final String tokeUrl = ofNullable(System.getenv("GITHUB_ACCESS_TOKEN_URL")).orElse(details.getAccessTokenUri());
+        final String oauthUrl = ofNullable(System.getenv("GITHUB_OAUTH_URL")).orElse(details.getUserAuthorizationUri());
         details.setAccessTokenUri(
-                ofNullable(details.getAccessTokenUri()).orElse("https://github.com/login/oauth/access_token"));
+                ofNullable(tokeUrl).orElse("https://github.com/login/oauth/access_token"));
         details.setUserAuthorizationUri(
-                ofNullable(details.getUserAuthorizationUri()).orElse("https://github.com/login/oauth/authorize"));
+                ofNullable(oauthUrl).orElse("https://github.com/login/oauth/authorize"));
         details.setClientAuthenticationScheme(ofNullable(details.getClientAuthenticationScheme()).orElse("form"));
     }
 
