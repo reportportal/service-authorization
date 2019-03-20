@@ -48,15 +48,17 @@ import java.util.stream.Stream;
 @Service
 public class TokenServicesFacade {
 
-	private final DefaultTokenServices tokenServices;
+	private final DefaultTokenServices databaseTokenServices;
+	private final DefaultTokenServices jwtTokenServices;
 	private final OAuth2RequestFactory oAuth2RequestFactory;
 	private final ClientDetailsService clientDetailsService;
 	private final OAuth2AccessTokenRepository tokenRepository;
 
 	@Autowired
-	public TokenServicesFacade(@Qualifier(value = "databaseTokenServices") DefaultTokenServices tokenServices,
-			ClientDetailsService clientDetailsService, OAuth2AccessTokenRepository tokenRepository) {
-		this.tokenServices = tokenServices;
+	public TokenServicesFacade(@Qualifier(value = "databaseTokenServices") DefaultTokenServices databaseTokenServices,
+			DefaultTokenServices jwtTokenServices, ClientDetailsService clientDetailsService, OAuth2AccessTokenRepository tokenRepository) {
+		this.databaseTokenServices = databaseTokenServices;
+		this.jwtTokenServices = jwtTokenServices;
 		this.clientDetailsService = clientDetailsService;
 		this.oAuth2RequestFactory = new DefaultOAuth2RequestFactory(clientDetailsService);
 		this.tokenRepository = tokenRepository;
@@ -67,12 +69,37 @@ public class TokenServicesFacade {
 				.map(token -> SerializationUtils.deserialize(token.getToken()));
 	}
 
-	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication) {
-		return createToken(client, username, userAuthentication, Collections.emptyMap());
+	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication, boolean isApi) {
+		if (isApi) {
+			return createApiToken(client, username, userAuthentication, Collections.emptyMap());
+		} else {
+			return createNonApiToken(client, username, userAuthentication, Collections.emptyMap());
+		}
+
 	}
 
-	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication,
+	public OAuth2AccessToken createApiToken(ReportPortalClient client, String username, Authentication userAuthentication,
 			Map<String, Serializable> extensionParams) {
+		OAuth2Request oAuth2Request = createOAuth2Request(client, username, extensionParams);
+		return databaseTokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
+	}
+
+	public OAuth2AccessToken createNonApiToken(ReportPortalClient client, String username, Authentication userAuthentication,
+			Map<String, Serializable> extensionParams) {
+		OAuth2Request oAuth2Request = createOAuth2Request(client, username, extensionParams);
+		return jwtTokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
+	}
+
+	public OAuth2AccessToken getAccessToken(Authentication userAuthentication) {
+		return databaseTokenServices.getAccessToken((OAuth2Authentication) userAuthentication);
+	}
+
+	public void revokeUserTokens(String user, ReportPortalClient client) {
+		this.tokenRepository.findByClientIdAndUserName(client.name(), user)
+				.forEach(token -> databaseTokenServices.revokeToken(token.getTokenId()));
+	}
+
+	private OAuth2Request createOAuth2Request(ReportPortalClient client, String username, Map<String, Serializable> extensionParams) {
 		//@formatter:off
 		ClientDetails clientDetails = clientDetailsService.loadClientByClientId(client.name());
 		OAuth2Request oAuth2Request = oAuth2RequestFactory.createOAuth2Request(clientDetails, oAuth2RequestFactory.createTokenRequest(
@@ -83,14 +110,6 @@ public class TokenServicesFacade {
 						.build(), clientDetails));
 		oAuth2Request.getExtensions().putAll(extensionParams);
 		//@formatter:on
-		return tokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
-	}
-
-	public OAuth2AccessToken getAccessToken(Authentication userAuthentication) {
-		return tokenServices.getAccessToken((OAuth2Authentication) userAuthentication);
-	}
-
-	public void revokeUserTokens(String user, ReportPortalClient client) {
-		this.tokenRepository.findByClientIdAndUserName(client.name(), user).forEach(token -> tokenServices.revokeToken(token.getTokenId()));
+		return oAuth2Request;
 	}
 }
