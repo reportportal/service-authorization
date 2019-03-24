@@ -50,15 +50,17 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 
     private final GitHubUserReplicator replicator;
     private final Supplier<OAuth2LoginDetails> loginDetails;
+    private final String githubBaseUrl;
 
-    public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor, Supplier<OAuth2LoginDetails> loginDetails) {
+    public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor, Supplier<OAuth2LoginDetails> loginDetails, String githubBaseUrl) {
         this.replicator = replicatingPrincipalExtractor;
         this.loginDetails = loginDetails;
+        this.githubBaseUrl = githubBaseUrl;
     }
 
     @Override
     public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException, InvalidTokenException {
-        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken, this.githubBaseUrl);
         UserResource gitHubUser = gitHubClient.getUser();
 
         List<String> allowedOrganizations = ofNullable(loginDetails.get().getRestrictions())

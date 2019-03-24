@@ -22,6 +22,7 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.AuthConfigService;
 import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -44,30 +45,38 @@ public class GithubOAuthProvider extends com.epam.reportportal.auth.oauth.OAuthP
 
     private final GitHubUserReplicator githubReplicator;
     private final AuthConfigService authConfigService;
+    private final String tokenUrl;
+    private final String authUrl;
+    private final String githubBaseUrl;
 
     public GithubOAuthProvider(GitHubUserReplicator githubReplicator,
-                               AuthConfigService authConfigService) {
+                               AuthConfigService authConfigService,
+                               @Value("${rp.auth.github.tokenUrl:https://github.com/login/oauth/access_token}") String tokenUrl,
+                               @Value("${rp.auth.github.authUrl:https://github.com/login/oauth/authorize}") String authUrl,
+                               @Value("${rp.auth.github.apiUrl:https://api.github.com}") String githubBaseUrl) {
         super("github", BUTTON, true);
         this.githubReplicator = githubReplicator;
         this.authConfigService = authConfigService;
+        this.tokenUrl = tokenUrl;
+        this.authUrl = authUrl;
+        this.githubBaseUrl = githubBaseUrl;
     }
 
     @Override
     public void applyDefaults(OAuth2LoginDetails details) {
         details.setScope(ofNullable(details.getScope()).orElse(Arrays.asList("read:user", "user:email")));
         details.setGrantType(ofNullable(details.getGrantType()).orElse("authorization_code"));
-        final String tokeUrl = ofNullable(System.getenv("GITHUB_ACCESS_TOKEN_URL")).orElse(details.getAccessTokenUri());
-        final String oauthUrl = ofNullable(System.getenv("GITHUB_OAUTH_URL")).orElse(details.getUserAuthorizationUri());
+
         details.setAccessTokenUri(
-                ofNullable(tokeUrl).orElse("https://github.com/login/oauth/access_token"));
+                ofNullable(details.getAccessTokenUri()).orElse(this.tokenUrl));
         details.setUserAuthorizationUri(
-                ofNullable(oauthUrl).orElse("https://github.com/login/oauth/authorize"));
+                ofNullable(details.getUserAuthorizationUri()).orElse(this.authUrl));
         details.setClientAuthenticationScheme(ofNullable(details.getClientAuthenticationScheme()).orElse("form"));
     }
 
     @Override
     public ResourceServerTokenServices getTokenServices() {
-        return new GitHubTokenServices(githubReplicator, authConfigService.getLoginDetailsSupplier(getName()));
+        return new GitHubTokenServices(githubReplicator, authConfigService.getLoginDetailsSupplier(getName()), this.githubBaseUrl);
     }
 
     @Override

@@ -35,23 +35,22 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
-
 /**
  * Simple GitHub client
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
+
 public class GitHubClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHubClient.class);
 
-    private static final String GITHUB_BASE_URL = ofNullable(System.getenv("GITHUB_API_URL")).orElse("https://api.github.com");
+    private final String githubBaseUrl;
 
     private final RestTemplate restTemplate;
 
 
-    private GitHubClient(String accessToken) {
+    private GitHubClient(String accessToken, String githubBaseUrl) {
         this.restTemplate = new RestTemplate();
         this.restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
             @Override
@@ -65,23 +64,24 @@ public class GitHubClient {
             request.getHeaders().add("Authorization", "bearer " + accessToken);
             return execution.execute(request, body);
         });
+        this.githubBaseUrl=githubBaseUrl;
     }
 
-    public static GitHubClient withAccessToken(String accessToken) {
-        return new GitHubClient(accessToken);
+    public static GitHubClient withAccessToken(String accessToken, String githubBaseUrl) {
+        return new GitHubClient(accessToken, githubBaseUrl);
     }
 
     public UserResource getUser() {
-        return this.restTemplate.getForObject(GITHUB_BASE_URL + "/user", UserResource.class);
+        return this.restTemplate.getForObject(this.githubBaseUrl + "/user", UserResource.class);
     }
 
     public List<EmailResource> getUserEmails() {
-        return getForObject(GITHUB_BASE_URL + "/user/emails", new ParameterizedTypeReference<List<EmailResource>>() {
+        return getForObject(this.githubBaseUrl + "/user/emails", new ParameterizedTypeReference<List<EmailResource>>() {
         });
     }
 
     public List<OrganizationResource> getUserOrganizations(String user) {
-        return getForObject(GITHUB_BASE_URL + "/users/{}/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
+        return getForObject(this.githubBaseUrl + "/users/{}/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
         }, user);
     }
 
