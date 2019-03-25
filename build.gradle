@@ -83,6 +83,7 @@ dependencies {
     compile 'org.springframework.security:spring-security-jwt'
     compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
 
+
 //    compile 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 
     //https://github.com/spring-projects/spring-security-oauth/issues/706
