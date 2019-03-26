@@ -54,7 +54,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -179,7 +179,7 @@ public class SecurityConfiguration {
         additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
         authCompositeFilter.setFilters(additionalFilters);
 
-        http.addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
+        http.addFilterAfter(authCompositeFilter, LogoutFilter.class);
         //@formatter:on
 		}
 
@@ -201,7 +201,9 @@ public class SecurityConfiguration {
 
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicPasswordAuthProvider()).authenticationProvider(activeDirectoryAuthProvider()).authenticationProvider(ldapAuthProvider());
+			auth.authenticationProvider(basicPasswordAuthProvider())
+					.authenticationProvider(activeDirectoryAuthProvider())
+					.authenticationProvider(ldapAuthProvider());
 		}
 
 		@Bean
