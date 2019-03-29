@@ -25,6 +25,7 @@ import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.filesystem.DataEncoder;
 import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.google.common.collect.Maps;
@@ -56,13 +57,15 @@ public class AbstractUserReplicator {
 	protected final ProjectRepository projectRepository;
 	protected final PersonalProjectService personalProjectService;
 	protected final DataStore dataStorage;
+	protected final DataEncoder encoder;
 
 	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage) {
+			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.personalProjectService = personalProjectService;
 		this.dataStorage = dataStorage;
+		this.encoder = encoder;
 	}
 
 	/**
@@ -122,7 +125,7 @@ public class AbstractUserReplicator {
 	}
 
 	protected String uploadPhoto(String login, BinaryData data) {
-		return dataStorage.save(login, data.getInputStream());
+		return encoder.encode(dataStorage.save(login, data.getInputStream()));
 	}
 
 	private String resolveContentType(byte[] data) {
