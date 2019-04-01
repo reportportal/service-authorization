@@ -74,7 +74,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 				.orElseThrow(() -> new ReportPortalException(ErrorType.ACCESS_DENIED,
 						Suppliers.formattedSupplier("Attribute - {} was not provided.", LOGIN_ATTRIBUTE).get()
 				));
-		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, login, oauth, false);
+		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, login, oauth);
 
 		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
 		query.add("token", accessToken.getValue());

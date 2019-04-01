@@ -83,7 +83,7 @@ public class SsoEndpoint {
 	@ApiOperation(value = "Create api token")
 	public OAuth2AccessToken createApiToken(OAuth2Authentication user) {
 		tokenServicesFacade.revokeUserTokens(user.getName(), ReportPortalClient.api);
-		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication(), true);
+		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication());
 	}
 
 }

@@ -69,8 +69,8 @@ public class TokenServicesFacade {
 				.map(token -> SerializationUtils.deserialize(token.getToken()));
 	}
 
-	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication, boolean isApi) {
-		if (isApi) {
+	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication) {
+		if (client == ReportPortalClient.api) {
 			return createApiToken(client, username, userAuthentication, Collections.emptyMap());
 		} else {
 			return createNonApiToken(client, username, userAuthentication, Collections.emptyMap());
