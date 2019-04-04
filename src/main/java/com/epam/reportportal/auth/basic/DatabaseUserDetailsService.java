@@ -1,22 +1,17 @@
 /*
- * Copyright 2016 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth.basic;
 
@@ -24,20 +19,19 @@ import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.entity.user.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static java.util.Optional.ofNullable;
 
 /**
- * Spring's {@link UserDetailsService} implementation. Uses {@link Users} entity
+ * Spring's {@link UserDetailsService} implementation. Uses {@link User} entity
  * from ReportPortal database
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
@@ -50,26 +44,32 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Optional<User> user = userRepository.findByLogin(normalizeId(username));
-		if (!user.isPresent() || UserType.INTERNAL != user.get().getUserType()) {
-			throw new UsernameNotFoundException("User not found");
-		}
+		User user = userRepository.findByLogin(normalizeId(username))
+				.orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found."));
 
-		String login = user.get().getLogin();
-		String password = user.get().getPassword() == null ? "" : user.get().getPassword();
+		String login = user.getLogin();
+		String password = ofNullable(user.getPassword()).orElse("");
 
-		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(login,
+		org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(login,
 				password,
 				true,
 				true,
 				true,
-				true,
-				AuthUtils.AS_AUTHORITIES.apply(user.get().getRole())
+				true, AuthUtils.AS_AUTHORITIES.apply(user.getRole())
 		);
 
-		return new ReportPortalUser(u, user.get().getId(), user.get().getRole(), user.get().getProjects().stream().collect(Collectors.toMap(
-				p -> p.getProject().getName(),
-				p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getProject().getName(), p.getProjectRole())
-		)), user.get().getEmail());
+		return new ReportPortalUser(userDetails,
+				user.getId(),
+				user.getRole(),
+				user.getProjects()
+						.stream()
+						.collect(Collectors.toMap(projectUser -> projectUser.getProject().getName(),
+								projectUser -> new ReportPortalUser.ProjectDetails(projectUser.getProject().getId(),
+										projectUser.getProject().getName(),
+										projectUser.getProjectRole()
+								)
+						)),
+				user.getEmail()
+		);
 	}
 }
