@@ -21,6 +21,9 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
+import com.epam.ta.reportportal.commons.validation.Suppliers;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -39,6 +42,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Success handler for external oauth. Generates internal token for authenticated user to be used on UI/Agents side
  *
@@ -46,6 +51,8 @@ import java.net.URI;
  */
 @Component
 public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+	private static final String LOGIN_ATTRIBUTE = "login";
 
 	/*
 	 * Internal token services facade
@@ -63,14 +70,19 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	@Override
 	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 		OAuth2AuthenticationToken oauth = (OAuth2AuthenticationToken) authentication;
-		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, oauth.getName(), oauth);
+		String login = ofNullable(oauth.getPrincipal().getAttributes().get(LOGIN_ATTRIBUTE)).map(String::valueOf)
+				.orElseThrow(() -> new ReportPortalException(ErrorType.ACCESS_DENIED,
+						Suppliers.formattedSupplier("Attribute - {} was not provided.", LOGIN_ATTRIBUTE).get()
+				));
+		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, login, oauth);
 
 		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
 		query.add("token", accessToken.getValue());
 		query.add("token_type", accessToken.getTokenType());
 		//TODO replace hard-coded port with custom value
-		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request)).port(8080)
-				.replacePath("/ui/authSuccess.html")
+		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+				.port(8080)
+				.replacePath("/ui/auth_success")
 				.replaceQueryParams(query)
 				.build()
 				.toUri();

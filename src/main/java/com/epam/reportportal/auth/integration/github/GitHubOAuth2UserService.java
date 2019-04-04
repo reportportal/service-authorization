@@ -16,11 +16,6 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;
 import com.epam.ta.reportportal.exception.ReportPortalException;
@@ -35,6 +30,11 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link OAuth2UserService}. Very similar to {@link DefaultOAuth2UserService},
