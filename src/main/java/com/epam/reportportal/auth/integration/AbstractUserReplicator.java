@@ -25,8 +25,10 @@ import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.filesystem.DataEncoder;
 import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.google.common.collect.Maps;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -37,10 +39,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.ZonedDateTime;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Andrei Varabyeu
@@ -53,13 +57,15 @@ public class AbstractUserReplicator {
 	protected final ProjectRepository projectRepository;
 	protected final PersonalProjectService personalProjectService;
 	protected final DataStore dataStorage;
+	protected final DataEncoder encoder;
 
 	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage) {
+			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.personalProjectService = personalProjectService;
 		this.dataStorage = dataStorage;
+		this.encoder = encoder;
 	}
 
 	/**
@@ -80,10 +86,22 @@ public class AbstractUserReplicator {
 	 */
 	protected com.epam.ta.reportportal.entity.Metadata defaultMetaData() {
 		Map<String, Object> metaDataMap = new HashMap<>();
-		Date now = Date.from(ZonedDateTime.now().toInstant());
-		metaDataMap.put("last login", now);
-		metaDataMap.put("synchronization date", now);
+		long nowInMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
+		metaDataMap.put("lastLogin", nowInMillis);
+		metaDataMap.put("synchronizationDate", nowInMillis);
 		return new com.epam.ta.reportportal.entity.Metadata(metaDataMap);
+	}
+
+	/**
+	 * Updates last syncronization data for specified user
+	 *
+	 * @param user User to be synchronized
+	 */
+	protected void updateSynchronizationDate(User user) {
+		com.epam.ta.reportportal.entity.Metadata metadata = ofNullable(user.getMetadata()).orElse(new com.epam.ta.reportportal.entity.Metadata(
+				Maps.newHashMap()));
+		metadata.getMetadata().put("synchronizationDate", LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli());
+		user.setMetadata(metadata);
 	}
 
 	/**
@@ -107,7 +125,7 @@ public class AbstractUserReplicator {
 	}
 
 	protected String uploadPhoto(String login, BinaryData data) {
-		return dataStorage.save(login, data.getInputStream());
+		return encoder.encode(dataStorage.save(login, data.getInputStream()));
 	}
 
 	private String resolveContentType(byte[] data) {

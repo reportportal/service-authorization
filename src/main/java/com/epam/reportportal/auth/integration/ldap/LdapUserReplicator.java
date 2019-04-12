@@ -29,6 +29,7 @@ import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
+import com.epam.ta.reportportal.filesystem.DataEncoder;
 import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
 	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage);
+			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
+		super(userRepository, projectRepository, personalProjectService, dataStorage, encoder);
 	}
 
 	/**

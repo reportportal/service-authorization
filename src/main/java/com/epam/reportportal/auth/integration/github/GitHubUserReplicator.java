@@ -31,6 +31,7 @@ import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
+import com.epam.ta.reportportal.filesystem.DataEncoder;
 import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
@@ -61,9 +62,9 @@ import static java.util.Optional.ofNullable;
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
-	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStore dataStorage,
-			PersonalProjectService personalProjectService) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage);
+	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
+			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
+		super(userRepository, projectRepository, personalProjectService, dataStorage, encoder);
 	}
 
 	public User synchronizeUser(String accessToken) {

@@ -21,6 +21,10 @@
 package com.epam.reportportal.auth.oauth;
 
 import com.google.common.base.Preconditions;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestOperations;
+import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,12 +60,12 @@ abstract public class OAuthProvider {
 	 *
 	 * @param details OAuth configuration
 	 */
-//	public void applyDefaults(ClientDetails details) {
-//	}
-//
-//	abstract public ResourceServerTokenServices getTokenServices();
-//
-//	abstract public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext context);
+	public void applyDefaults(ClientDetails details) {
+	}
+
+	abstract public ResourceServerTokenServices getTokenServices();
+
+	abstract public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext context);
 
 	public String getName() {
 		return name;

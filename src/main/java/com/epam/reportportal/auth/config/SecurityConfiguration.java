@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 EPAM Systems
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.epam.reportportal.auth.config;
 
 import com.drew.lang.Charsets;
@@ -11,17 +27,23 @@ import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.oauth.AccessTokenStore;
+import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -30,15 +52,16 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.*;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -49,21 +72,35 @@ import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticat
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.web.filter.CompositeFilter;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 @Configuration
 public class SecurityConfiguration {
 
+	@Bean
+	@ConditionalOnProperty(name = "rp.auth.server", havingValue = "default")
+	public List<OAuthProvider> authProviders() {
+		return Collections.emptyList();
+	}
+
+	@EnableOAuth2Client
 	@Configuration
+	@Conditional(GlobalWebSecurityConfig.HasExtensionsCondition.class)
 	@Order(4)
 	public static class GlobalWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		public static final String SSO_LOGIN_PATH = "/sso/login";
+
+		@Autowired
+		private OAuth2ClientContext oauth2ClientContext;
 
 		@Autowired
 		private OAuthSuccessHandler successHandler;
@@ -73,6 +110,65 @@ public class SecurityConfiguration {
 
 		@Autowired
 		private LdapUserReplicator ldapUserReplicator;
+
+		@Autowired
+		private List<OAuthProvider> authProviders;
+
+		private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
+			return authProviders.stream().map(provider -> {
+				OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(provider.buildPath(
+						SSO_LOGIN_PATH));
+				filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
+				filter.setTokenServices(provider.getTokenServices());
+				filter.setAuthenticationSuccessHandler(successHandler);
+				return filter;
+			}).collect(Collectors.toList());
+		}
+
+		protected List<OAuth2ClientAuthenticationProcessingFilter> getAdditionalFilters(OAuth2ClientContext oauth2ClientContext) {
+			return Collections.emptyList();
+		}
+
+		private static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
+			response.sendRedirect(UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+					.replacePath("ui/#login")
+					.replaceQuery("errorAuth=" + exception.getMessage())
+					.build()
+					.toUriString());
+		};
+
+		/**
+		 * Condition. Load this config is there are no subclasses in the application context
+		 */
+		protected static class HasExtensionsCondition extends SpringBootCondition {
+
+			@Override
+			public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+				String[] enablers = context.getBeanFactory().getBeanNamesForAnnotation(EnableOAuth2Client.class);
+				boolean extensions = Arrays.stream(enablers)
+						.filter(name -> !context.getBeanFactory().getType(name).equals(GlobalWebSecurityConfig.class))
+						.anyMatch(name -> context.getBeanFactory().isTypeMatch(name, GlobalWebSecurityConfig.class));
+				if (extensions) {
+					return ConditionOutcome.noMatch("found @EnableOAuth2Client on a OAuthSecurityConfig subclass");
+				} else {
+					return ConditionOutcome.match("found no @EnableOAuth2Client on a OAuthSecurityConfig subsclass");
+				}
+
+			}
+		}
+
+		@Bean
+		Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
+			return providers.stream().collect(Collectors.toMap(OAuthProvider::getName, p -> p));
+		}
+
+		@Bean
+		FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
+			FilterRegistrationBean registration = new FilterRegistrationBean();
+			registration.setFilter(filter);
+			registration.setOrder(-100);
+			return registration;
+		}
 
 		@Override
 		protected final void configure(HttpSecurity http) throws Exception {
@@ -101,6 +197,17 @@ public class SecurityConfiguration {
 						.userService(oauth2UserService())
 						  .and()
 						.successHandler(successHandler);
+
+        CompositeFilter authCompositeFilter = new CompositeFilter();
+        List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
+                .addAll(getDefaultFilters(oauth2ClientContext))
+                .addAll(getAdditionalFilters(oauth2ClientContext)).build();
+
+		/* make sure filters have correct exception handler */
+        additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
+        authCompositeFilter.setFilters(additionalFilters);
+
+        http.addFilterBefore(authCompositeFilter, OAuth2AuthorizationRequestRedirectFilter.class);
         //@formatter:on
 		}
 

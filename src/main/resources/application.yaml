@@ -49,3 +49,5 @@ rp:
     pass: rppass
   jwt:
     signing-key: 123
+  auth:
+    server: default
