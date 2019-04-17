@@ -12,9 +12,6 @@ spring:
     default-property-inclusion: non_null
   session:
     store-type: jdbc
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${rp.db.url}
   jpa:
     properties:
       hibernate:
@@ -41,8 +38,17 @@ springfox:
 #### Custom ReportPortal Properties ######
 ##########################################
 rp:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driverClassName: org.postgresql.Driver
+    jdbcUrl: ${rp.db.url}
+    username: ${rp.db.user}
+    password: ${rp.db.pass}
+    maximumPoolSize: 27
+
   db:
-    url: jdbc:postgresql://${rp.db.host}:${rp.db.port}/reportportal?user=${rp.db.user}&password=${rp.db.pass}
+    url: jdbc:postgresql://${rp.db.host}:${rp.db.port}/${rp.db.name}
+    name: reportportal
     host: postgres
     port: 5432
     user: rpuser
