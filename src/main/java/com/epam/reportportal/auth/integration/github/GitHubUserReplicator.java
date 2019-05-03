@@ -34,6 +34,7 @@ import com.epam.ta.reportportal.database.personal.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -54,14 +55,18 @@ import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 @Component
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
+    private final String githubBaseUrl;
+
     @Autowired
     public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage,
-                                PersonalProjectService personalProjectService) {
+                                PersonalProjectService personalProjectService,
+                                @Value("${rp.auth.github.apiUrl:https://api.github.com}") String githubBaseUrl) {
         super(userRepository, projectRepository, personalProjectService, dataStorage);
+        this.githubBaseUrl=githubBaseUrl;
     }
 
     public User synchronizeUser(String accessToken) {
-        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken, this.githubBaseUrl);
         UserResource userInfo = gitHubClient.getUser();
         User user = userRepository.findOne(normalizeId(userInfo.login));
         BusinessRule.expect(user, Objects::nonNull).verify(ErrorType.USER_NOT_FOUND, userInfo.login);
@@ -86,7 +91,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
      * @return Internal User representation
      */
     public User replicateUser(String accessToken) {
-        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken, this.githubBaseUrl);
         UserResource userInfo = gitHubClient.getUser();
         return replicateUser(userInfo, gitHubClient);
     }
