@@ -51,9 +51,9 @@ public class GithubOAuthProvider extends com.epam.reportportal.auth.oauth.OAuthP
 
     public GithubOAuthProvider(GitHubUserReplicator githubReplicator,
                                AuthConfigService authConfigService,
-                               @Value("${rp.auth.github.tokenUrl:https://github.com/login/oauth/access_token}") String tokenUrl,
-                               @Value("${rp.auth.github.authUrl:https://github.com/login/oauth/authorize}") String authUrl,
-                               @Value("${rp.auth.github.apiUrl:https://api.github.com}") String githubBaseUrl) {
+                               @Value("${rp.auth.github.tokenUrl}") String tokenUrl,
+                               @Value("${rp.auth.github.authUrl}") String authUrl,
+                               @Value("${rp.auth.github.apiUrl}") String githubBaseUrl) {
         super("github", BUTTON, true);
         this.githubReplicator = githubReplicator;
         this.authConfigService = authConfigService;

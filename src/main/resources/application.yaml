@@ -76,6 +76,11 @@ rp:
    auth:
         encryptor:
           password: reportportal
+        github:
+            apiUrl: https://api.github.com
+            authUrl: https://github.com/login/oauth/authorize
+            tokenUrl: https://github.com/login/oauth/access_token
+
 
 logging:
   level:

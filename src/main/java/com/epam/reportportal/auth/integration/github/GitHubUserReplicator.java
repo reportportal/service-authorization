@@ -60,7 +60,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     @Autowired
     public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository, DataStorage dataStorage,
                                 PersonalProjectService personalProjectService,
-                                @Value("${rp.auth.github.apiUrl:https://api.github.com}") String githubBaseUrl) {
+                                @Value("${rp.auth.github.apiUrl}") String githubBaseUrl) {
         super(userRepository, projectRepository, personalProjectService, dataStorage);
         this.githubBaseUrl=githubBaseUrl;
     }
