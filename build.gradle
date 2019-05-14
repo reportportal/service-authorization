@@ -58,7 +58,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-dao:4.2.0'
         compile 'com.epam.reportportal:commons-rules:4.2.0'
     } else {
-        compile('com.github.reportportal:commons-dao:4.2.0')
+        compile('com.github.reportportal:commons-dao:c772bde')
         compile 'com.github.reportportal:commons-rules:4.2.0'
     }
 
