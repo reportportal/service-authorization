@@ -76,6 +76,13 @@ rp:
    auth:
         encryptor:
           password: reportportal
+        saml:
+          base-path: ${SP_BASE_PATH:${server.contextPath:http://localhost:8080}}/${spring.application.name}
+          key-password: ${SP_KEY_PASSWORD:password}
+          key-alias: ${SP_KEY_ALIAS:report-portal-sp}
+          key-store: ${SP_KEY_STORE:saml/keystore.jks}
+          key-store-password: ${SP_KEY_STORE_PASSWORD:password}
+
 
 logging:
   level:
