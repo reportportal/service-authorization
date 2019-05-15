@@ -45,7 +45,7 @@ public class UiAuthenticationFailureEventHandler implements ApplicationListener<
 
 	private static final long MAXIMUM_SIZE = 5000;
 	private static final long EXPIRATION_SECONDS = 30;
-	private static final int MAX_ATTEMPTS = 3;
+	private static final int MAX_ATTEMPTS = 5;
 	private static final RequestHeaderRequestMatcher AJAX_REQUEST_MATCHER = new RequestHeaderRequestMatcher(HttpHeaders.X_REQUESTED_WITH,
 			"XMLHttpRequest");
 

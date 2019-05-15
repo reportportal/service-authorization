@@ -44,6 +44,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -219,6 +220,9 @@ public class SecurityConfiguration {
 		private GitHubUserReplicator gitHubUserReplicator;
 
 		@Autowired
+		private AuthenticationEventPublisher authenticationEventPublisher;
+
+		@Autowired
 		private OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository;
 
 		private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
@@ -230,6 +234,7 @@ public class SecurityConfiguration {
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 			auth.authenticationProvider(basicPasswordAuthProvider())
+					.authenticationEventPublisher(authenticationEventPublisher)
 					.authenticationProvider(activeDirectoryAuthProvider())
 					.authenticationProvider(ldapAuthProvider());
 		}
