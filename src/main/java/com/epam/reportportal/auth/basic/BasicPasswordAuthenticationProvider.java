@@ -22,7 +22,7 @@ package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -53,7 +53,7 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
 		if (!accountNonLocked) {
-			BusinessRule.fail().withError(ErrorType.ADDRESS_LOCKED);
+			throw new ReportPortalException(ErrorType.ADDRESS_LOCKED);
 		}
 		Authentication auth = super.authenticate(authentication);
 		eventPublisher.publishEvent(new UiUserSignedInEvent(auth));

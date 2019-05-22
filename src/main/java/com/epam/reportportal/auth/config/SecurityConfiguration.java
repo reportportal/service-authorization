@@ -119,8 +119,8 @@ public class SecurityConfiguration {
 			return authProviders.stream().map(provider -> {
 				OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(provider.buildPath(
 						SSO_LOGIN_PATH));
-				filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
-				filter.setTokenServices(provider.getTokenServices());
+//				filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
+//				filter.setTokenServices(provider.getTokenServices());
 				filter.setAuthenticationSuccessHandler(successHandler);
 				return filter;
 			}).collect(Collectors.toList());

@@ -66,8 +66,8 @@ dependencies {
     if (releaseMode) {
 //        compile 'com.epam.reportportal:commons-rules:4.0.1'
     } else {
-        compile 'com.github.reportportal:commons-dao:a90a581'
-        compile 'com.github.reportportal:commons-model:8391ca1'
+        compile 'com.github.reportportal:commons-dao:e4e1e94'
+        compile 'com.github.reportportal:commons-model:5d22133'
         compile 'com.github.reportportal:commons-rules:spb2-SNAPSHOT'
     }
 

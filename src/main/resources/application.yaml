@@ -1,3 +1,7 @@
+management:
+  endpoints:
+    web:
+      base-path: /
 info:
   build:
     version: ${rp.uat.version:5.0}
