@@ -21,20 +21,16 @@ import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
-import com.epam.reportportal.auth.integration.github.GitHubOAuth2UserService;
-import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.oauth.AccessTokenStore;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.OAuthRegistrationRestrictionRepository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -56,16 +52,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.*;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
@@ -74,10 +64,14 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -119,8 +113,8 @@ public class SecurityConfiguration {
 			return authProviders.stream().map(provider -> {
 				OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(provider.buildPath(
 						SSO_LOGIN_PATH));
-//				filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
-//				filter.setTokenServices(provider.getTokenServices());
+				filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
+				filter.setTokenServices(provider.getTokenServices());
 				filter.setAuthenticationSuccessHandler(successHandler);
 				return filter;
 			}).collect(Collectors.toList());
@@ -159,12 +153,12 @@ public class SecurityConfiguration {
 		}
 
 		@Bean
-		Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
+		public Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
 			return providers.stream().collect(Collectors.toMap(OAuthProvider::getName, p -> p));
 		}
 
 		@Bean
-		FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
+		public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
 			FilterRegistrationBean registration = new FilterRegistrationBean();
 			registration.setFilter(filter);
 			registration.setOrder(-100);
@@ -173,8 +167,18 @@ public class SecurityConfiguration {
 
 		@Override
 		protected final void configure(HttpSecurity http) throws Exception {
+			CompositeFilter authCompositeFilter = new CompositeFilter();
+			List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
+					.addAll(getDefaultFilters(oauth2ClientContext))
+					.addAll(getAdditionalFilters(oauth2ClientContext))
+					.build();
+
+			/* make sure filters have correct exception handler */
+			additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
+			authCompositeFilter.setFilters(additionalFilters);
+
 			//@formatter:off
-        http
+        	http
                 .antMatcher("/**")
                 .authorizeRequests()
                 .antMatchers(SSO_LOGIN_PATH + "/**", "/epam/**", "/info", "/health", "/api-docs/**")
@@ -187,49 +191,12 @@ public class SecurityConfiguration {
 				.sessionManagement()
                 	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				.and()
-					.httpBasic()
-				.and()
-					.oauth2Login()
-				.clientRegistrationRepository(clientRegistrationRepository)
-					  .authorizationEndpoint()
-						.baseUri(SSO_LOGIN_PATH)
-						  .and()
-						.userInfoEndpoint()
-						.userService(oauth2UserService())
-						  .and()
-						.successHandler(successHandler);
-
-        CompositeFilter authCompositeFilter = new CompositeFilter();
-        List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
-                .addAll(getDefaultFilters(oauth2ClientContext))
-                .addAll(getAdditionalFilters(oauth2ClientContext)).build();
-
-		/* make sure filters have correct exception handler */
-        additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
-        authCompositeFilter.setFilters(additionalFilters);
-
-        http.addFilterBefore(authCompositeFilter, OAuth2AuthorizationRequestRedirectFilter.class);
-        //@formatter:on
+				.addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
+       		 //@formatter:on
 		}
-
-		@Autowired
-		@Qualifier(value = "mutableClientRegistrationRepository")
-		private ClientRegistrationRepository clientRegistrationRepository;
-
-		@Autowired
-		private GitHubUserReplicator gitHubUserReplicator;
 
 		@Autowired
 		private AuthenticationEventPublisher authenticationEventPublisher;
-
-		@Autowired
-		private OAuthRegistrationRestrictionRepository oAuthRegistrationRestrictionRepository;
-
-		private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
-			List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> services = new LinkedList<>();
-			services.add(new GitHubOAuth2UserService(gitHubUserReplicator, oAuthRegistrationRestrictionRepository));
-			return new DelegatingOAuth2UserService<>(services);
-		}
 
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -251,9 +218,7 @@ public class SecurityConfiguration {
 
 		@Bean
 		protected UserDetailsService userDetailsService() {
-			DatabaseUserDetailsService service = new DatabaseUserDetailsService();
-
-			return service;
+			return new DatabaseUserDetailsService();
 		}
 
 		@Bean
@@ -277,7 +242,6 @@ public class SecurityConfiguration {
 	}
 
 	@Configuration
-	@Order(5)
 	@EnableAuthorizationServer
 	public static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
@@ -286,7 +250,6 @@ public class SecurityConfiguration {
 		@Autowired
 		private DatabaseUserDetailsService userDetailsService;
 
-		@Autowired
 		@Value("${rp.jwt.signing-key}")
 		private String signingKey;
 

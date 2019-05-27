@@ -57,21 +57,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		configurer.setUseSuffixPatternMatch(false);
 	}
 
-//	@Bean
-//	public Thumbnailator thumbnailator() {
-//		return new ThumbnailatorImpl();
-//	}
-//
-//	@Bean
-//	public ContentTypeResolver contentTypeResolver() {
-//		return new TikaContentTypeResolver();
-//	}
-
-//	@Bean
-//	public UserDetailsService userDetailsService() {
-//		return new DatabaseUserDetailsService();
-//	}
-
 	@Override
 	public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
 

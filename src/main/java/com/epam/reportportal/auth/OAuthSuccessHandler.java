@@ -24,7 +24,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -65,18 +65,16 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
 	@Override
 	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-		String login = ofNullable(((OAuth2User) authentication.getPrincipal()).getAttributes().get(LOGIN_ATTRIBUTE)).map(String::valueOf)
+		String login = ofNullable((OAuth2Authentication) authentication).map(auth -> String.valueOf(auth.getPrincipal()))
 				.orElseThrow(() -> new ReportPortalException(ErrorType.ACCESS_DENIED,
-						Suppliers.formattedSupplier("Attribute - {} was not provided.", LOGIN_ATTRIBUTE).get()
+						Suppliers.formattedSupplier("{} was not provided.", LOGIN_ATTRIBUTE).get()
 				));
 		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, normalizeId(login), authentication);
 
 		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
 		query.add("token", accessToken.getValue());
 		query.add("token_type", accessToken.getTokenType());
-		//TODO replace hard-coded port with custom value
 		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-				.port(8080)
 				.replacePath("/ui/auth_success")
 				.replaceQueryParams(query)
 				.build()

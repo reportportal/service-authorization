@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.integration;
 
+import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.BinaryData;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -110,9 +111,9 @@ public class AbstractUserReplicator {
 	 * @param email email to check
 	 */
 	protected void checkEmail(String email) {
-		//		if (userRepository.exists(Filter.builder().withTarget(User.class).withCondition(builder().eq("email", email).build()).build())) {
-		//			throw new UserSynchronizationException("User with email '" + email + "' already exists");
-		//		}
+		if (userRepository.findByEmail(email).isPresent()) {
+			throw new UserSynchronizationException("User with email '" + email + "' already exists");
+		}
 	}
 
 	protected String uploadPhoto(String login, byte[] data) {
