@@ -75,7 +75,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 		query.add("token", accessToken.getValue());
 		query.add("token_type", accessToken.getTokenType());
 		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-				.replacePath("/ui/auth_success")
+				.replacePath("/ui/authSuccess")
 				.replaceQueryParams(query)
 				.build()
 				.toUri();
