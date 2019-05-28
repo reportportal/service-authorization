@@ -57,10 +57,12 @@ dependencyManagement {
 dependencies {
     if (releaseMode) {
         compile 'com.epam.reportportal:commons-dao:4.2.0'
+        compile 'com.epam.reportportal:commons-model:4.2.0'
         compile 'com.epam.reportportal:commons-rules:4.2.0'
     } else {
-        compile('com.github.reportportal:commons-dao:c772bde')
-        compile 'com.github.reportportal:commons-rules:4.2.0'
+        compile('com.github.reportportal:commons-dao:5c1017a')
+        compile 'com.github.reportportal:commons-model:cd7658a'
+        compile('com.github.reportportal:commons-rules:4.2.0')
     }
 
     compile 'javax.inject:javax.inject:1'
