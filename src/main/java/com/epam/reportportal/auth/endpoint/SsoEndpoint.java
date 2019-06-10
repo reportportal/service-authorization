@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -83,7 +84,7 @@ public class SsoEndpoint {
 	@ApiOperation(value = "Create api token")
 	public OAuth2AccessToken createApiToken(OAuth2Authentication user) {
 		tokenServicesFacade.revokeUserTokens(user.getName(), ReportPortalClient.api);
-		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication());
+		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication(), Collections.emptyMap());
 	}
 
 }

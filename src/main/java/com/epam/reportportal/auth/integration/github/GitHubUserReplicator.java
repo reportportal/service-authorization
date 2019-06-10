@@ -37,6 +37,7 @@ import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -77,7 +78,9 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		User user = userOptional.get();
 		BusinessRule.expect(user.getUserType(), userType -> Objects.equals(userType, UserType.GITHUB))
 				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "User '" + userResource.getLogin() + "' is not GitHUB user");
-		user.setFullName(userResource.getName());
+		if (StringUtils.isNotBlank(userResource.getName())) {
+			user.setFullName(userResource.getName());
+		}
 		String email = userResource.getEmail();
 		if (Strings.isNullOrEmpty(email)) {
 			email = retrieveEmail(gitHubClient).orElseThrow(() -> new UserSynchronizationException("User 'email' has not been provided"));
@@ -141,11 +144,11 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 			email = retrieveEmail(gitHubClient).orElseThrow(() -> new UserSynchronizationException("User 'email' has not been provided"));
 		}
 		email = normalizeId(email);
-		if (!user.getEmail().equals(email)) {
+		if (StringUtils.isBlank(user.getEmail()) || !user.getEmail().equals(email)) {
 			checkEmail(email);
 			user.setEmail(email);
 		}
-		user.setFullName(isNullOrEmpty(userResource.getName()) ? user.getLogin() : user.getFullName());
+		user.setFullName(isNullOrEmpty(userResource.getName()) ? user.getLogin() : userResource.getName());
 		user.setMetadata(defaultMetaData());
 		user.setAttachment(uploadAvatar(gitHubClient, userResource.getLogin(), userResource.getAvatarUrl()));
 	}
@@ -154,16 +157,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		User user = new User();
 		String login = normalizeId(userResource.getLogin());
 		user.setLogin(login);
-		String email = userResource.getEmail();
-		if (Strings.isNullOrEmpty(email)) {
-			email = retrieveEmail(gitHubClient).orElseThrow(() -> new UserSynchronizationException("User 'email' has not been provided"));
-		}
-		email = normalizeId(email);
-		checkEmail(email);
-		user.setEmail(email);
-		user.setFullName(isNullOrEmpty(user.getFullName()) ? user.getLogin() : user.getFullName());
-		user.setMetadata(defaultMetaData());
-		user.setAttachment(uploadAvatar(gitHubClient, login, userResource.getAvatarUrl()));
+		updateUser(user, userResource, gitHubClient);
 		user.setUserType(UserType.GITHUB);
 		user.setRole(UserRole.USER);
 		user.setExpired(false);

@@ -21,6 +21,7 @@ import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
+import com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
@@ -36,6 +37,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -43,6 +45,7 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -57,10 +60,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.*
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
-import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -196,12 +196,17 @@ public class SecurityConfiguration {
 		}
 
 		@Autowired
-		private AuthenticationEventPublisher authenticationEventPublisher;
+		private ApplicationEventPublisher applicationEventPublisher;
+
+		@Bean
+		public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+			return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+		}
 
 		@Override
 		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 			auth.authenticationProvider(basicPasswordAuthProvider())
-					.authenticationEventPublisher(authenticationEventPublisher)
+					.authenticationEventPublisher(authenticationEventPublisher(applicationEventPublisher))
 					.authenticationProvider(activeDirectoryAuthProvider())
 					.authenticationProvider(ldapAuthProvider());
 		}
@@ -270,7 +275,7 @@ public class SecurityConfiguration {
 					.pathMapping("/oauth/confirm_access", "/sso/oauth/confirm_access")
 					.tokenStore(jwtTokenStore())
 //					.exceptionTranslator(new OAuthErrorHandler(new ReportPortalExceptionResolver(new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING))))
-					.accessTokenConverter(accessTokenConverter())
+					.accessTokenConverter(accessTokenConverter(defaultAccessTokenConverter(defaultUserAuthenticationConverter())))
 					.authenticationManager(authenticationManager);
 			//@formatter:on
 		}
@@ -310,21 +315,44 @@ public class SecurityConfiguration {
 		@Bean(value = "jwtTokenStore")
 		@Primary
 		public TokenStore jwtTokenStore() {
-			return new JwtTokenStore(accessTokenConverter());
+			AccessTokenConverter accessTokenConverter = defaultAccessTokenConverter(defaultUserAuthenticationConverter());
+			JwtAccessTokenConverter jwtTokenEnhancer = accessTokenConverter(accessTokenConverter);
+			return new JwtTokenStore(jwtTokenEnhancer);
+		}
+
+		@Bean(value = "externalOauth2TokenStore")
+		public TokenStore externalOauth2TokenStore() {
+			AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(defaultUserAuthenticationConverter());
+			JwtAccessTokenConverter jwtTokenEnhancer = accessTokenConverter(accessTokenConverter);
+			return new JwtTokenStore(jwtTokenEnhancer);
 		}
 
 		@Bean
-		public JwtAccessTokenConverter accessTokenConverter() {
-			JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
-			jwtConverter.setSigningKey(signingKey);
-
+		public UserAuthenticationConverter defaultUserAuthenticationConverter() {
 			DefaultUserAuthenticationConverter defaultUserAuthenticationConverter = new DefaultUserAuthenticationConverter();
 			defaultUserAuthenticationConverter.setUserDetailsService(userDetailsService);
+			return defaultUserAuthenticationConverter;
+		}
+
+		@Bean
+		public AccessTokenConverter defaultAccessTokenConverter(UserAuthenticationConverter userAuthenticationConverter) {
 			DefaultAccessTokenConverter accessTokenConverter = new DefaultAccessTokenConverter();
-			accessTokenConverter.setUserTokenConverter(defaultUserAuthenticationConverter);
+			accessTokenConverter.setUserTokenConverter(userAuthenticationConverter);
+			return accessTokenConverter;
+		}
 
+		@Bean
+		public AccessTokenConverter externalOauth2TokenConverter(UserAuthenticationConverter userAuthenticationConverter) {
+			ExternalOauth2TokenConverter accessTokenConverter = new ExternalOauth2TokenConverter();
+			accessTokenConverter.setUserTokenConverter(userAuthenticationConverter);
+			return accessTokenConverter;
+		}
+
+		@Bean
+		public JwtAccessTokenConverter accessTokenConverter(AccessTokenConverter accessTokenConverter) {
+			JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
+			jwtConverter.setSigningKey(signingKey);
 			jwtConverter.setAccessTokenConverter(accessTokenConverter);
-
 			return jwtConverter;
 		}
 
@@ -335,7 +363,9 @@ public class SecurityConfiguration {
 			defaultTokenServices.setTokenStore(jwtTokenStore());
 			defaultTokenServices.setSupportRefreshToken(true);
 			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			defaultTokenServices.setTokenEnhancer(accessTokenConverter());
+			AccessTokenConverter accessTokenConverter = defaultAccessTokenConverter(defaultUserAuthenticationConverter());
+			JwtAccessTokenConverter accessTokenEnhancer = accessTokenConverter(accessTokenConverter);
+			defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
 			return defaultTokenServices;
 		}
 
@@ -347,6 +377,18 @@ public class SecurityConfiguration {
 			defaultTokenServices.setClientDetailsService(clientDetailsService);
 			defaultTokenServices.setSupportRefreshToken(false);
 			defaultTokenServices.setAuthenticationManager(authenticationManager);
+			return defaultTokenServices;
+		}
+
+		@Bean(value = "externalOauth2TokenServices")
+		public DefaultTokenServices externalOauth2TokenServices() {
+			DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+			defaultTokenServices.setTokenStore(externalOauth2TokenStore());
+			defaultTokenServices.setSupportRefreshToken(true);
+			defaultTokenServices.setAuthenticationManager(authenticationManager);
+			AccessTokenConverter accessTokenConverter = defaultAccessTokenConverter(defaultUserAuthenticationConverter());
+			JwtAccessTokenConverter accessTokenEnhancer = accessTokenConverter(accessTokenConverter);
+			defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
 			return defaultTokenServices;
 		}
 

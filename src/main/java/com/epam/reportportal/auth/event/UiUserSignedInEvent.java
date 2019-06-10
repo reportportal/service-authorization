@@ -35,6 +35,7 @@ public class UiUserSignedInEvent extends AuthenticationSuccessEvent {
 
 	public UiUserSignedInEvent(Authentication authentication) {
 		super(authentication);
+		System.err.println("HALLLOOOO");
 	}
 
 }

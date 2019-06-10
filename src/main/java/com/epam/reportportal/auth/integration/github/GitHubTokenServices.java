@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter.UPSTREAM_TOKEN;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
@@ -80,7 +81,7 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getLogin(), "N/A",
                 AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
 
-        Map<String, Serializable> extensionProperties = Collections.singletonMap("upstream_token", accessToken);
+        Map<String, Serializable> extensionProperties = Collections.singletonMap(UPSTREAM_TOKEN, accessToken);
         OAuth2Request request = new OAuth2Request(null, oAuthRegistrationResource.getClientId(), null, true, null, null, null, null, extensionProperties);
         return new OAuth2Authentication(request, token);
     }
