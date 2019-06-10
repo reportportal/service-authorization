@@ -7,10 +7,6 @@ info:
     version: ${rp.uat.version:5.0}
 server:
   port: 9999
-security:
-  oauth2:
-    resource:
-      filter-order: 3
 spring:
   jackson:
     default-property-inclusion: non_null

@@ -79,7 +79,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-security'
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.2.1.RELEASE'
     compile 'org.springframework.security:spring-security-oauth2-client'
-    compile group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.1.0.RELEASE'
+    compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.3.RELEASE'
     compile 'org.springframework.security:spring-security-jwt'
     compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
 

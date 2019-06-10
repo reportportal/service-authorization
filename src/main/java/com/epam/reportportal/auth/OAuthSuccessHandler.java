@@ -16,15 +16,17 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static java.util.Optional.ofNullable;
@@ -48,8 +51,6 @@ import static java.util.Optional.ofNullable;
 @Component
 public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-	private static final String LOGIN_ATTRIBUTE = "login";
-
 	/*
 	 * Internal token services facade
 	 */
@@ -59,31 +60,39 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
 
+	@Autowired
+	@Qualifier("externalOauth2TokenServices")
+	private AuthorizationServerTokenServices tokenServices;
+
 	OAuthSuccessHandler() {
 		super("/");
 	}
 
 	@Override
 	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-		String login = ofNullable(((OAuth2User) authentication.getPrincipal()).getAttributes().get(LOGIN_ATTRIBUTE)).map(String::valueOf)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.ACCESS_DENIED,
-						Suppliers.formattedSupplier("Attribute - {} was not provided.", LOGIN_ATTRIBUTE).get()
-				));
-		OAuth2AccessToken accessToken = tokenServicesFacade.get().createToken(ReportPortalClient.ui, normalizeId(login), authentication);
+		OAuth2Authentication oAuth2Authentication = ofNullable((OAuth2Authentication) authentication).orElseThrow(() -> new ReportPortalException(
+				ErrorType.ACCESS_DENIED));
+		String login = String.valueOf(oAuth2Authentication.getPrincipal());
+		OAuth2AccessToken accessToken = tokenServicesFacade.get()
+				.createToken(tokenServices,
+						ReportPortalClient.ui,
+						normalizeId(login),
+						authentication,
+						ofNullable(oAuth2Authentication.getOAuth2Request()).map(OAuth2Request::getExtensions)
+								.orElseGet(Collections::emptyMap)
+				);
 
 		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
 		query.add("token", accessToken.getValue());
 		query.add("token_type", accessToken.getTokenType());
-		//TODO replace hard-coded port with custom value
 		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-				.port(8080)
-				.replacePath("/ui/auth_success")
+				.replacePath("/ui/authSuccess")
 				.replaceQueryParams(query)
 				.build()
 				.toUri();
 
 		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString());
+		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString().replaceFirst("/ui/authSuccess", "/#ui/authSuccess"));
 	}
 }
