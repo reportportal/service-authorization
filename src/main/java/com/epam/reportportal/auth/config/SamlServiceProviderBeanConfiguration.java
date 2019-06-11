@@ -20,6 +20,7 @@
  */
 package com.epam.reportportal.auth.config;
 
+import com.epam.reportportal.auth.AuthenticationFailureHandler;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthenticationManager;
 import com.epam.reportportal.auth.integration.saml.SamlAuthenticationSuccessHandler;
 import com.epam.reportportal.auth.integration.saml.SamlUserReplicator;
@@ -27,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.saml.SamlKeyException;
 import org.springframework.security.saml.key.SimpleKey;
 import org.springframework.security.saml.provider.SamlServerConfiguration;
-import org.springframework.security.saml.provider.service.authentication.GenericErrorAuthenticationFailureHandler;
 import org.springframework.security.saml.provider.service.authentication.SamlAuthenticationResponseFilter;
 import org.springframework.security.saml.provider.service.config.SamlServiceProviderServerBeanConfiguration;
 import org.springframework.security.saml.spi.SamlKeyStoreProvider;
@@ -57,13 +57,17 @@ import static org.springframework.util.StringUtils.hasText;
 public class SamlServiceProviderBeanConfiguration extends SamlServiceProviderServerBeanConfiguration {
 
     private SamlAuthenticationSuccessHandler samlSuccessHandler;
+    private AuthenticationFailureHandler authenticationFailureHandler;
     private SamlUserReplicator samlUserReplicator;
     private SamlServerConfiguration serviceProviderConfiguration;
 
-    public SamlServiceProviderBeanConfiguration(SamlServerConfiguration spConfiguration, SamlAuthenticationSuccessHandler samlSuccessHandler,
-                                                SamlUserReplicator samlUserReplicator) {
+    public SamlServiceProviderBeanConfiguration(SamlServerConfiguration spConfiguration,
+                                                SamlUserReplicator samlUserReplicator,
+                                                SamlAuthenticationSuccessHandler samlSuccessHandler,
+                                                AuthenticationFailureHandler authenticationFailureHandler) {
         this.serviceProviderConfiguration = spConfiguration;
         this.samlSuccessHandler = samlSuccessHandler;
+        this.authenticationFailureHandler = authenticationFailureHandler;
         this.samlUserReplicator = samlUserReplicator;
     }
 
@@ -77,7 +81,7 @@ public class SamlServiceProviderBeanConfiguration extends SamlServiceProviderSer
         SamlAuthenticationResponseFilter authenticationFilter = new SamlAuthenticationResponseFilter(getSamlProvisioning());
         authenticationFilter.setAuthenticationManager(new ReportPortalSamlAuthenticationManager(samlUserReplicator));
         authenticationFilter.setAuthenticationSuccessHandler(samlSuccessHandler);
-        authenticationFilter.setAuthenticationFailureHandler(new GenericErrorAuthenticationFailureHandler());
+        authenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
         return authenticationFilter;
     }
 

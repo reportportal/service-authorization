@@ -23,6 +23,7 @@ package com.epam.reportportal.auth.integration.saml;
 import org.springframework.security.saml.saml2.authentication.SubjectPrincipal;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Represents principal extracted from SAML response and used for authentication
@@ -59,5 +60,19 @@ public class Principal extends SubjectPrincipal<Principal> implements Serializab
     @Override
     public String getName() {
         return getValue();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Principal principal = (Principal) o;
+        return format.equals(principal.format) &&
+                value.equals(principal.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(format, value);
     }
 }

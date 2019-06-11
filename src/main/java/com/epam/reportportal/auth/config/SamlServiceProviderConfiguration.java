@@ -70,6 +70,18 @@ public class SamlServiceProviderConfiguration {
     @Value("${rp.auth.saml.key-store-password}")
     private String keyStorePassword;
 
+    @Value("${rp.auth.saml.active-key-name}")
+    private String activeKeyName;
+
+    @Value("${rp.auth.saml.network-connection-timeout}")
+    private Integer networkConnectTimeout;
+
+    @Value("${rp.auth.saml.network-read-timeout}")
+    private Integer networkReadTimeout;
+
+    @Value("${rp.auth.saml.signed-requests}")
+    private Boolean signedRequests;
+
     private ServerSettingsRepository serverSettingsRepository;
 
     public SamlServiceProviderConfiguration(ServerSettingsRepository serverSettingsRepository) {
@@ -83,18 +95,18 @@ public class SamlServiceProviderConfiguration {
     }
 
     private NetworkConfiguration networkConfiguration() {
-        return new NetworkConfiguration().setConnectTimeout(5000)
-                .setReadTimeout(10000);
+        return new NetworkConfiguration().setConnectTimeout(networkConnectTimeout)
+                .setReadTimeout(networkReadTimeout);
 
     }
 
     private LocalServiceProviderConfiguration serviceProviderConfiguration() {
         LocalServiceProviderConfiguration serviceProviderConfiguration = new LocalServiceProviderConfiguration();
-        serviceProviderConfiguration.setSignRequests(true)
-                .setWantAssertionsSigned(true)
+        serviceProviderConfiguration.setSignRequests(signedRequests)
+                .setWantAssertionsSigned(signedRequests)
                 .setEntityId("report.portal.sp.id")
                 .setAlias("report-portal-sp")
-                .setSignMetadata(true)
+                .setSignMetadata(signedRequests)
                 .setSingleLogoutEnabled(true)
                 .setNameIds(Arrays.asList(NameID.EMAIL, NameID.PERSISTENT, NameID.UNSPECIFIED))
                 .setKeys(rotatingKeys())
@@ -124,7 +136,8 @@ public class SamlServiceProviderConfiguration {
     }
 
     private RotatingKeys rotatingKeys() {
-        return new RotatingKeys().setActive(activeKey())
+        return new RotatingKeys()
+                .setActive(activeKey())
                 .setStandBy(standbyKeys());
     }
 
@@ -133,6 +146,7 @@ public class SamlServiceProviderConfiguration {
     }
 
     private SimpleKey activeKey() {
+
         X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore, keyStorePassword);
         PrivateKey privateKey = CertificationUtil.getPrivateKey(keyAlias, keyPassword, keyStore, keyStorePassword);
 
@@ -140,7 +154,7 @@ public class SamlServiceProviderConfiguration {
             return new SimpleKey().setCertificate(getEncoder().encodeToString(certificate.getEncoded()))
                     .setPassphrase(keyPassword)
                     .setPrivateKey(getEncoder().encodeToString(privateKey.getEncoded()))
-                    .setName("sp-signing-key");
+                    .setName(activeKeyName);
         } catch (CertificateEncodingException e) {
             e.printStackTrace();
         }

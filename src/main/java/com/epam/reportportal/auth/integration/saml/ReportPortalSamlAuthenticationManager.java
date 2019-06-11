@@ -27,12 +27,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.saml.spi.DefaultSamlAuthentication;
+import org.springframework.stereotype.Component;
 
 /**
  * Implementation of authentication manager for SAML integration
  *
  * @author Yevgeniy Svalukhin
  */
+@Component
 public class ReportPortalSamlAuthenticationManager implements AuthenticationManager {
 
     private SamlUserReplicator samlUserReplicator;

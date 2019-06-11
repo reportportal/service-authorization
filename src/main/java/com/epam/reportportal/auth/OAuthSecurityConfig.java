@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -40,10 +39,8 @@ import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +66,9 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     protected OAuthSuccessHandler authSuccessHandler;
+
+    @Autowired
+    private AuthenticationFailureHandler authFailureHandler;
 
     @Autowired
     private List<OAuthProvider> authProviders;
@@ -106,7 +106,7 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addAll(getAdditionalFilters(oauth2ClientContext)).build();
 
 		/* make sure filters have correct exception handler */
-        additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
+        additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(authFailureHandler));
         authCompositeFilter.setFilters(additionalFilters);
 
         //install additional OAuth Authentication filters
@@ -158,11 +158,4 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
 
         }
     }
-
-    private static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
-        response.sendRedirect(
-                UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request)).replacePath("ui/#login")
-                        .replaceQuery("errorAuth=" + exception.getMessage()).build().toUriString());
-    };
-
 }

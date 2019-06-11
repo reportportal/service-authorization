@@ -25,6 +25,7 @@ import org.springframework.security.saml.saml2.attribute.AttributeNameFormat;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents attributes extracted from SAML response message
@@ -83,5 +84,20 @@ public class Attribute implements Serializable {
     public Attribute setRequired(boolean required) {
         this.required = required;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Attribute attribute = (Attribute) o;
+        return required == attribute.required &&
+                Objects.equals(name, attribute.name) &&
+                Objects.equals(nameFormat, attribute.nameFormat);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, nameFormat, required);
     }
 }
