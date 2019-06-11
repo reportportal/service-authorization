@@ -41,7 +41,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -66,7 +65,6 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,7 +87,7 @@ public class SecurityConfiguration {
 	@EnableOAuth2Client
 	@Configuration
 	@Conditional(GlobalWebSecurityConfig.HasExtensionsCondition.class)
-	@Order(4)
+	@Order(5)
 	public static class GlobalWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		public static final String SSO_LOGIN_PATH = "/sso/login";
@@ -99,6 +97,9 @@ public class SecurityConfiguration {
 
 		@Autowired
 		private OAuthSuccessHandler successHandler;
+
+		@Autowired
+		private AuthenticationFailureHandler authenticationFailureHandler;
 
 		@Autowired
 		private IntegrationRepository authConfigRepository;
@@ -123,14 +124,6 @@ public class SecurityConfiguration {
 		protected List<OAuth2ClientAuthenticationProcessingFilter> getAdditionalFilters(OAuth2ClientContext oauth2ClientContext) {
 			return Collections.emptyList();
 		}
-
-		private static final AuthenticationFailureHandler OAUTH_ERROR_HANDLER = (request, response, exception) -> {
-			response.sendRedirect(UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-					.replacePath("ui/#login")
-					.replaceQuery("errorAuth=" + exception.getMessage())
-					.build()
-					.toUriString());
-		};
 
 		/**
 		 * Condition. Load this config is there are no subclasses in the application context
@@ -174,14 +167,14 @@ public class SecurityConfiguration {
 					.build();
 
 			/* make sure filters have correct exception handler */
-			additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(OAUTH_ERROR_HANDLER));
+			additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(authenticationFailureHandler));
 			authCompositeFilter.setFilters(additionalFilters);
 
 			//@formatter:off
         	http
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers(SSO_LOGIN_PATH + "/**", "/epam/**", "/info", "/health", "/api-docs/**")
+                .antMatchers(SSO_LOGIN_PATH + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
