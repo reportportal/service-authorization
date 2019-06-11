@@ -147,16 +147,18 @@ public class SamlServiceProviderConfiguration {
 
     private SimpleKey activeKey() {
 
-        X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore, keyStorePassword);
-        PrivateKey privateKey = CertificationUtil.getPrivateKey(keyAlias, keyPassword, keyStore, keyStorePassword);
+        if (signedRequests) {
+            X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore, keyStorePassword);
+            PrivateKey privateKey = CertificationUtil.getPrivateKey(keyAlias, keyPassword, keyStore, keyStorePassword);
 
-        try {
-            return new SimpleKey().setCertificate(getEncoder().encodeToString(certificate.getEncoded()))
-                    .setPassphrase(keyPassword)
-                    .setPrivateKey(getEncoder().encodeToString(privateKey.getEncoded()))
-                    .setName(activeKeyName);
-        } catch (CertificateEncodingException e) {
-            e.printStackTrace();
+            try {
+                return new SimpleKey().setCertificate(getEncoder().encodeToString(certificate.getEncoded()))
+                        .setPassphrase(keyPassword)
+                        .setPrivateKey(getEncoder().encodeToString(privateKey.getEncoded()))
+                        .setName(activeKeyName);
+            } catch (CertificateEncodingException e) {
+                e.printStackTrace();
+            }
         }
         return new SimpleKey();
     }

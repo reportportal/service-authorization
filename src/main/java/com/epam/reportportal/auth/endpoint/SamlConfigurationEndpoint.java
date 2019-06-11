@@ -29,7 +29,9 @@ import com.epam.ta.reportportal.database.entity.settings.SamlProviderDetails;
 import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.settings.SamlDetailsResource;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.saml.provider.provisioning.SamlProviderProvisioning;
@@ -123,6 +125,25 @@ public class SamlConfigurationEndpoint {
 
         return serverDetails.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> SamlDetailsConverter.TO_RESOURCE.apply(e.getValue())));
+    }
+
+    @RequestMapping(value = "/{providerId}", method = RequestMethod.DELETE)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Deletes SAML Integration Settings", notes = "'default' profile is using till additional UI implementations")
+    public OperationCompletionRS deleteSettings(@PathVariable("profileId") String profileId,
+                                                @PathVariable("providerId") String samlProviderName) {
+        ServerSettings settings = repository.findOne(profileId);
+        BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
+        Map<String, SamlProviderDetails> samlProviderSettings = Optional.ofNullable(settings.getSamlProviderDetails()).orElseGet(HashMap::new);
+        SamlProviderDetails removedSettings = samlProviderSettings.remove(samlProviderName);
+        if (removedSettings != null) {
+            repository.save(settings);
+            eventPublisher.publishEvent(new SamlProvidersReloadEvent(samlProviderSettings));
+        } else {
+            throw new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND);
+        }
+        return new OperationCompletionRS("Auth settings '" + samlProviderName + "' were successfully removed");
     }
 
     private SamlProviderDetails populateProviderDetails(SamlDetailsResource samlDetails) {
