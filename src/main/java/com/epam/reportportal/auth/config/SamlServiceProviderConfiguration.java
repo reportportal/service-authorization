@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -132,7 +133,7 @@ public class SamlServiceProviderConfiguration {
                 .collect(Collectors.toList());
         IntStream.range(0, externalProviders.size())
                 .forEach(value -> externalProviders.get(value).setAssertionConsumerServiceIndex(value));
-        return externalProviders;
+        return new CopyOnWriteArrayList<>(externalProviders);
     }
 
     private RotatingKeys rotatingKeys() {

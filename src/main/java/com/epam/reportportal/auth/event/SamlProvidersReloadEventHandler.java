@@ -62,9 +62,7 @@ public class SamlProvidersReloadEventHandler implements ApplicationListener<Saml
         IntStream.range(0, updatedProviders.size())
                 .forEach(value -> updatedProviders.get(value).setAssertionConsumerServiceIndex(value));
 
-        List<ExternalIdentityProviderConfiguration> existProviders = serviceProvider.getProviders();
-        serviceProvider.setProviders(updatedProviders);
-
-        existProviders.clear();
+        serviceProvider.getProviders().clear();
+        serviceProvider.getProviders().addAll(updatedProviders);
     }
 }
