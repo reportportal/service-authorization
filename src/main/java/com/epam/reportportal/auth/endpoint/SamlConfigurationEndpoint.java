@@ -68,11 +68,11 @@ public class SamlConfigurationEndpoint {
 		this.repository = repository;
 	}
 
-	@GetMapping(value = "/")
+	@GetMapping("/{providerName}")
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@Transactional(readOnly = true)
-	public SamlDetailsResource getSamlSettings(@PathVariable String providerName) {
+	public SamlDetailsResource getSamlSettingsByName(@PathVariable String providerName) {
 		SamlProviderDetails samlProviderDetails = repository.findByIdpName(providerName)
 				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, providerName));
 		return TO_RESOURCE.apply(samlProviderDetails);
@@ -110,7 +110,7 @@ public class SamlConfigurationEndpoint {
 		SamlProviderDetails samlProviderDetails = populateProviderDetails(samlDetailsResource);
 		repository.save(samlProviderDetails);
 		eventPublisher.publishEvent(new SamlProvidersReloadEvent(repository.findAll()));
-		return samlDetailsResource;
+		return TO_RESOURCE.apply(samlProviderDetails);
 	}
 
 	@PutMapping("/{providerId}")

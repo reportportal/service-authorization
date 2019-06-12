@@ -113,7 +113,7 @@ public class SamlServiceProviderConfiguration {
 		List<SamlProviderDetails> providers = samlProviderDetailsRepository.findAll();
 
 		if (CollectionUtils.isEmpty(providers)) {
-			return Collections.emptyList();
+			return new CopyOnWriteArrayList<>();
 		}
 
 		return new CopyOnWriteArrayList<>(SamlDetailsConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(providers));
