@@ -121,7 +121,7 @@ public class SamlServiceProviderConfiguration {
         ServerSettings settings = serverSettingsRepository.findOne("default");
 
         if (Objects.isNull(settings.getSamlProviderDetails())) {
-            return Collections.emptyList();
+            return new CopyOnWriteArrayList<>();
         }
 
         List<ExternalIdentityProviderConfiguration> externalProviders = settings.getSamlProviderDetails().values().stream()
