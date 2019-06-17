@@ -39,6 +39,7 @@ import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -66,8 +67,10 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.Filter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -163,6 +166,19 @@ public class SecurityConfiguration {
 			registration.setFilter(filter);
 			registration.setOrder(-100);
 			return registration;
+		}
+
+		@Bean
+		public Filter forwardedHeaderFilter() {
+			return new ForwardedHeaderFilter();
+		}
+
+		@Bean
+		public FilterRegistrationBean<Filter> forwardedHeaderFilterRegistrationBean() {
+			FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
+			filterRegistrationBean.setFilter(forwardedHeaderFilter());
+			filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+			return filterRegistrationBean;
 		}
 
 		@Override
