@@ -43,8 +43,8 @@ dependencyManagement {
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:5.0.0-BETA-2'
-        compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-1'
+        compile 'com.epam.reportportal:commons-dao:5.0.0-BETA-3'
+        compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-3'
         compile 'com.epam.reportportal:commons-model:5.0.0-BETA-3'
     } else {
         compile 'com.github.reportportal:commons-dao:51c828b0'
@@ -89,51 +89,15 @@ dependencies {
     testCompile 'org.springframework:spring-test'
 }
 
+wrapper {
+    gradleVersion = '5.4.1'
+}
+
 release {
     git {
         requireBranch = 'spb4-master'
     }
 }
-
-/** Starting from 1.4 Spring Boot uses very strange repackage model which does not allow this JAR to be used as dependency
- * So package jar by hands */
-task copyRuntimeLibs(type: Copy) {
-    into "$buildDir/libs/lib"
-    from configurations.runtime
-}
-
-build.dependsOn(copyRuntimeLibs)
-
-
-jar {
-    archiveName "${baseName}.${extension}"
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    manifest {
-        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': version,
-                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-    }
-}
-
-
-wrapper {
-    gradleVersion = '5.4.1'
-}
-
-/* CANNOT PUT publish scripts in separate file due to incorrect POM file generation */
-
-task fatDist(type: Zip) {
-    archiveName = "${baseName}.${extension}"
-    appendix = 'dist'
-    into('lib') {
-        from configurations.runtime
-    }
-    into('./') {
-        from jar
-    }
-}
-fatDist.dependsOn 'jar', 'copyRuntimeLibs'
 
 jacocoTestReport {
     reports {
