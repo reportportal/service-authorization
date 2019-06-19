@@ -12,7 +12,6 @@ apply from: 'build-quality.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/release-service.gradle'
 
 
 sourceCompatibility = 1.8
@@ -106,4 +105,148 @@ jacocoTestReport {
 }
 
 build.dependsOn jacocoTestReport
+
+
+/** Starting from 1.4 Spring Boot uses very strange repackage model which does not allow this JAR to be used as dependency
+ * So package jar by hands */
+task copyRuntimeLibs(type: Copy) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+}
+
+build.dependsOn(copyRuntimeLibs)
+
+
+jar {
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    manifest {
+        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
+                'Implementation-Version': version,
+                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+    }
+
+}
+
+task bootRepackage {
+    enabled = false
+}
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    getArchiveClassifier().set('sources')
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    getArchiveClassifier().set('javadoc')
+}
+
+task fatDist(type: Zip) {
+    appendix = 'dist'
+    into('lib') {
+        from configurations.runtime
+    }
+    into('./') {
+        from jar
+    }
+}
+
+fatDist.dependsOn 'jar', 'copyRuntimeLibs'
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives fatDist
+}
+
+javadoc() {
+    failOnError = false
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId 'com.epam.reportportal'
+            artifactId "$project.name"
+
+            pom.withXml {
+                def root = asNode()
+                root.children().last() + pomConfig
+            }
+            artifact sourcesJar
+            artifact javadocJar
+            artifact fatDist
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['mavenJava']
+    publish = true
+    pkg {
+        repo = 'reportportal'
+        name = "$project.name"
+        desc = "$project.description"
+        websiteUrl = 'https://reportportal.github.io/'
+        issueTrackerUrl = "https://github.com/reportportal/$project.name/issues"
+        vcsUrl = "https://github.com/reportportal/$project.name"
+        githubRepo = "reportportal/$project.name"
+        githubReleaseNotesFile = 'CHANGELOG.md'
+
+        userOrg = 'epam'
+        licenses = ['Apache-2.0']
+    }
+}
+
+afterReleaseBuild.dependsOn bintrayUpload
+
+
+task releaseDockerfile(type: Copy) {
+    /* copy dockerfile and replace version of JAR */
+    from('docker/Dockerfile-release')
+
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.properties.findAll { it.value instanceof String }.collectEntries {
+        [it.key, it.value]
+    })
+
+    into "${project.projectDir}/"
+    rename('Dockerfile-release', 'Dockerfile')
+}
+
+task addDockerfileToGit {
+    doLast {
+        grgit = grgit.open(dir: '.')
+        grgit.add(patterns: ['Dockerfile'])
+    }
+}
+
+task removeDockerfileFromGit {
+    doLast {
+        grgit = grgit.open(dir: '.')
+        grgit.remove(patterns: ['Dockerfile'])
+    }
+}
+
+
+addDockerfileToGit.dependsOn releaseDockerfile
+updateVersion.dependsOn removeDockerfileFromGit
+beforeReleaseBuild.dependsOn addDockerfileToGit
+afterReleaseBuild.dependsOn bintrayUpload
 
