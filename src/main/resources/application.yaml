@@ -58,3 +58,5 @@ rp:
     signing-key: 123
   auth:
     server: default
+  plugins:
+    path: /plugins

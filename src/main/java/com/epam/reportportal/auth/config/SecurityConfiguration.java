@@ -416,10 +416,10 @@ public class SecurityConfiguration {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			http.requestMatchers()
-					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**")
+					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**", "/plugin/**")
 					.and()
 					.authorizeRequests()
-					.antMatchers("/settings/**")
+					.antMatchers("/settings/**", "/plugin/**")
 					.hasRole("ADMINISTRATOR")
 					.antMatchers("/sso/internal/**")
 					.hasRole("INTERNAL")
