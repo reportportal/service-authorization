@@ -93,6 +93,6 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
 		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString().replaceFirst("/ui/authSuccess", "/#ui/authSuccess"));
+		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString().replaceFirst("/ui/authSuccess", "/#authSuccess"));
 	}
 }
