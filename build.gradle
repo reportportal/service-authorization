@@ -93,10 +93,7 @@ wrapper {
 }
 
 release {
-    pushReleaseVersionBranch = 'spb4-master'
-    git {
-        requireBranch = 'spb4-master'
-    }
+    pushReleaseVersionBranch = 'master'
 }
 
 jacocoTestReport {
