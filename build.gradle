@@ -44,6 +44,7 @@ repositories {
     }
 
     maven { url "http://dl.bintray.com/epam/reportportal" }
+    maven { url "https://repo.spring.io/milestone" }
 }
 
 dependencyManagement {
@@ -56,10 +57,12 @@ dependencyManagement {
 dependencies {
     if (releaseMode) {
         compile 'com.epam.reportportal:commons-dao:4.2.0'
+        compile 'com.epam.reportportal:commons-model:4.2.0'
         compile 'com.epam.reportportal:commons-rules:4.2.0'
     } else {
-        compile('com.github.reportportal:commons-dao:4.2.0')
-        compile 'com.github.reportportal:commons-rules:4.2.0'
+        compile('com.github.reportportal:commons-dao:5c1017a')
+        compile 'com.github.reportportal:commons-model:cd7658a'
+        compile('com.github.reportportal:commons-rules:4.2.0')
     }
 
     compile 'javax.inject:javax.inject:1'
@@ -82,6 +85,10 @@ dependencies {
     //LDAP stuff
     compile("org.springframework.ldap:spring-ldap-core")
     compile("org.springframework.security:spring-security-ldap")
+
+    //SAML
+    compile 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M26'
+
     compile("org.springframework:spring-tx")
     compile("com.unboundid:unboundid-ldapsdk")
     compile("org.apache.directory.server:apacheds-core:1.5.5")
