@@ -114,8 +114,10 @@ task copyRuntimeLibs(type: Copy) {
 
 build.dependsOn(copyRuntimeLibs)
 
-
 jar {
+    if (!releaseMode) {
+        getArchiveFileName().set("${baseName}.${extension}")
+    }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     manifest {
         attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
