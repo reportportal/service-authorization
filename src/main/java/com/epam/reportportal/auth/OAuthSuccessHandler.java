@@ -19,14 +19,12 @@ import com.epam.reportportal.auth.event.UiUserSignedInEvent;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -60,10 +58,6 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
 
-	@Autowired
-	@Qualifier("externalOauth2TokenServices")
-	private AuthorizationServerTokenServices tokenServices;
-
 	OAuthSuccessHandler() {
 		super("/");
 	}
@@ -74,8 +68,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 				ErrorType.ACCESS_DENIED));
 		String login = String.valueOf(oAuth2Authentication.getPrincipal());
 		OAuth2AccessToken accessToken = tokenServicesFacade.get()
-				.createToken(tokenServices,
-						ReportPortalClient.ui,
+				.createToken(ReportPortalClient.ui,
 						normalizeId(login),
 						authentication,
 						ofNullable(oAuth2Authentication.getOAuth2Request()).map(OAuth2Request::getExtensions)
