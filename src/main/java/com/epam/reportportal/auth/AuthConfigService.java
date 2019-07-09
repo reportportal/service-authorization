@@ -1,28 +1,24 @@
 /*
- * Copyright 2016 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth;
 
-import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
-import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
-import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
+import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
+import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
+import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -34,12 +30,13 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.implicit.ImplicitResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
-import org.springframework.security.oauth2.client.token.grant.redirect.AbstractRedirectResourceDetails;
 import org.springframework.security.oauth2.common.AuthenticationScheme;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -56,7 +53,7 @@ import static java.util.Optional.ofNullable;
 public class AuthConfigService {
 
 	@Autowired
-	private ServerSettingsRepository serverSettingsRepository;
+	private MutableClientRegistrationRepository clientRegistrationRepository;
 
 	/**
 	 * Builds proxy instance of {@link RestTemplate} which load OAuth resouce details from DB on each operation
@@ -76,20 +73,18 @@ public class AuthConfigService {
 		});
 	}
 
-	public Supplier<OAuth2LoginDetails> getLoginDetailsSupplier(String name) {
-		return () -> loadLoginDetails(name).orElseThrow(() -> noAuthDetailsException(name));
+	public Supplier<OAuthRegistrationResource> getLoginDetailsSupplier(String name) {
+		return () -> loadOAuthRegistration(name).orElseThrow(() -> noAuthDetailsException(name));
 	}
 
 	/**
-	 * Loads {@link OAuth2LoginDetails} from database
+	 * Loads {@link OAuthRegistration} from database and converts it to the {@link OAuthRegistrationResource}
 	 *
-	 * @param name Name of resource
-	 * @return Built {@link OAuth2ProtectedResourceDetails}
+	 * @param id {@link OAuthRegistration#id}
+	 * @return Built {@link OAuthRegistrationResource}
 	 */
-	public Optional<OAuth2LoginDetails> loadLoginDetails(String name) {
-		return ofNullable(serverSettingsRepository.findOne("default"))
-				.map(ServerSettings::getoAuth2LoginDetails)
-				.flatMap(details -> ofNullable(details.get(name)));
+	public Optional<OAuthRegistrationResource> loadOAuthRegistration(String id) {
+		return clientRegistrationRepository.findOAuthRegistrationById(id).map(OAuthRegistrationConverters.TO_RESOURCE);
 	}
 
 	/**
@@ -99,53 +94,49 @@ public class AuthConfigService {
 	 * @return Built {@link OAuth2ProtectedResourceDetails}
 	 */
 	public OAuth2ProtectedResourceDetails loadResourceDetails(String name) {
-		return loadLoginDetails(name).map(RESOURCE_DETAILS_CONVERTER).orElseThrow(() -> noAuthDetailsException(name));
+		return loadOAuthRegistration(name).map(RESOURCE_DETAILS_CONVERTER).orElseThrow(() -> noAuthDetailsException(name));
 	}
 
 	/**
 	 * Converts DB model to {@link OAuth2ProtectedResourceDetails}
 	 */
-	private static final Function<OAuth2LoginDetails, OAuth2ProtectedResourceDetails> RESOURCE_DETAILS_CONVERTER = d -> {
-		BaseOAuth2ProtectedResourceDetails details;
-
-		String grantType = d.getGrantType();
-		switch (grantType) {
-		case "authorization_code":
-			details = new AuthorizationCodeResourceDetails();
-			break;
-		case "implicit":
-			details = new ImplicitResourceDetails();
-			break;
-		case "client_credentials":
-			details = new ClientCredentialsResourceDetails();
-			break;
-		case "password":
-			details = new ResourceOwnerPasswordResourceDetails();
-			break;
-		default:
-			details = new BaseOAuth2ProtectedResourceDetails();
-		}
-
-		if (null != d.getUserAuthorizationUri()) {
-			((AbstractRedirectResourceDetails) details).setUserAuthorizationUri(d.getUserAuthorizationUri());
-		}
-
-		details.setAccessTokenUri(d.getAccessTokenUri());
-		if (null != d.getAuthenticationScheme()) {
-			details.setAuthenticationScheme(AuthenticationScheme.valueOf(d.getAuthenticationScheme()));
-		}
-
-		details.setAuthenticationScheme(ofNullable(d.getAuthenticationScheme()).map(AuthenticationScheme::valueOf).orElse(null));
-
-		details.setClientAuthenticationScheme(
-				ofNullable(d.getClientAuthenticationScheme()).map(AuthenticationScheme::valueOf).orElse(null));
-
+	private static final Function<OAuthRegistrationResource, OAuth2ProtectedResourceDetails> RESOURCE_DETAILS_CONVERTER = d -> {
+		BaseOAuth2ProtectedResourceDetails details = getOauth2ProtectedResourceDetails(d);
+		details.setId(d.getId());
+		details.setAccessTokenUri(d.getTokenUri());
+		Arrays.stream(AuthenticationScheme.values())
+				.filter(scheme -> scheme.name().equalsIgnoreCase(d.getClientAuthMethod()))
+				.findFirst()
+				.ifPresent(details::setClientAuthenticationScheme);
 		details.setClientId(d.getClientId());
 		details.setClientSecret(d.getClientSecret());
-		details.setScope(d.getScope());
-		details.setTokenName(d.getTokenName());
+		details.setScope(new ArrayList<>(d.getScopes()));
 		return details;
 	};
+
+	private static BaseOAuth2ProtectedResourceDetails getOauth2ProtectedResourceDetails(
+			OAuthRegistrationResource oAuthRegistrationResource) {
+		return ofNullable(oAuthRegistrationResource.getAuthGrantType()).map(grantType -> {
+			Optional<String> authorizationUri = ofNullable(oAuthRegistrationResource.getAuthorizationUri());
+			switch (grantType) {
+				case "authorization_code":
+					AuthorizationCodeResourceDetails authorizationCodeResourceDetails = new AuthorizationCodeResourceDetails();
+					authorizationUri.ifPresent(authorizationCodeResourceDetails::setUserAuthorizationUri);
+					return authorizationCodeResourceDetails;
+				case "implicit":
+					ImplicitResourceDetails implicitResourceDetails = new ImplicitResourceDetails();
+					authorizationUri.ifPresent(implicitResourceDetails::setUserAuthorizationUri);
+					return implicitResourceDetails;
+				case "client_credentials":
+					return new ClientCredentialsResourceDetails();
+				case "password":
+					return new ResourceOwnerPasswordResourceDetails();
+				default:
+					return new BaseOAuth2ProtectedResourceDetails();
+			}
+		}).orElseGet(BaseOAuth2ProtectedResourceDetails::new);
+
+	}
 
 	private ProviderNotFoundException noAuthDetailsException(String name) {
 		return new ProviderNotFoundException("Auth details '" + name + "' are not configured");

@@ -1,0 +1,15 @@
+
+spring:
+  cloud:
+    consul:
+      discovery:
+        hostname: docker.for.mac.localhost
+      host: localhost
+
+rp:
+  db:
+     url: jdbc:postgresql://localhost:5432/reportportal?user=rpuser&password=rppass
+  uat:
+    serviceUrl: http://localhost:8080/uat
+server:
+  port: 9999

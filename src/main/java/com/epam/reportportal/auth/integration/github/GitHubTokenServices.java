@@ -1,28 +1,23 @@
 /*
- * Copyright 2016 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth.integration.github;
 
-import com.epam.reportportal.auth.AuthUtils;
-import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
-import com.epam.ta.reportportal.database.entity.user.User;
+import com.epam.reportportal.auth.util.AuthUtils;
+import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -38,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter.UPSTREAM_TOKEN;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
@@ -49,11 +45,12 @@ import static java.util.Optional.ofNullable;
 public class GitHubTokenServices implements ResourceServerTokenServices {
 
     private final GitHubUserReplicator replicator;
-    private final Supplier<OAuth2LoginDetails> loginDetails;
+    private final Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier;
 
-    public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor, Supplier<OAuth2LoginDetails> loginDetails) {
+    public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor,
+            Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier) {
         this.replicator = replicatingPrincipalExtractor;
-        this.loginDetails = loginDetails;
+        this.oAuthRegistrationSupplier = oAuthRegistrationSupplier;
     }
 
     @Override
@@ -61,7 +58,8 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
         GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
         UserResource gitHubUser = gitHubClient.getUser();
 
-        List<String> allowedOrganizations = ofNullable(loginDetails.get().getRestrictions())
+        OAuthRegistrationResource oAuthRegistrationResource = oAuthRegistrationSupplier.get();
+        List<String> allowedOrganizations = ofNullable(oAuthRegistrationResource.getRestrictions())
                 .flatMap(restrictions -> ofNullable(restrictions.get("organizations")))
                 .map(it -> Splitter.on(",").omitEmptyStrings().splitToList(it))
                 .orElse(emptyList());
@@ -69,17 +67,17 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
             boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser).stream().map(userOrg -> userOrg.login)
                     .anyMatch(allowedOrganizations::contains);
             if (!assignedToOrganization) {
-                throw new InsufficientOrganizationException("User '" + gitHubUser.login + "' does not belong to allowed GitHUB organization");
+                throw new InsufficientOrganizationException("User '" + gitHubUser.getLogin() + "' does not belong to allowed GitHUB organization");
             }
         }
 
         User user = replicator.replicateUser(gitHubUser, gitHubClient);
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getId(), "N/A",
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getLogin(), "N/A",
                 AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
 
-        Map<String, Serializable> extensionProperties = Collections.singletonMap("upstream_token", accessToken);
-        OAuth2Request request = new OAuth2Request(null, loginDetails.get().getClientId(), null, true, null, null, null, null, extensionProperties);
+        Map<String, Serializable> extensionProperties = Collections.singletonMap(UPSTREAM_TOKEN, accessToken);
+        OAuth2Request request = new OAuth2Request(null, oAuthRegistrationResource.getClientId(), null, true, null, null, null, null, extensionProperties);
         return new OAuth2Authentication(request, token);
     }
 

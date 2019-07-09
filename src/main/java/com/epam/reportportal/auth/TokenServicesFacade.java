@@ -1,39 +1,36 @@
 /*
- * Copyright 2016 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.store.OAuth2AccessTokenRepository;
+//import org.springframework.security.oauth2.provider.*;
+//import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
+
+import com.epam.ta.reportportal.dao.OAuth2AccessTokenRepository;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -45,43 +42,59 @@ import java.util.stream.Stream;
 @Service
 public class TokenServicesFacade {
 
-	private final OAuth2AccessTokenRepository tokenRepository;
-	private final DefaultTokenServices tokenServices;
+	private final DefaultTokenServices databaseTokenServices;
+	private final DefaultTokenServices jwtTokenServices;
 	private final OAuth2RequestFactory oAuth2RequestFactory;
 	private final ClientDetailsService clientDetailsService;
+	private final OAuth2AccessTokenRepository tokenRepository;
 
 	@Autowired
-	public TokenServicesFacade(AuthorizationServerTokenServices tokenServices, OAuth2AccessTokenRepository tokenRepository,
-			ClientDetailsService clientDetailsService) {
-		this.tokenServices = (DefaultTokenServices) tokenServices;
-		this.tokenRepository = tokenRepository;
+	public TokenServicesFacade(@Qualifier(value = "databaseTokenServices") DefaultTokenServices databaseTokenServices,
+			DefaultTokenServices jwtTokenServices, ClientDetailsService clientDetailsService, OAuth2AccessTokenRepository tokenRepository) {
+		this.databaseTokenServices = databaseTokenServices;
+		this.jwtTokenServices = jwtTokenServices;
 		this.clientDetailsService = clientDetailsService;
 		this.oAuth2RequestFactory = new DefaultOAuth2RequestFactory(clientDetailsService);
+		this.tokenRepository = tokenRepository;
 	}
 
 	public Stream<OAuth2AccessToken> getTokens(String username, ReportPortalClient client) {
 		return tokenRepository.findByClientIdAndUserName(client.name(), username)
-				.map(token -> SerializationUtils.<OAuth2AccessToken>deserialize(token.getToken()));
+				.map(token -> SerializationUtils.deserialize(token.getToken()));
 	}
 
-	public void revokeToken(String token) {
-		this.tokenServices.revokeToken(token);
+	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication,
+			Map<String, Serializable> extensionParams) {
+		if (client == ReportPortalClient.api) {
+			return createApiToken(client, username, userAuthentication, extensionParams);
+		} else {
+			return createNonApiToken(client, username, userAuthentication, extensionParams);
+		}
+
 	}
 
-	public void revokeUserTokens(String user) {
-		this.tokenRepository.findByUserName(user).forEach(token -> tokenServices.revokeToken(token.getTokenId()));
+	public OAuth2AccessToken createApiToken(ReportPortalClient client, String username, Authentication userAuthentication,
+			Map<String, Serializable> extensionParams) {
+		OAuth2Request oAuth2Request = createOAuth2Request(client, username, extensionParams);
+		return databaseTokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
+	}
+
+	public OAuth2AccessToken createNonApiToken(ReportPortalClient client, String username, Authentication userAuthentication,
+			Map<String, Serializable> extensionParams) {
+		OAuth2Request oAuth2Request = createOAuth2Request(client, username, extensionParams);
+		return jwtTokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
+	}
+
+	public OAuth2AccessToken getAccessToken(Authentication userAuthentication) {
+		return databaseTokenServices.getAccessToken((OAuth2Authentication) userAuthentication);
 	}
 
 	public void revokeUserTokens(String user, ReportPortalClient client) {
 		this.tokenRepository.findByClientIdAndUserName(client.name(), user)
-				.forEach(token -> tokenServices.revokeToken(token.getTokenId()));
+				.forEach(token -> databaseTokenServices.revokeToken(token.getTokenId()));
 	}
 
-	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication) {
-		return createToken(client, username, userAuthentication, Collections.emptyMap());
-	}
-
-	public OAuth2AccessToken createToken(ReportPortalClient client, String username, Authentication userAuthentication, Map<String, Serializable> extensionParams) {
+	private OAuth2Request createOAuth2Request(ReportPortalClient client, String username, Map<String, Serializable> extensionParams) {
 		//@formatter:off
 		ClientDetails clientDetails = clientDetailsService.loadClientByClientId(client.name());
 		OAuth2Request oAuth2Request = oAuth2RequestFactory.createOAuth2Request(clientDetails, oAuth2RequestFactory.createTokenRequest(
@@ -92,6 +105,6 @@ public class TokenServicesFacade {
 						.build(), clientDetails));
 		oAuth2Request.getExtensions().putAll(extensionParams);
 		//@formatter:on
-		return tokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
+		return oAuth2Request;
 	}
 }

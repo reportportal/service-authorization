@@ -1,0 +1,58 @@
+FROM openjdk:8-jdk-alpine as builder
+
+RUN apk add --no-cache ca-certificates git
+
+WORKDIR /usr/src/reportportal
+
+COPY gradle/ ./gradle
+COPY gradlew .
+RUN ./gradlew wrapper
+
+COPY build-quality.gradle build.gradle gradlew settings.gradle gradle.properties ./
+RUN ./gradlew resolveDependencies --stacktrace
+
+COPY . ./
+RUN ./gradlew build
+
+FROM openjdk:8-alpine
+LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
+
+ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Djava.security.egd=file:/dev/./urandom"
+ENV JOLOKIA_AGENT="-javaagent:/opt/java/jolokia-jvm-1.6.0-agent.jar=port=7778,host=localhost"
+ENV JAVA_APP=/app.jar
+
+RUN apk update \
+  && apk add -y wget \
+  && apk add -y dpkg \
+  && rm -rf /var/lib/apt/lists/*
+
+# Installing Java Jolokia
+RUN mkdir -p /opt/java && cd /opt/java \
+ && wget -O jolokia-jvm-1.6.0-agent.jar \
+ http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/1.6.0/jolokia-jvm-1.6.0-agent.jar
+
+# Downloading Telegraf
+ADD https://dl.influxdata.com/telegraf/releases/telegraf-1.8.3-static_linux_amd64.tar.gz ./
+
+# Installing telegraf
+RUN tar -C . -xzf telegraf-1.8.3-static_linux_amd64.tar.gz && \
+        chmod +x telegraf/* && \
+        cp telegraf/telegraf /usr/bin/ && \
+        rm -rf *.tar.gz* telegraf/
+COPY docker/telegraf.conf /etc/telegraf/telegraf.conf
+
+
+RUN echo $'#!/bin/sh \n\
+telegraf & \n\
+exec java $JOLOKIA_AGENT $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh
+
+VOLUME /tmp
+
+COPY --from=builder /usr/src/reportportal/build/libs/service-authorization.jar ./app.jar
+COPY --from=builder /usr/src/reportportal/build/libs/lib ./lib
+
+RUN sh -c 'touch /app.jar'
+
+EXPOSE 8080
+
+ENTRYPOINT ["/start.sh"]
