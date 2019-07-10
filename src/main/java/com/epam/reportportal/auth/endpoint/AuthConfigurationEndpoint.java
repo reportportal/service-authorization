@@ -1,39 +1,34 @@
 /*
- * Copyright 2017 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.store.AuthConfigRepository;
-import com.epam.reportportal.auth.store.entity.AbstractAuthConfig;
-import com.epam.reportportal.auth.store.entity.ldap.ActiveDirectoryConfig;
-import com.epam.reportportal.auth.store.entity.ldap.LdapConfig;
+import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
+import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
+import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+import com.epam.ta.reportportal.ws.model.integration.auth.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -42,51 +37,61 @@ import javax.validation.Valid;
 import java.beans.PropertyEditorSupport;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.web.bind.annotation.RequestMethod.*;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
-@Controller
+@RestController
 @RequestMapping("/settings/auth")
 @Api(description = "Main Auth Configuration Endpoint")
 public class AuthConfigurationEndpoint {
 
-	private final AuthConfigRepository repository;
+	private final CreateAuthIntegrationHandler createAuthIntegrationHandler;
+
+	private final DeleteAuthIntegrationHandler deleteAuthIntegrationHandler;
+
+	private final GetAuthIntegrationHandler getAuthIntegrationHandler;
+
 	private final Encryptor encryptor;
 
 	@Autowired
-	public AuthConfigurationEndpoint(AuthConfigRepository repository, Encryptor encryptor) {
-		this.repository = repository;
+	public AuthConfigurationEndpoint(CreateAuthIntegrationHandler createAuthIntegrationHandler,
+			DeleteAuthIntegrationHandler deleteAuthIntegrationHandler, GetAuthIntegrationHandler getAuthIntegrationHandler,
+			Encryptor encryptor) {
+		this.createAuthIntegrationHandler = createAuthIntegrationHandler;
+		this.deleteAuthIntegrationHandler = deleteAuthIntegrationHandler;
+		this.getAuthIntegrationHandler = getAuthIntegrationHandler;
 		this.encryptor = encryptor;
 	}
 
 	/**
 	 * Updates LDAP auth settings
 	 *
-	 * @param ldapConfig LDAP configuration
+	 * @param updateLdapRQ LDAP configuration
 	 * @return Successful message or an error
 	 */
+	@Transactional
 	@RequestMapping(value = "/ldap", method = { POST, PUT })
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public LdapConfig updateLdapSettings(@RequestBody @Valid LdapConfig ldapConfig) {
-		encyptPasswords(ldapConfig);
-		repository.updateLdap(ldapConfig);
-		return repository.findDefault().getLdap();
+	public LdapResource updateLdapSettings(@RequestBody @Valid UpdateLdapRQ updateLdapRQ) {
+
+		encryptPasswords(updateLdapRQ);
+		return createAuthIntegrationHandler.updateLdapSettings(updateLdapRQ);
 	}
 
 	/**
 	 * Updates LDAP auth settings
 	 *
-	 * @param adConfig Active Directory configuration
+	 * @param updateActiveDirectoryRQ Active Directory configuration
 	 * @return Successful message or an error
 	 */
+	@Transactional
 	@RequestMapping(value = "/ad", method = { POST, PUT })
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public ActiveDirectoryConfig updateADSettings(@RequestBody @Validated ActiveDirectoryConfig adConfig) {
-		repository.updateActiveDirectory(adConfig);
-		return repository.findDefault().getActiveDirectory();
+	public ActiveDirectoryResource updateADSettings(@RequestBody @Validated UpdateActiveDirectoryRQ updateActiveDirectoryRQ) {
+
+		return createAuthIntegrationHandler.updateActiveDirectorySettings(updateActiveDirectoryRQ);
 	}
 
 	/**
@@ -95,28 +100,28 @@ public class AuthConfigurationEndpoint {
 	 * @param authType Type of Auth
 	 * @return Successful message or an error
 	 */
-	@RequestMapping(value = "/{authType}", method = { GET })
-	@ResponseBody
+	@Transactional(readOnly = true)
+	@GetMapping(value = "/{authType}")
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Retrieves auth settings")
-	public AbstractAuthConfig getSettings(@PathVariable AuthIntegrationType authType) {
-		return authType.get(repository.findDefault())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, authType.getId()));
+	public AbstractLdapResource getSettings(@PathVariable AuthIntegrationType authType) {
+
+		return getAuthIntegrationHandler.getIntegrationByType(authType);
 	}
 
 	/**
 	 * Deletes LDAP auth settings
 	 *
-	 * @param authType Type of Auth
+	 * @param integrationId Type of Auth
 	 * @return Successful message or an error
 	 */
-	@RequestMapping(value = "/{authType}", method = { DELETE })
-	@ResponseBody
+	@Transactional
+	@DeleteMapping(value = "/{integrationId}")
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Retrieves auth settings")
-	public OperationCompletionRS deleteSettings(@PathVariable AuthIntegrationType authType) {
-		repository.deleteSettings(authType);
-		return new OperationCompletionRS(String.format("Auth config %s successfully deleted", authType));
+	public OperationCompletionRS deleteSettings(@PathVariable Long integrationId) {
+
+		return deleteAuthIntegrationHandler.deleteAuthIntegrationById(integrationId);
 	}
 
 	@InitBinder
@@ -124,13 +129,14 @@ public class AuthConfigurationEndpoint {
 		webdataBinder.registerCustomEditor(AuthIntegrationType.class, new PropertyEditorSupport() {
 			@Override
 			public void setAsText(String text) throws IllegalArgumentException {
-				setValue(AuthIntegrationType.fromId(text).orElse(null));
+				setValue(AuthIntegrationType.fromId(text)
+						.orElseThrow(() -> new ReportPortalException(ErrorType.INCORRECT_AUTHENTICATION_TYPE, text)));
 			}
 		});
 	}
 
-	private void encyptPasswords(LdapConfig ldapConfig) {
-		ofNullable(ldapConfig).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
-				.ifPresent(pwd -> ldapConfig.setManagerPassword(encryptor.encrypt(ldapConfig.getManagerPassword())));
+	private void encryptPasswords(UpdateLdapRQ updateLdapRQ) {
+		ofNullable(updateLdapRQ).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
+				.ifPresent(pwd -> updateLdapRQ.setManagerPassword(encryptor.encrypt(updateLdapRQ.getManagerPassword())));
 	}
 }

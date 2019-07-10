@@ -1,22 +1,17 @@
 /*
- * Copyright 2016 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth.integration.github;
 
@@ -29,10 +24,11 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.Serializable;
 import java.util.Objects;
+
+import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter.UPSTREAM_TOKEN;
 
 /**
  * GitHUB synchronization endpoint
@@ -42,19 +38,20 @@ import java.util.Objects;
 @RestController
 public class GithubEndpoint {
 
-    private final GitHubUserReplicator replicator;
+	private final GitHubUserReplicator replicator;
 
-    @Autowired
-    public GithubEndpoint(GitHubUserReplicator replicator) {
-        this.replicator = replicator;
-    }
+	@Autowired
+	public GithubEndpoint(GitHubUserReplicator replicator) {
+		this.replicator = replicator;
+	}
 
-    @ApiOperation(value = "Synchronizes logged-in GitHub user")
-    @RequestMapping(value = {"/sso/me/github/synchronize"}, method = RequestMethod.POST)
-    public OperationCompletionRS synchronize(@ApiIgnore OAuth2Authentication user) {
-        Serializable upstreamToken = user.getOAuth2Request().getExtensions().get("upstream_token");
-        BusinessRule.expect(upstreamToken, Objects::nonNull).verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "Cannot synchronize GitHub User");
-        this.replicator.synchronizeUser(upstreamToken.toString());
-        return new OperationCompletionRS("User info successfully synchronized");
-    }
+	@ApiOperation(value = "Synchronizes logged-in GitHub user")
+	@RequestMapping(value = { "/sso/me/github/synchronize" }, method = RequestMethod.POST)
+	public OperationCompletionRS synchronize(OAuth2Authentication user) {
+		Serializable upstreamToken = user.getOAuth2Request().getExtensions().get(UPSTREAM_TOKEN);
+		BusinessRule.expect(upstreamToken, Objects::nonNull)
+				.verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "Cannot synchronize GitHub User");
+		this.replicator.synchronizeUser(upstreamToken.toString());
+		return new OperationCompletionRS("User info successfully synchronized");
+	}
 }

@@ -1,51 +1,36 @@
 /*
- * Copyright 2016 EPAM Systems
+ * Copyright 2019 EPAM Systems
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This file is part of EPAM Report Portal.
- * https://github.com/reportportal/service-authorization
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Report Portal is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Report Portal is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.epam.reportportal.auth.endpoint;
 
-import com.epam.reportportal.auth.converter.OAuthDetailsConverters;
-import com.epam.reportportal.auth.oauth.OAuthProvider;
-import com.epam.ta.reportportal.commons.Predicates;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
-import com.epam.ta.reportportal.database.dao.ServerSettingsRepository;
-import com.epam.ta.reportportal.database.entity.settings.OAuth2LoginDetails;
-import com.epam.ta.reportportal.database.entity.settings.ServerSettings;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
+import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
+import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
-import com.epam.ta.reportportal.ws.model.settings.OAuthDetailsResource;
+import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.epam.ta.reportportal.commons.Predicates.isPresent;
-import static java.util.stream.Collectors.toMap;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
@@ -54,119 +39,78 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Controller
-@RequestMapping("/settings/{profileId}/oauth")
+@RequestMapping("/settings/oauth")
 @Api(description = "OAuth Configuration Endpoint")
 public class OAuthConfigurationEndpoint {
 
-	private final ServerSettingsRepository repository;
-	private final Map<String, OAuthProvider> providers;
+	private final CreateAuthIntegrationHandler createAuthIntegrationHandler;
+
+	private final DeleteAuthIntegrationHandler deleteAuthIntegrationHandler;
+
+	private final GetAuthIntegrationHandler getAuthIntegrationHandler;
 
 	@Autowired
-	public OAuthConfigurationEndpoint(ServerSettingsRepository repository, Map<String, OAuthProvider> providers) {
-		this.repository = repository;
-		this.providers = providers;
+	public OAuthConfigurationEndpoint(CreateAuthIntegrationHandler createAuthIntegrationHandler,
+			DeleteAuthIntegrationHandler deleteAuthIntegrationHandler, GetAuthIntegrationHandler getAuthIntegrationHandler) {
+		this.createAuthIntegrationHandler = createAuthIntegrationHandler;
+		this.deleteAuthIntegrationHandler = deleteAuthIntegrationHandler;
+		this.getAuthIntegrationHandler = getAuthIntegrationHandler;
 	}
 
 	/**
 	 * Updates oauth integration settings
 	 *
-	 * @param profileId         settings ProfileID
-	 * @param oauthDetails      OAuth details resource update
-	 * @param oauthProviderName ID of third-party OAuth provider
+	 * @param clientRegistrationResource OAuth configuration
 	 * @return All defined OAuth integration settings
 	 */
+	@Transactional
 	@RequestMapping(value = "/{authId}", method = { POST, PUT })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
-	public Map<String, OAuthDetailsResource> updateOAuthSettings(@PathVariable String profileId,
-			@PathVariable("authId") String oauthProviderName, @RequestBody @Validated OAuthDetailsResource oauthDetails) {
-
-		Optional<OAuthProvider> oAuthProvider = Optional.ofNullable(providers.get(oauthProviderName));
-		BusinessRule.expect(oAuthProvider, isPresent()).verify(ErrorType.AUTH_INTEGRATION_NOT_FOUND, profileId);
-
-		ServerSettings settings = repository.findOne(profileId);
-		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
-		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.ofNullable(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
-
-		OAuth2LoginDetails loginDetails = OAuthDetailsConverters.FROM_RESOURCE.apply(oauthDetails);
-		oAuthProvider.get().applyDefaults(loginDetails);
-		serverOAuthDetails.put(oauthProviderName, loginDetails);
-
-		settings.setoAuth2LoginDetails(serverOAuthDetails);
-
-		repository.save(settings);
-		return serverOAuthDetails.entrySet().stream()
-				.collect(toMap(Map.Entry::getKey, e -> OAuthDetailsConverters.TO_RESOURCE.apply(e.getValue())));
+	@ApiOperation(value = "Creates/Updates OAuth Integration Settings")
+	public OAuthRegistrationResource updateOAuthSettings(@PathVariable("authId") String oauthProviderId,
+			@RequestBody @Validated OAuthRegistrationResource clientRegistrationResource) {
+		return createAuthIntegrationHandler.updateOauthSettings(oauthProviderId, clientRegistrationResource);
 	}
 
 	/**
 	 * Deletes oauth integration settings
 	 *
-	 * @param profileId         settings ProfileID
-	 * @param oauthProviderName ID of third-party OAuth provider
+	 * @param oauthProviderId Oauth settings Profile Id
 	 * @return All defined OAuth integration settings
 	 */
 	@RequestMapping(value = "/{authId}", method = { DELETE })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Deletes OAuth Integration Settings", notes = "'default' profile is using till additional UI implementations")
-	public OperationCompletionRS deleteOAuthSetting(@PathVariable String profileId, @PathVariable("authId") String oauthProviderName) {
-
-		ServerSettings settings = repository.findOne(profileId);
-		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
-		Map<String, OAuth2LoginDetails> serverOAuthDetails = Optional.of(settings.getoAuth2LoginDetails()).orElse(new HashMap<>());
-
-		if (null != serverOAuthDetails.remove(oauthProviderName)) {
-			settings.setoAuth2LoginDetails(serverOAuthDetails);
-			repository.save(settings);
-		} else {
-			throw new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND);
-		}
-
-		return new OperationCompletionRS("Auth settings '" + oauthProviderName + "' were successfully removed");
+	@ApiOperation(value = "Deletes OAuth Integration Settings")
+	public OperationCompletionRS deleteOAuthSetting(@PathVariable("authId") String oauthProviderId) {
+		return deleteAuthIntegrationHandler.deleteOauthSettingsById(oauthProviderId);
 	}
 
 	/**
 	 * Returns oauth integration settings
 	 *
-	 * @param profileId settings ProfileID
 	 * @return All defined OAuth integration settings
 	 */
-	@RequestMapping(value = "/", method = { GET })
+	@GetMapping
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
-	public Map<String, OAuthDetailsResource> getOAuthSettings(@PathVariable String profileId) {
-
-		ServerSettings settings = repository.findOne(profileId);
-		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
-
-		return Optional.ofNullable(settings.getoAuth2LoginDetails()).map(details -> details.entrySet().stream()
-				.collect(Collectors.toMap(Map.Entry::getKey, e -> OAuthDetailsConverters.TO_RESOURCE.apply(e.getValue()))))
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND));
-
+	@ApiOperation(value = "Returns OAuth Server Settings")
+	public Map<String, OAuthRegistrationResource> getOAuthSettings() {
+		return getAuthIntegrationHandler.getAllOauthIntegrations();
 	}
 
 	/**
 	 * Returns oauth integration settings
 	 *
-	 * @param profileId         settings ProfileID
-	 * @param oauthProviderName ID of third-party OAuth provider
+	 * @param oauthProviderId ID of third-party OAuth provider
 	 * @return All defined OAuth integration settings
 	 */
 	@RequestMapping(value = "/{authId}", method = { GET })
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Returns OAuth Server Settings", notes = "'default' profile is using till additional UI implementations")
-	public OAuthDetailsResource getOAuthSettings(@PathVariable String profileId, @PathVariable("authId") String oauthProviderName) {
-
-		ServerSettings settings = repository.findOne(profileId);
-		BusinessRule.expect(settings, Predicates.notNull()).verify(ErrorType.SERVER_SETTINGS_NOT_FOUND, profileId);
-
-		return Optional.ofNullable(settings.getoAuth2LoginDetails()).flatMap(details -> Optional.ofNullable(details.get(oauthProviderName)))
-				.map(OAuthDetailsConverters.TO_RESOURCE)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, oauthProviderName));
-
+	@ApiOperation(value = "Returns OAuth Server Settings")
+	public OAuthRegistrationResource getOAuthSettings(@PathVariable("authId") String oauthProviderId) {
+		return getAuthIntegrationHandler.getOauthIntegrationById(oauthProviderId);
 	}
 }
