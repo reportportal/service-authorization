@@ -44,7 +44,7 @@ public class MutableClientRegistrationRepository implements ClientRegistrationRe
 	@Override
 	public ClientRegistration findByRegistrationId(String registrationId) {
 		return this.oAuthRegistrationRepository.findById(registrationId).map(TO_SPRING).orElseThrow(() -> new ReportPortalException(
-				ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+				ErrorType.AUTH_INTEGRATION_NOT_FOUND,
 				Suppliers.formattedSupplier("Client registration with id = {} has not been found.", registrationId).get()
 		));
 	}
