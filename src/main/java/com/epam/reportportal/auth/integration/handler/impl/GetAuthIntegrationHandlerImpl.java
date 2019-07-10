@@ -71,7 +71,7 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
 	public OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId) {
 		return clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
 				.map(OAuthRegistrationConverters.TO_RESOURCE)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
 						Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", oauthProviderId).get()
 				));
 	}
