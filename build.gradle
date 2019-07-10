@@ -46,7 +46,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-4'
         compile 'com.epam.reportportal:commons-model:5.0.0-BETA-4'
     } else {
-        compile 'com.github.reportportal:commons-dao:47b7ce0c'
+        compile 'com.github.reportportal:commons-dao:1b285c054a'
         compile 'com.github.reportportal:commons-rules:5.0.0-BETA-4'
         compile 'com.github.reportportal:commons-model:5.0.0-BETA-4'
     }
