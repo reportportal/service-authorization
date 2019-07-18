@@ -39,6 +39,7 @@ import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
@@ -65,7 +66,10 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
+import org.springframework.web.filter.ForwardedHeaderFilter;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.Filter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -156,6 +160,19 @@ public class SecurityConfiguration {
 			registration.setFilter(filter);
 			registration.setOrder(-100);
 			return registration;
+		}
+
+		@Bean
+		public Filter forwardedHeaderFilter() {
+			return new ForwardedHeaderFilter();
+		}
+
+		@Bean
+		public FilterRegistrationBean<Filter> forwardedHeaderFilterRegistrationBean() {
+			FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
+			filterRegistrationBean.setFilter(forwardedHeaderFilter());
+			filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+			return filterRegistrationBean;
 		}
 
 		@Override
@@ -268,7 +285,7 @@ public class SecurityConfiguration {
 					.pathMapping("/oauth/confirm_access", "/sso/oauth/confirm_access")
 					.tokenStore(jwtTokenStore())
 //					.exceptionTranslator(new OAuthErrorHandler(new ReportPortalExceptionResolver(new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING))))
-					.accessTokenConverter(accessTokenConverter(defaultAccessTokenConverter(defaultUserAuthenticationConverter())))
+					.accessTokenConverter(accessTokenConverter(externalOauth2TokenConverter(defaultUserAuthenticationConverter())))
 					.authenticationManager(authenticationManager);
 			//@formatter:on
 		}
@@ -308,13 +325,6 @@ public class SecurityConfiguration {
 		@Bean(value = "jwtTokenStore")
 		@Primary
 		public TokenStore jwtTokenStore() {
-			AccessTokenConverter accessTokenConverter = defaultAccessTokenConverter(defaultUserAuthenticationConverter());
-			JwtAccessTokenConverter jwtTokenEnhancer = accessTokenConverter(accessTokenConverter);
-			return new JwtTokenStore(jwtTokenEnhancer);
-		}
-
-		@Bean(value = "externalOauth2TokenStore")
-		public TokenStore externalOauth2TokenStore() {
 			AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(defaultUserAuthenticationConverter());
 			JwtAccessTokenConverter jwtTokenEnhancer = accessTokenConverter(accessTokenConverter);
 			return new JwtTokenStore(jwtTokenEnhancer);
@@ -325,13 +335,6 @@ public class SecurityConfiguration {
 			DefaultUserAuthenticationConverter defaultUserAuthenticationConverter = new DefaultUserAuthenticationConverter();
 			defaultUserAuthenticationConverter.setUserDetailsService(userDetailsService);
 			return defaultUserAuthenticationConverter;
-		}
-
-		@Bean
-		public AccessTokenConverter defaultAccessTokenConverter(UserAuthenticationConverter userAuthenticationConverter) {
-			DefaultAccessTokenConverter accessTokenConverter = new DefaultAccessTokenConverter();
-			accessTokenConverter.setUserTokenConverter(userAuthenticationConverter);
-			return accessTokenConverter;
 		}
 
 		@Bean
@@ -356,7 +359,7 @@ public class SecurityConfiguration {
 			defaultTokenServices.setTokenStore(jwtTokenStore());
 			defaultTokenServices.setSupportRefreshToken(true);
 			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			AccessTokenConverter accessTokenConverter = defaultAccessTokenConverter(defaultUserAuthenticationConverter());
+			AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(defaultUserAuthenticationConverter());
 			JwtAccessTokenConverter accessTokenEnhancer = accessTokenConverter(accessTokenConverter);
 			defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
 			return defaultTokenServices;
@@ -370,18 +373,6 @@ public class SecurityConfiguration {
 			defaultTokenServices.setClientDetailsService(clientDetailsService);
 			defaultTokenServices.setSupportRefreshToken(false);
 			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			return defaultTokenServices;
-		}
-
-		@Bean(value = "externalOauth2TokenServices")
-		public DefaultTokenServices externalOauth2TokenServices() {
-			DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-			defaultTokenServices.setTokenStore(externalOauth2TokenStore());
-			defaultTokenServices.setSupportRefreshToken(true);
-			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			AccessTokenConverter accessTokenConverter = defaultAccessTokenConverter(defaultUserAuthenticationConverter());
-			JwtAccessTokenConverter accessTokenEnhancer = accessTokenConverter(accessTokenConverter);
-			defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
 			return defaultTokenServices;
 		}
 

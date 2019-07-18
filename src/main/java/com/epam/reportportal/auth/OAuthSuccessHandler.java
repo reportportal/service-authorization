@@ -50,7 +50,6 @@ public class OAuthSuccessHandler extends AuthSuccessHandler {
 				ErrorType.ACCESS_DENIED));
 		String login = String.valueOf(oAuth2Authentication.getPrincipal());
 		return tokenServicesFacade.get().createToken(
-				tokenServices,
 				ReportPortalClient.ui,
 				normalizeId(login),
 				authentication,

@@ -27,7 +27,6 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.stereotype.Service;
 
@@ -72,12 +71,6 @@ public class TokenServicesFacade {
 			return createNonApiToken(client, username, userAuthentication, extensionParams);
 		}
 
-	}
-
-	public OAuth2AccessToken createToken(AuthorizationServerTokenServices externalTokenServices, ReportPortalClient client, String username,
-			Authentication userAuthentication, Map<String, Serializable> extensionParams) {
-		OAuth2Request oAuth2Request = createOAuth2Request(client, username, extensionParams);
-		return externalTokenServices.createAccessToken(new OAuth2Authentication(oAuth2Request, userAuthentication));
 	}
 
 	public OAuth2AccessToken createApiToken(ReportPortalClient client, String username, Authentication userAuthentication,

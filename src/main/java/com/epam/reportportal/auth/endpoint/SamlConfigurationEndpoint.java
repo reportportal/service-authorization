@@ -74,7 +74,7 @@ public class SamlConfigurationEndpoint {
 	@Transactional(readOnly = true)
 	public SamlDetailsResource getSamlSettingsByName(@PathVariable String providerName) {
 		SamlProviderDetails samlProviderDetails = repository.findByIdpName(providerName)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, providerName));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND, providerName));
 		return TO_RESOURCE.apply(samlProviderDetails);
 	}
 
@@ -92,7 +92,7 @@ public class SamlConfigurationEndpoint {
 	@Transactional
 	public OperationCompletionRS deleteSamlSetting(@PathVariable Long providerId) {
 		SamlProviderDetails samlProviderDetails = repository.findById(providerId)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, providerId));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND, providerId));
 		repository.delete(samlProviderDetails);
 		eventPublisher.publishEvent(new SamlProvidersReloadEvent(repository.findAll()));
 		return new OperationCompletionRS("Auth settings '" + samlProviderDetails.getIdpName() + "' were successfully removed");
@@ -120,7 +120,7 @@ public class SamlConfigurationEndpoint {
 	public SamlDetailsResource updateSamlSettings(@PathVariable Long providerId,
 			@RequestBody @Validated SamlDetailsResource samlDetailsResource) {
 		SamlProviderDetails samlProviderDetails = repository.findById(providerId)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND, providerId));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND, providerId));
 
 		validate(samlDetailsResource);
 

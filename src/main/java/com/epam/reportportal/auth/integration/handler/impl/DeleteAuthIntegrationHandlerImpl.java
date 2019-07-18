@@ -67,7 +67,7 @@ public class DeleteAuthIntegrationHandlerImpl implements DeleteAuthIntegrationHa
 	public OperationCompletionRS deleteOauthSettingsById(String oauthProviderId) {
 
 		OAuthRegistration oAuthRegistration = clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.OAUTH_INTEGRATION_NOT_FOUND,
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
 						Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", oauthProviderId).get()
 				));
 

@@ -6,8 +6,6 @@ node {
 
         stage('Checkout') {
             checkout scm
-            sh 'git checkout spb4'
-            sh 'git pull'
         }
 
         stage('Build') {
