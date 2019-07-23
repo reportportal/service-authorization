@@ -76,8 +76,8 @@ podTemplate(
                 dir('app') {
                     container('docker') {
                         //                    docker.withServer("$DOCKER_HOST") {
-                        sh "docker build -f docker/Dockerfile-develop -t quay.io/reportportal/service-api:BUILD-${env.BUILD_NUMBER} ."
-                        sh "docker push quay.io/reportportal/service-api:BUILD-${env.BUILD_NUMBER}"
+                        sh "docker build -f docker/Dockerfile-develop -t quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER} ."
+                        sh "docker push quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER}"
 //                    }
                     }
 
