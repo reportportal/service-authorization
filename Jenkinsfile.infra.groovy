@@ -62,7 +62,7 @@ hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradl
             dir('app') {
                 container('gradle') {
                     stage('Build App') {
-                        sh './gradlew build --full-stacktrace'
+                        sh "./gradlew build --full-stacktrace"
                     }
                     stage('Test') {
                         sh "./gradlew test --full-stacktrace"
