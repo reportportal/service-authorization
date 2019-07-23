@@ -8,19 +8,19 @@ println("${label}")
 podTemplate(
         label: "${label}",
         containers: [
-                containerTemplate(name: 'jnlp', image: 'jenkins/jnlp-slave:3.27-1-alpine', args: '${computer.jnlpmac} ${computer.name}'),
-                containerTemplate(name: 'gradle', image: 'gradle:4.5.1-jdk8-alpine', command: 'cat', ttyEnabled: true),
+//                containerTemplate(name: 'jnlp', image: 'jenkins/jnlp-slave:3.27-1-alpine', args: '${computer.jnlpmac} ${computer.name}'),
+                containerTemplate(name: 'jdk', image: 'openjdk:8-jdk-alpine', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
         ],
-        imagePullSecrets: ["regcred"],
+//        imagePullSecrets: ["regcred"],
         volumes: [
 //                hostPathVolume(hostPath: '/data/volumes/tools/.m2/repository', mountPath: '/root/.m2/repository'),
 //        persistentVolumeClaim(claimName: 'repository', mountPath: '/root/.m2/repository'),
-hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+                    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
 //        hostPathVolume(mountPath: '/home/root/.gradle', hostPath: '/tmp/jenkins/.gradle'),
-hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle')
+//                    hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle')
         ]
 ) {
 
@@ -60,7 +60,7 @@ hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradl
 
         stage('Build') {
             dir('app') {
-                container('gradle') {
+                container('jdk') {
                     stage('Build App') {
                         sh "./gradlew build --full-stacktrace"
                     }
