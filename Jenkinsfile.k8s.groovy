@@ -49,21 +49,22 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
                 """
             }
         }
-        stage('Checkout Infra') {
-            sh 'mkdir -p ~/.ssh'
-            sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
-            dir('kubernetes') {
-                git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
+        parallel {
+            stage('Checkout Infra') {
+                sh 'mkdir -p ~/.ssh'
+                sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
+                dir('kubernetes') {
+                    git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
 
+                }
+            }
+
+            stage('Checkout Service') {
+                dir('app') {
+                    checkout scm
+                }
             }
         }
-
-        stage('Checkout Service') {
-            dir('app') {
-                checkout scm
-            }
-        }
-
 
         dir('app') {
             container('jdk') {
