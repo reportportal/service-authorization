@@ -10,7 +10,8 @@ podTemplate(
         containers: [
                 containerTemplate(name: 'jnlp', image: 'jenkins/jnlp-slave:alpine'),
                 containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, alwaysPullImage: true, privileged: true,
-                        command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay'), containerTemplate(name: 'jdk', image: 'openjdk:8-jdk-alpine', command: 'cat', ttyEnabled: true),
+                        command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay'),
+                containerTemplate(name: 'gradle', image: 'gradle:4.5.1-jdk-alpine', command: 'cat', ttyEnabled: true),
 //              containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
 //              containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
         ],
@@ -73,15 +74,15 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
 
 
         dir('app') {
-            container('jdk') {
+            container('gradle') {
                 stage('Build App') {
-                    sh "./gradlew build --full-stacktrace"
+                    sh "gradle build --full-stacktrace"
                 }
                 stage('Test') {
-                    sh "./gradlew test --full-stacktrace"
+                    sh "gradle test --full-stacktrace"
                 }
                 stage('Security/SAST') {
-                    sh "./gradlew dependencyCheckAnalyze"
+                    sh "gradle dependencyCheckAnalyze"
                 }
             }
 
