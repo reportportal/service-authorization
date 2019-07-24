@@ -76,13 +76,14 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
                 stage('Security/SAST') {
                     sh "./gradlew dependencyCheckAnalyze"
                 }
+            }
 
+            container('docker') {
                 stage('Create Docker Image') {
                     sh "docker build -f docker/Dockerfile-dev-release -t quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER} ."
                     sh "docker push quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER}"
 
                 }
-
             }
         }
         stage('Deploy to Dev Environment') {
