@@ -48,23 +48,29 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
                 cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
                 """
             }
-        }
-        parallel {
-            stage('Checkout Infra') {
-                sh 'mkdir -p ~/.ssh'
-                sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
-                dir('kubernetes') {
-                    git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
-
-                }
-            }
-
-            stage('Checkout Service') {
-                dir('app') {
-                    checkout scm
-                }
+            container('jdk') {
+                sh 'mkdir -p ~/.gradle && echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties'
             }
         }
+        //stage('Checkout') {
+            parallel checkoutInfra: {
+                stage('Checkout Infra') {
+                    sh 'mkdir -p ~/.ssh'
+                    sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
+                    dir('kubernetes') {
+                        git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
+
+                    }
+                }
+            }, checkoutService: {
+                stage('Checkout Service') {
+                    dir('app') {
+                        checkout scm
+                    }
+                }
+            }
+        //}
+
 
         dir('app') {
             container('jdk') {
@@ -81,6 +87,8 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
 
             container('docker') {
                 stage('Create Docker Image') {
+                    sh 'ls -la'
+                    sh 'ls -la build'
                     sh "docker build -f docker/Dockerfile-dev-release -t quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER} ."
                     sh "docker push quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER}"
 
@@ -103,5 +111,5 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
         }
 
     }
-}
 
+}

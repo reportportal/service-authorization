@@ -15,7 +15,7 @@ exec java $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh"
 VOLUME /tmp
 
 RUN mkdir /app
-ADD build/libs/service-authorization.jar /app/app.zip
+ADD build/libs/service-authorization.jar /app/app.jar
 ADD build/libs/lib/ /app/lib/
 
 EXPOSE 8080
