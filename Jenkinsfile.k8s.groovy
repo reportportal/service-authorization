@@ -78,7 +78,7 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
                 }
 
                 stage('Create Docker Image') {
-                    sh "docker build -f docker/Dockerfile-develop-release -t quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER} ."
+                    sh "docker build -f docker/Dockerfile-dev-release -t quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER} ."
                     sh "docker push quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER}"
 
                 }
