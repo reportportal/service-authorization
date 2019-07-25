@@ -11,25 +11,19 @@ podTemplate(
                 containerTemplate(name: 'jnlp', image: 'jenkins/jnlp-slave:alpine'),
                 containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, alwaysPullImage: true, privileged: true,
                         command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay'),
-                containerTemplate(name: 'gradle', image: 'gradle:4.5.1-jdk-alpine', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'jdk', image: 'java:8-jdk-alpine', command: 'cat', ttyEnabled: true),
+//                containerTemplate(name: 'gradle', image: 'gradle:5.4.1-jdk-alpine', command: 'cat', ttyEnabled: true),
 //              containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
 //              containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
         ],
         imagePullSecrets: ["regcred"],
         volumes: [
-//                hostPathVolume(hostPath: '/data/volumes/tools/.m2/repository', mountPath: '/root/.m2/repository'),
-//        persistentVolumeClaim(claimName: 'repository', mountPath: '/root/.m2/repository'),
-hostPathVolume(mountPath: '/home/root/.gradle', hostPath: '/tmp/jenkins/.gradle'),
+                hostPathVolume(mountPath: '/root/.gradle', hostPath: '/tmp/jenkins/.gradle'),
+//                hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle'),
 //                hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-emptyDirVolume(memory: false, mountPath: '/var/lib/docker'),
-secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
-
-//                    hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle')
+                emptyDirVolume(memory: false, mountPath: '/var/lib/docker'),
+                secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
         ]
-//        envVars: [
-//                secretEnvVar(key: 'DOCKER_USERNAME', secretName: 'docker-creds', secretKey: 'username'),
-//                secretEnvVar(key: 'DOCKER_PASSWORD', secretName: 'docker-creds', secretKey: 'password'),
-//        ]
 ) {
 
     node("${label}") {
@@ -54,35 +48,35 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
             }
         }
         //stage('Checkout') {
-            parallel checkoutInfra: {
-                stage('Checkout Infra') {
-                    sh 'mkdir -p ~/.ssh'
-                    sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
-                    dir('kubernetes') {
-                        git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
+        parallel checkoutInfra: {
+            stage('Checkout Infra') {
+                sh 'mkdir -p ~/.ssh'
+                sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
+                dir('kubernetes') {
+                    git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
 
-                    }
-                }
-            }, checkoutService: {
-                stage('Checkout Service') {
-                    dir('app') {
-                        checkout scm
-                    }
                 }
             }
+        }, checkoutService: {
+            stage('Checkout Service') {
+                dir('app') {
+                    checkout scm
+                }
+            }
+        }
         //}
 
 
         dir('app') {
-            container('gradle') {
+            container('jdk') {
                 stage('Build App') {
-                    sh "gradle build --full-stacktrace"
+                    sh "./gradlew build --full-stacktrace"
                 }
                 stage('Test') {
-                    sh "gradle test --full-stacktrace"
+                    sh "./gradlew test --full-stacktrace"
                 }
                 stage('Security/SAST') {
-                    sh "gradle dependencyCheckAnalyze"
+                    sh "./gradlew dependencyCheckAnalyze"
                 }
             }
 
@@ -90,6 +84,7 @@ secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
                 stage('Create Docker Image') {
                     sh 'ls -la'
                     sh 'ls -la build'
+                    sh 'ls -la build/libs'
                     sh "docker build -f docker/Dockerfile-dev-release -t quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER} ."
                     sh "docker push quay.io/reportportal/service-authorozation:BUILD-${env.BUILD_NUMBER}"
 
