@@ -67,23 +67,22 @@ podTemplate(
 
 
         dir('app') {
-            container('jdk') {
-                stage('Build App') {
-                    sh "./gradlew build --full-stacktrace"
+            try {
+                container('jdk') {
+                    stage('Build App') {
+                        sh "./gradlew build --full-stacktrace"
+                    }
+                    stage('Test') {
+                        sh "./gradlew test --full-stacktrace"
+                    }
+                    stage('Security/SAST') {
+                        sh "./gradlew dependencyCheckAnalyze"
+                    }
                 }
-                stage('Test') {
-                    sh "./gradlew test --full-stacktrace"
-                }
-                stage('Security/SAST') {
-                    sh "./gradlew dependencyCheckAnalyze"
-                }
-            }
+            } finally {
+//                junit 'build/reports/**/*.xml'
+                dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
 
-            post {
-                always {
-                    junit 'build/reports/**/*.xml'
-                    dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
-                }
             }
 
             container('docker') {
