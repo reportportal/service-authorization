@@ -9,6 +9,8 @@ server:
   port: 9999
   use-forward-headers: true
 spring:
+  application:
+    name: uat
   jackson:
     default-property-inclusion: non_null
   session:
