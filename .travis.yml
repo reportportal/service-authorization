@@ -2,8 +2,10 @@ language: java
 
 script: ./gradlew build
 
+dist: trusty
+
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 notifications:
   slack: reportportal-dev:fl6xWHVQp1jvsMmCJxYW9YKP
