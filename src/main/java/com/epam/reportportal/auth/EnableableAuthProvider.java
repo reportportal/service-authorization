@@ -22,7 +22,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Dynamic (enableable) auth provider
@@ -45,7 +44,6 @@ public abstract class EnableableAuthProvider implements AuthenticationProvider {
 	protected abstract AuthenticationProvider getDelegate();
 
 	@Override
-	@Transactional
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		if (isEnabled()) {
 			Authentication auth = getDelegate().authenticate(authentication);

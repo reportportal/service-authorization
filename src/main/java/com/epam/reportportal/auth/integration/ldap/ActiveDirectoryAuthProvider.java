@@ -23,6 +23,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Active Directory provider
@@ -31,12 +32,12 @@ import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAu
  */
 public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
-	private final LdapUserReplicator ldapUserReplicator;
+	private final DetailsContextMapper detailsContextMapper;
 
 	public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
-			LdapUserReplicator ldapUserReplicator) {
+			DetailsContextMapper detailsContextMapper) {
 		super(integrationRepository, eventPublisher);
-		this.ldapUserReplicator = ldapUserReplicator;
+		this.detailsContextMapper = detailsContextMapper;
 	}
 
 	@Override
@@ -56,7 +57,7 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 		);
 
 		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
-		adAuth.setUserDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, adConfig.getSynchronizationAttributes()));
+		adAuth.setUserDetailsContextMapper(detailsContextMapper);
 		return adAuth;
 	}
 }

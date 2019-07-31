@@ -41,12 +41,12 @@ import static java.util.Optional.ofNullable;
  */
 public class LdapAuthProvider extends EnableableAuthProvider {
 
-	private final LdapUserReplicator ldapUserReplicator;
+	private final DetailsContextMapper detailsContextMapper;
 
 	public LdapAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
-			LdapUserReplicator ldapUserReplicator) {
+			DetailsContextMapper detailsContextMapper) {
 		super(integrationRepository, eventPublisher);
-		this.ldapUserReplicator = ldapUserReplicator;
+		this.detailsContextMapper = detailsContextMapper;
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
 				.contextSource(contextSource)
 				.ldapAuthoritiesPopulator(new NullLdapAuthoritiesPopulator())
-				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()));
+				.userDetailsContextMapper(detailsContextMapper);
 
 		/*
 		 * Basically, groups are not used

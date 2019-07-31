@@ -23,15 +23,19 @@ import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.oauth.AccessTokenStore;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -165,6 +169,26 @@ public class SecurityConfiguration {
 			return registration;
 		}
 
+		@Bean("activeDirectoryDetailsContextMapper")
+		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
+			return new DetailsContextMapper(
+					ldapUserReplicator,
+					() -> authConfigRepository.findActiveDirectory(true)
+							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+							.getSynchronizationAttributes()
+			);
+		}
+
+		@Bean("ldapDetailsContextMapper")
+		public DetailsContextMapper ldapDetailsContextMapper() {
+			return new DetailsContextMapper(
+					ldapUserReplicator,
+					() -> authConfigRepository.findLdap(true)
+							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+							.getSynchronizationAttributes()
+			);
+		}
+
 		@Bean
 		public Filter forwardedHeaderFilter() {
 			return new ForwardedHeaderFilter();
@@ -211,6 +235,14 @@ public class SecurityConfiguration {
 		@Autowired
 		private ApplicationEventPublisher eventPublisher;
 
+		@Autowired
+		@Qualifier("activeDirectoryDetailsContextMapper")
+		DetailsContextMapper activeDirectoryContextMapper;
+
+		@Autowired
+		@Qualifier("ldapDetailsContextMapper")
+		DetailsContextMapper ldapContextMapper;
+
 		@Bean
 		public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 			return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
@@ -226,12 +258,12 @@ public class SecurityConfiguration {
 
 		@Bean
 		public AuthenticationProvider activeDirectoryAuthProvider() {
-			return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher, ldapUserReplicator);
+			return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher, activeDirectoryContextMapper);
 		}
 
 		@Bean
 		public AuthenticationProvider ldapAuthProvider() {
-			return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapUserReplicator);
+			return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapContextMapper);
 		}
 
 		@Bean
