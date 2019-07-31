@@ -23,15 +23,19 @@ import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
 import com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.oauth.AccessTokenStore;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -67,7 +71,6 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.Filter;
 import java.util.Arrays;
@@ -96,23 +99,27 @@ public class SecurityConfiguration {
 
 		public static final String SSO_LOGIN_PATH = "/sso/login";
 
-		@Autowired
 		private OAuth2ClientContext oauth2ClientContext;
-
-		@Autowired
 		private OAuthSuccessHandler successHandler;
-
-		@Autowired
 		private AuthenticationFailureHandler authenticationFailureHandler;
-
-		@Autowired
 		private IntegrationRepository authConfigRepository;
-
-		@Autowired
 		private LdapUserReplicator ldapUserReplicator;
+		private List<OAuthProvider> authProviders;
 
 		@Autowired
-		private List<OAuthProvider> authProviders;
+		public GlobalWebSecurityConfig(OAuth2ClientContext oauth2ClientContext, AuthenticationFailureHandler authenticationFailureHandler,
+				IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator, List<OAuthProvider> authProviders) {
+			this.oauth2ClientContext = oauth2ClientContext;
+			this.authenticationFailureHandler = authenticationFailureHandler;
+			this.authConfigRepository = authConfigRepository;
+			this.ldapUserReplicator = ldapUserReplicator;
+			this.authProviders = authProviders;
+		}
+
+		@Autowired
+		public void setSuccessHandler(OAuthSuccessHandler successHandler) {
+			this.successHandler = successHandler;
+		}
 
 		private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
 			return authProviders.stream().map(provider -> {
@@ -162,6 +169,26 @@ public class SecurityConfiguration {
 			return registration;
 		}
 
+		@Bean("activeDirectoryDetailsContextMapper")
+		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
+			return new DetailsContextMapper(
+					ldapUserReplicator,
+					() -> authConfigRepository.findActiveDirectory(true)
+							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+							.getSynchronizationAttributes()
+			);
+		}
+
+		@Bean("ldapDetailsContextMapper")
+		public DetailsContextMapper ldapDetailsContextMapper() {
+			return new DetailsContextMapper(
+					ldapUserReplicator,
+					() -> authConfigRepository.findLdap(true)
+							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+							.getSynchronizationAttributes()
+			);
+		}
+
 		@Bean
 		public Filter forwardedHeaderFilter() {
 			return new ForwardedHeaderFilter();
@@ -206,7 +233,15 @@ public class SecurityConfiguration {
 		}
 
 		@Autowired
-		private ApplicationEventPublisher applicationEventPublisher;
+		private ApplicationEventPublisher eventPublisher;
+
+		@Autowired
+		@Qualifier("activeDirectoryDetailsContextMapper")
+		DetailsContextMapper activeDirectoryContextMapper;
+
+		@Autowired
+		@Qualifier("ldapDetailsContextMapper")
+		DetailsContextMapper ldapContextMapper;
 
 		@Bean
 		public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
@@ -214,21 +249,21 @@ public class SecurityConfiguration {
 		}
 
 		@Override
-		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		protected void configure(AuthenticationManagerBuilder auth) {
 			auth.authenticationProvider(basicPasswordAuthProvider())
-					.authenticationEventPublisher(authenticationEventPublisher(applicationEventPublisher))
+					.authenticationEventPublisher(authenticationEventPublisher(eventPublisher))
 					.authenticationProvider(activeDirectoryAuthProvider())
 					.authenticationProvider(ldapAuthProvider());
 		}
 
 		@Bean
 		public AuthenticationProvider activeDirectoryAuthProvider() {
-			return new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
+			return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher, activeDirectoryContextMapper);
 		}
 
 		@Bean
 		public AuthenticationProvider ldapAuthProvider() {
-			return new LdapAuthProvider(authConfigRepository, ldapUserReplicator);
+			return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapContextMapper);
 		}
 
 		@Bean

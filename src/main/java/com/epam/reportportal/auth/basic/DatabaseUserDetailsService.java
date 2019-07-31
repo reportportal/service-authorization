@@ -42,7 +42,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	private UserRepository userRepository;
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		User user = userRepository.findByLogin(normalizeId(username))
 				.orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found."));

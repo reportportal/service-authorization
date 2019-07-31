@@ -83,7 +83,7 @@ public class AbstractUserReplicator {
 	protected com.epam.ta.reportportal.entity.Metadata defaultMetaData() {
 		Map<String, Object> metaDataMap = new HashMap<>();
 		long nowInMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
-		metaDataMap.put("lastLogin", nowInMillis);
+		metaDataMap.put("last_login", nowInMillis);
 		metaDataMap.put("synchronizationDate", nowInMillis);
 		return new com.epam.ta.reportportal.entity.Metadata(metaDataMap);
 	}
