@@ -42,13 +42,13 @@ dependencyManagement {
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:5.0.0-BETA-6'
+        compile 'com.epam.reportportal:commons-dao:5.0.0-BETA-7'
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.epam.reportportal:commons-model:5.0.0-BETA-6'
+        compile 'com.epam.reportportal:commons-model:5.0.0-BETA-8'
     } else {
-        compile 'com.github.reportportal:commons-dao:5.0.0-BETA-6'
+        compile 'com.github.reportportal:commons-dao:5.0.0-BETA-7'
         compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.github.reportportal:commons-model:5.0.0-BETA-6'
+        compile 'com.github.reportportal:commons-model:5.0.0-BETA-8'
     }
 
     compile 'javax.inject:javax.inject:1'
@@ -74,6 +74,9 @@ dependencies {
     compile("org.apache.directory.server:apacheds-core:1.5.5")
     compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
     compile 'org.jasypt:jasypt:1.9.2'
+
+    //SAML
+    compile 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M26'
 
     compile 'org.springframework.retry:spring-retry'
 
