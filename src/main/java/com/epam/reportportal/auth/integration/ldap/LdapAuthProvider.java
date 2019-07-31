@@ -20,6 +20,7 @@ import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -42,8 +43,9 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	private final LdapUserReplicator ldapUserReplicator;
 
-	public LdapAuthProvider(IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
-		super(authConfigRepository);
+	public LdapAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
+			LdapUserReplicator ldapUserReplicator) {
+		super(integrationRepository, eventPublisher);
 		this.ldapUserReplicator = ldapUserReplicator;
 	}
 
@@ -54,8 +56,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
-		LdapConfig ldap = integrationRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException(
-				"LDAP is not configured"));
+		LdapConfig ldap = integrationRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn()

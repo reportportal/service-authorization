@@ -15,22 +15,29 @@
  */
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.event.UiUserSignedInEvent;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Dynamic (enableable) auth provider
  *
  * @author Andrei Varabyeu
  */
+@Component
 public abstract class EnableableAuthProvider implements AuthenticationProvider {
 
 	protected final IntegrationRepository integrationRepository;
+	protected final ApplicationEventPublisher eventPublisher;
 
-	protected EnableableAuthProvider(IntegrationRepository integrationRepository) {
+	public EnableableAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher) {
 		this.integrationRepository = integrationRepository;
+		this.eventPublisher = eventPublisher;
 	}
 
 	protected abstract boolean isEnabled();
@@ -38,8 +45,15 @@ public abstract class EnableableAuthProvider implements AuthenticationProvider {
 	protected abstract AuthenticationProvider getDelegate();
 
 	@Override
-	public final Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		return isEnabled() ? getDelegate().authenticate(authentication) : null;
+	@Transactional
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		if (isEnabled()) {
+			Authentication auth = getDelegate().authenticate(authentication);
+			eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
+			return auth;
+		} else {
+			return null;
+		}
 	}
 
 	@Override

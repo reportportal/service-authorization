@@ -67,7 +67,6 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.Filter;
 import java.util.Arrays;
@@ -96,23 +95,27 @@ public class SecurityConfiguration {
 
 		public static final String SSO_LOGIN_PATH = "/sso/login";
 
-		@Autowired
 		private OAuth2ClientContext oauth2ClientContext;
-
-		@Autowired
 		private OAuthSuccessHandler successHandler;
-
-		@Autowired
 		private AuthenticationFailureHandler authenticationFailureHandler;
-
-		@Autowired
 		private IntegrationRepository authConfigRepository;
-
-		@Autowired
 		private LdapUserReplicator ldapUserReplicator;
+		private List<OAuthProvider> authProviders;
 
 		@Autowired
-		private List<OAuthProvider> authProviders;
+		public GlobalWebSecurityConfig(OAuth2ClientContext oauth2ClientContext, AuthenticationFailureHandler authenticationFailureHandler,
+				IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator, List<OAuthProvider> authProviders) {
+			this.oauth2ClientContext = oauth2ClientContext;
+			this.authenticationFailureHandler = authenticationFailureHandler;
+			this.authConfigRepository = authConfigRepository;
+			this.ldapUserReplicator = ldapUserReplicator;
+			this.authProviders = authProviders;
+		}
+
+		@Autowired
+		public void setSuccessHandler(OAuthSuccessHandler successHandler) {
+			this.successHandler = successHandler;
+		}
 
 		private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
 			return authProviders.stream().map(provider -> {
@@ -206,7 +209,7 @@ public class SecurityConfiguration {
 		}
 
 		@Autowired
-		private ApplicationEventPublisher applicationEventPublisher;
+		private ApplicationEventPublisher eventPublisher;
 
 		@Bean
 		public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
@@ -214,21 +217,21 @@ public class SecurityConfiguration {
 		}
 
 		@Override
-		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		protected void configure(AuthenticationManagerBuilder auth) {
 			auth.authenticationProvider(basicPasswordAuthProvider())
-					.authenticationEventPublisher(authenticationEventPublisher(applicationEventPublisher))
+					.authenticationEventPublisher(authenticationEventPublisher(eventPublisher))
 					.authenticationProvider(activeDirectoryAuthProvider())
 					.authenticationProvider(ldapAuthProvider());
 		}
 
 		@Bean
 		public AuthenticationProvider activeDirectoryAuthProvider() {
-			return new ActiveDirectoryAuthProvider(authConfigRepository, ldapUserReplicator);
+			return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher, ldapUserReplicator);
 		}
 
 		@Bean
 		public AuthenticationProvider ldapAuthProvider() {
-			return new LdapAuthProvider(authConfigRepository, ldapUserReplicator);
+			return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapUserReplicator);
 		}
 
 		@Bean
