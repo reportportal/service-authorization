@@ -69,7 +69,7 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
 		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString().replaceFirst("/ui/authSuccess", "/#ui/authSuccess"));
+		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString().replaceFirst("/ui/authSuccess", "/#authSuccess"));
 	}
 
 	protected abstract OAuth2AccessToken getToken(Authentication authentication);
