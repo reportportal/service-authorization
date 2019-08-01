@@ -17,6 +17,7 @@ package com.epam.reportportal.auth;
 
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -39,6 +40,7 @@ import static java.util.Optional.ofNullable;
 @Component
 public class OAuthSuccessHandler extends AuthSuccessHandler {
 
+	@Autowired
 	public OAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher,
 			AuthorizationServerTokenServices tokenServices) {
 		super(tokenServicesFacade, eventPublisher, tokenServices);

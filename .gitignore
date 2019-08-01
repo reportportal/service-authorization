@@ -17,6 +17,7 @@ hs_err_pid*
 ## macOS meta files
 .DS_Store
 
+*.iml
 .idea/
 build/
 .gradle/
