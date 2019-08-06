@@ -20,6 +20,7 @@ import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -40,11 +41,12 @@ import static java.util.Optional.ofNullable;
  */
 public class LdapAuthProvider extends EnableableAuthProvider {
 
-	private final LdapUserReplicator ldapUserReplicator;
+	private final DetailsContextMapper detailsContextMapper;
 
-	public LdapAuthProvider(IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
-		super(authConfigRepository);
-		this.ldapUserReplicator = ldapUserReplicator;
+	public LdapAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
+			DetailsContextMapper detailsContextMapper) {
+		super(integrationRepository, eventPublisher);
+		this.detailsContextMapper = detailsContextMapper;
 	}
 
 	@Override
@@ -54,8 +56,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
-		LdapConfig ldap = integrationRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException(
-				"LDAP is not configured"));
+		LdapConfig ldap = integrationRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn()
@@ -67,7 +68,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
 				.contextSource(contextSource)
 				.ldapAuthoritiesPopulator(new NullLdapAuthoritiesPopulator())
-				.userDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, ldap.getSynchronizationAttributes()));
+				.userDetailsContextMapper(detailsContextMapper);
 
 		/*
 		 * Basically, groups are not used

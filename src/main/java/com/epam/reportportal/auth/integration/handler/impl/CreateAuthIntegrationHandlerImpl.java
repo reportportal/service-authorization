@@ -25,6 +25,7 @@ import com.epam.reportportal.auth.integration.converter.OAuthRestrictionConverte
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
@@ -70,13 +71,14 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 	}
 
 	@Override
-	public LdapResource updateLdapSettings(UpdateLdapRQ updateLdapRQ) {
+	public LdapResource updateLdapSettings(UpdateLdapRQ updateLdapRQ, ReportPortalUser user) {
 		LdapConfig ldapConfig = integrationRepository.findLdap().map(lc -> {
 			BusinessRule.expect(lc.getType().getIntegrationGroup(), equalTo(IntegrationGroupEnum.AUTH))
 					.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION, "Wrong integration group");
 			return new LdapBuilder(lc).addUpdateRq(updateLdapRQ).build();
 		}).orElseGet(() -> {
 			LdapConfig config = new LdapBuilder().addUpdateRq(updateLdapRQ).build();
+			config.setCreator(user.getUsername());
 			updateWithAuthIntegrationParameters(config);
 			return config;
 		});
@@ -85,7 +87,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 	}
 
 	@Override
-	public ActiveDirectoryResource updateActiveDirectorySettings(UpdateActiveDirectoryRQ updateActiveDirectoryRQ) {
+	public ActiveDirectoryResource updateActiveDirectorySettings(UpdateActiveDirectoryRQ updateActiveDirectoryRQ, ReportPortalUser user) {
 
 		ActiveDirectoryConfig activeDirectoryConfig = integrationRepository.findActiveDirectory().map(ad -> {
 			BusinessRule.expect(ad.getType().getIntegrationGroup(), equalTo(IntegrationGroupEnum.AUTH))
@@ -93,6 +95,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 			return new ActiveDirectoryBuilder(ad).addUpdateRq(updateActiveDirectoryRQ).build();
 		}).orElseGet(() -> {
 			ActiveDirectoryConfig config = new ActiveDirectoryBuilder().addUpdateRq(updateActiveDirectoryRQ).build();
+			config.setCreator(user.getUsername());
 			updateWithAuthIntegrationParameters(config);
 			return config;
 		});

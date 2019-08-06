@@ -58,6 +58,8 @@ rp:
     pass: rppass
   jwt:
     signing-key: 123
+    token:
+      validity-period: 86400
   auth:
     server: default
     saml:
