@@ -20,6 +20,7 @@ import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandl
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.util.Encryptor;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
@@ -28,6 +29,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
@@ -73,10 +75,10 @@ public class AuthConfigurationEndpoint {
 	@RequestMapping(value = "/ldap", method = { POST, PUT })
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public LdapResource updateLdapSettings(@RequestBody @Valid UpdateLdapRQ updateLdapRQ) {
+	public LdapResource updateLdapSettings(@RequestBody @Valid UpdateLdapRQ updateLdapRQ, @AuthenticationPrincipal ReportPortalUser user) {
 
 		encryptPasswords(updateLdapRQ);
-		return createAuthIntegrationHandler.updateLdapSettings(updateLdapRQ);
+		return createAuthIntegrationHandler.updateLdapSettings(updateLdapRQ, user);
 	}
 
 	/**
@@ -89,9 +91,10 @@ public class AuthConfigurationEndpoint {
 	@RequestMapping(value = "/ad", method = { POST, PUT })
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public ActiveDirectoryResource updateADSettings(@RequestBody @Validated UpdateActiveDirectoryRQ updateActiveDirectoryRQ) {
+	public ActiveDirectoryResource updateADSettings(@RequestBody @Validated UpdateActiveDirectoryRQ updateActiveDirectoryRQ,
+			@AuthenticationPrincipal ReportPortalUser user) {
 
-		return createAuthIntegrationHandler.updateActiveDirectorySettings(updateActiveDirectoryRQ);
+		return createAuthIntegrationHandler.updateActiveDirectorySettings(updateActiveDirectoryRQ, user);
 	}
 
 	/**

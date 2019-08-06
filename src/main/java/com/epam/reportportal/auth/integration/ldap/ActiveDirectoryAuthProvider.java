@@ -18,10 +18,12 @@ package com.epam.reportportal.auth.integration.ldap;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Active Directory provider
@@ -30,11 +32,12 @@ import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAu
  */
 public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
-	private final LdapUserReplicator ldapUserReplicator;
+	private final DetailsContextMapper detailsContextMapper;
 
-	public ActiveDirectoryAuthProvider(IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator) {
-		super(authConfigRepository);
-		this.ldapUserReplicator = ldapUserReplicator;
+	public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
+			DetailsContextMapper detailsContextMapper) {
+		super(integrationRepository, eventPublisher);
+		this.detailsContextMapper = detailsContextMapper;
 	}
 
 	@Override
@@ -45,8 +48,8 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 	@Override
 	protected AuthenticationProvider getDelegate() {
 
-		ActiveDirectoryConfig adConfig = integrationRepository.findActiveDirectory(true).orElseThrow(() -> new BadCredentialsException(
-				"Active Directory is not configured"));
+		ActiveDirectoryConfig adConfig = integrationRepository.findActiveDirectory(true)
+				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
 		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
 				adConfig.getUrl(),
@@ -54,7 +57,7 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 		);
 
 		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
-		adAuth.setUserDetailsContextMapper(new DetailsContextMapper(ldapUserReplicator, adConfig.getSynchronizationAttributes()));
+		adAuth.setUserDetailsContextMapper(detailsContextMapper);
 		return adAuth;
 	}
 }

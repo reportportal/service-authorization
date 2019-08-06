@@ -24,11 +24,13 @@ import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -36,21 +38,22 @@ import static java.util.Optional.ofNullable;
 /**
  * @author Details Context mapper
  */
-class DetailsContextMapper extends LdapUserDetailsMapper {
+public class DetailsContextMapper extends LdapUserDetailsMapper {
 
 	private final LdapUserReplicator ldapUserReplicator;
-	private final SynchronizationAttributes attributes;
+	private final Supplier<SynchronizationAttributes> attributes;
 
-	DetailsContextMapper(LdapUserReplicator ldapUserReplicator, SynchronizationAttributes attributes) {
+	public DetailsContextMapper(LdapUserReplicator ldapUserReplicator, Supplier<SynchronizationAttributes> attributes) {
 		this.ldapUserReplicator = ldapUserReplicator;
 		this.attributes = attributes;
 	}
 
 	@Override
+	@Transactional
 	public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
 		UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
 
-		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes);
+		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes.get());
 
 		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(user.getLogin(),
 				"",
