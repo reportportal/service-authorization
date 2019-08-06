@@ -4,6 +4,8 @@ management:
       base-path: /
 info:
   build:
+    name: Authorization Service
+    description: Unified Authorization Trap for all ReportPortal's Services
     version: ${rp.uat.version:5.0}
 server:
   port: 9999
