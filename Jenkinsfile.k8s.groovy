@@ -47,8 +47,8 @@ podTemplate(
                 sh 'mkdir -p ~/.gradle && echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties'
             }
         }
-        //stage('Checkout') {
-        parallel checkoutInfra: {
+
+        parallel 'Checkout Infra': {
             stage('Checkout Infra') {
                 sh 'mkdir -p ~/.ssh'
                 sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
@@ -57,27 +57,32 @@ podTemplate(
 
                 }
             }
-        }, checkoutService: {
+        }, 'Checkout Service': {
             stage('Checkout Service') {
                 dir('app') {
                     checkout scm
                 }
             }
         }
-        //}
 
 
         dir('app') {
-            container('jdk') {
-                stage('Build App') {
-                    sh "./gradlew build --full-stacktrace"
+            try {
+                container('jdk') {
+                    stage('Build App') {
+                        sh "./gradlew build --full-stacktrace"
+                    }
+                    stage('Test') {
+                        sh "./gradlew test --full-stacktrace"
+                    }
+                    stage('Security/SAST') {
+                        sh "./gradlew dependencyCheckAnalyze"
+                    }
                 }
-                stage('Test') {
-                    sh "./gradlew test --full-stacktrace"
-                }
-                stage('Security/SAST') {
-                    sh "./gradlew dependencyCheckAnalyze"
-                }
+            } finally {
+//                junit 'build/reports/**/*.xml'
+                dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
+
             }
 
             container('docker') {

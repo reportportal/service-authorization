@@ -248,6 +248,10 @@ task removeDockerfileFromGit {
     }
 }
 
+dependencyCheck {
+    formats = ['HTML', 'XML']
+//    cveValidForHours = 1
+}
 
 addDockerfileToGit.dependsOn releaseDockerfile
 updateVersion.dependsOn removeDockerfileFromGit
