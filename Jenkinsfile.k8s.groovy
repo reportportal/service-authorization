@@ -43,9 +43,9 @@ podTemplate(
                 cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
                 """
             }
-            container('jdk') {
-                sh 'mkdir -p ~/.gradle && echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties'
-            }
+//            container('jdk') {
+//                sh 'mkdir -p ~/.gradle && echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties'
+//            }
         }
 
         parallel 'Checkout Infra': {
