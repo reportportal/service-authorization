@@ -70,7 +70,7 @@ podTemplate(
             try {
                 container('gradle') {
                     stage('Build App') {
-                        sh "gradlew build --full-stacktrace"
+                        sh "gradle build --full-stacktrace"
                     }
                     stage('Test') {
                         sh "gradle test --full-stacktrace"
