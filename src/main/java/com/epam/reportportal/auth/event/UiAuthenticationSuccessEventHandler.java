@@ -17,7 +17,7 @@ package com.epam.reportportal.auth.event;
 
 import com.epam.ta.reportportal.dao.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +31,12 @@ import java.time.ZoneOffset;
  * @author Andrei Varabyeu
  */
 @Component
-public class UiAuthenticationSuccessEventHandler implements ApplicationListener<UiUserSignedInEvent> {
+public class UiAuthenticationSuccessEventHandler {
 
 	@Autowired
 	private UserRepository userRepository;
 
-	@Override
+	@EventListener
 	@Transactional
 	public void onApplicationEvent(UiUserSignedInEvent event) {
 		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
