@@ -12,7 +12,7 @@ podTemplate(
                 containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, alwaysPullImage: true, privileged: true,
                         command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay'),
 //                containerTemplate(name: 'jdk', image: 'java:8-jdk-alpine', command: 'cat', ttyEnabled: true),
-                containerTemplate(name: 'gradle', image: 'gradle:5.4.1-jdk8', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'gradle', image: 'gradle:5.5.1-jdk8', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
 //              containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
         ],
