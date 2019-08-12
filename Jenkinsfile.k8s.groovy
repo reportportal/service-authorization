@@ -46,6 +46,10 @@ podTemplate(
                 cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
                 """
             }
+            container('helm') {
+                sh 'helm init --client-only'
+                sh 'helm repo update'
+            }
         }
 
         parallel 'Checkout Infra': {
