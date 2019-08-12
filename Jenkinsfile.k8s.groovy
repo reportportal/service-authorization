@@ -46,19 +46,23 @@ podTemplate(
                 cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
                 """
             }
-//            container('jdk') {
-//                sh 'mkdir -p ~/.gradle && echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties'
-//            }
         }
 
         parallel 'Checkout Infra': {
             stage('Checkout Infra') {
                 sh 'mkdir -p ~/.ssh'
                 sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
+                sh 'ssh-keyscan -t rsa git.epam.com >> ~/.ssh/known_hosts'
+
                 dir('kubernetes') {
                     git branch: "v5", url: 'https://github.com/reportportal/kubernetes.git'
 
                 }
+
+                dir('reportportal-ci') {
+                    git credentialsId: 'epm-gitlab-key', branch: "master", url: 'git@git.epam.com:epmc-tst/reportportal-ci.git'
+                }
+
             }
         }, 'Checkout Service': {
             stage('Checkout Service') {
@@ -84,7 +88,7 @@ podTemplate(
                 }
             } finally {
 //                junit 'build/reports/**/*.xml'
-//                dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
+                dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
 
             }
 
