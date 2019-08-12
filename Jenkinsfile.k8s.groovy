@@ -13,8 +13,8 @@ podTemplate(
                         command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay'),
 //                containerTemplate(name: 'jdk', image: 'java:8-jdk-alpine', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'gradle', image: 'gradle:5.4.1-jdk8', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
 //              containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
-//              containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
         ],
         imagePullSecrets: ["regcred"],
         volumes: [
@@ -34,6 +34,9 @@ podTemplate(
                 ])
         ])
 
+        def srvRepo = "quay.io/reportportal/service-authorization"
+        def srvVersion = "BUILD-${env.BUILD_NUMBER}"
+        def tag = "$srvRepo:$srvVersion"
 
         stage('Configure') {
             container('docker') {
@@ -94,7 +97,12 @@ podTemplate(
             }
         }
         stage('Deploy to Dev Environment') {
-
+            container('helm') {
+                dir('kubernetes/reportportal/v5/v5') {
+                    sh 'helm dependency update'
+                }
+                sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./reportportal-ci/rp/values-ci.yml reportportal ./kubernetes/reportportal/v5/v5"
+            }
         }
         stage('Execute Smoke Tests') {
 
