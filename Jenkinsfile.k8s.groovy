@@ -84,7 +84,7 @@ podTemplate(
                 }
             } finally {
 //                junit 'build/reports/**/*.xml'
-                dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
+//                dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
 
             }
 
