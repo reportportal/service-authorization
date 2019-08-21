@@ -4,11 +4,15 @@ management:
       base-path: /
 info:
   build:
+    name: Authorization Service
+    description: Unified Authorization Trap for all ReportPortal's Services
     version: ${rp.uat.version:5.0}
 server:
   port: 9999
   use-forward-headers: true
 spring:
+  application:
+    name: uat
   jackson:
     default-property-inclusion: non_null
   session:
@@ -56,6 +60,8 @@ rp:
     pass: rppass
   jwt:
     signing-key: 123
+    token:
+      validity-period: 86400
   auth:
     server: default
     saml:

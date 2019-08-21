@@ -48,9 +48,11 @@ public class Swagger2Configuration {
 	@Autowired
 	private ServletContext servletContext;
 
-	@Autowired
 	@Value("${info.build.version}")
 	private String buildVersion;
+
+	@Value("${spring.application.name}")
+	private String applicationName;
 
 	@Bean
 	public Docket docket() {
@@ -84,7 +86,12 @@ public class Swagger2Configuration {
 
 	@Bean
 	public PathProvider rpPathProvider() {
-		return new RelativePathProvider(servletContext);
+		return new RelativePathProvider(servletContext) {
+			@Override
+			public String getApplicationBasePath() {
+				return "/" + applicationName + super.getApplicationBasePath();
+			}
+		};
 	}
 
 	@Bean
