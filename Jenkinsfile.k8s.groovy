@@ -8,27 +8,25 @@ println("${label}")
 podTemplate(
         label: "${label}",
         containers: [
-//                containerTemplate(name: 'jnlp', image: 'jenkins/jnlp-slave:alpine'),
                 containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, alwaysPullImage: true, privileged: true,
                         command: 'dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 --storage-driver=overlay',
                         resourceRequestCpu: '300m',
                         resourceLimitCpu: '600m',
                         resourceRequestMemory: '512Mi',
                         resourceLimitMemory: '1024Mi'),
-//                containerTemplate(name: 'jdk', image: 'java:8-jdk-alpine', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'gradle', image: 'gradle:5.5.1-jdk8', command: 'cat', ttyEnabled: true,
-                        resourceRequestCpu: '300m',
-                        resourceLimitCpu: '600m',
-                        resourceRequestMemory: '1024Mi',
-                        resourceLimitMemory: '2048Mi'),
-                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
-//              containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
+                        resourceRequestCpu: '1000m',
+                        resourceLimitCpu: '2000m',
+                        resourceRequestMemory: '2048Mi',
+                        resourceLimitMemory: '4096Mi'),
+                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'httpie', image: 'blacktop/httpie', command: 'cat', ttyEnabled: true)
+
         ],
         imagePullSecrets: ["regcred"],
         volumes: [
-//                hostPathVolume(mountPath: '/root/.gradle', hostPath: '/tmp/jenkins/.gradle'),
                 hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle'),
-//                hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
                 emptyDirVolume(memory: false, mountPath: '/var/lib/docker'),
                 secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
         ]
@@ -36,15 +34,11 @@ podTemplate(
 
     node("${label}") {
 
-        properties([
-                pipelineTriggers([
-                        pollSCM('H/10 * * * *')
-                ])
-        ])
-
         def srvRepo = "quay.io/reportportal/service-authorization"
         def srvVersion = "BUILD-${env.BUILD_NUMBER}"
         def tag = "$srvRepo:$srvVersion"
+
+        def k8sNs = "reportportal"
 
         stage('Configure') {
             container('docker') {
@@ -68,7 +62,6 @@ podTemplate(
 
                 dir('kubernetes') {
                     git branch: "master", url: 'https://github.com/reportportal/kubernetes.git'
-
                 }
 
                 dir('reportportal-ci') {
@@ -83,6 +76,11 @@ podTemplate(
                 }
             }
         }
+
+        def test = load "${ciDir}/jenkins/scripts/test.groovy"
+        def utils = load "${ciDir}/jenkins/scripts/util.groovy"
+
+        utils.scheduleRepoPoll()
 
 
         dir('app') {
@@ -120,8 +118,18 @@ podTemplate(
                 sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./reportportal-ci/rp/values-ci.yml reportportal ./kubernetes/reportportal/v5/v5"
             }
         }
-        stage('Execute Smoke Tests') {
-
+        stage('Execute DVT Tests') {
+            def srvUrl
+            container('kubectl') {
+                def srvName = utils.getServiceName(k8sNs, "uat")
+                srvUrl = utils.getServiceEndpoint(k8sNs, srvName)
+            }
+            if (srvUrl == null) {
+                error("Unable to retrieve service URL")
+            }
+            container('httpie') {
+                test.checkVersion("http://$srvUrl", "$srvVersion")
+            }
         }
 
         stage('Deploy to QA Environment') {
