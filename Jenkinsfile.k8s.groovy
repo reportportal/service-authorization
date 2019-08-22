@@ -38,6 +38,10 @@ podTemplate(
         def srvVersion = "BUILD-${env.BUILD_NUMBER}"
         def tag = "$srvRepo:$srvVersion"
 
+        def k8sDir = "kubernetes"
+        def ciDir = "reportportal-ci"
+        def appDir = "app"
+
         def k8sNs = "reportportal"
 
         stage('Configure') {
