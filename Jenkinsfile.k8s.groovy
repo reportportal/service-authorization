@@ -65,7 +65,7 @@ podTemplate(
                 sh 'ssh-keyscan -t rsa git.epam.com >> ~/.ssh/known_hosts'
 
                 dir('kubernetes') {
-                    git branch: "liveness-probes", url: 'https://github.com/reportportal/kubernetes.git'
+                    git branch: "master", url: 'https://github.com/reportportal/kubernetes.git'
                 }
 
                 dir('reportportal-ci') {
