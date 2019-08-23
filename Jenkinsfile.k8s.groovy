@@ -83,6 +83,7 @@ podTemplate(
 
         def test = load "${ciDir}/jenkins/scripts/test.groovy"
         def utils = load "${ciDir}/jenkins/scripts/util.groovy"
+        def props = load "${ciDir}/jenkins/scripts/props.groovy"
 
         utils.scheduleRepoPoll()
 
@@ -91,7 +92,7 @@ podTemplate(
             try {
                 container('gradle') {
                     stage('Build App') {
-                        sh "gradle build --full-stacktrace"
+                        sh "gradle build --full-stacktrace -P buildVersion=$srvVersion"
                     }
                     stage('Test') {
                         sh "gradle test --full-stacktrace"
@@ -134,7 +135,8 @@ podTemplate(
                 error("Unable to retrieve service URL")
             }
             container('httpie') {
-                test.checkVersion("http://$srvUrl", "$srvVersion")
+                snapshotVersion = props.readProperty("gradle.properties", "version")
+                test.checkVersion("http://$srvUrl", "$snapshotVersion-$srvVersion")
             }
         }
 

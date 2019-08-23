@@ -6,7 +6,8 @@ info:
   build:
     name: Authorization Service
     description: Unified Authorization Trap for all ReportPortal's Services
-    version: ${rp.uat.version:5.0}
+    version: @version@
+
 server:
   port: 9999
   use-forward-headers: true

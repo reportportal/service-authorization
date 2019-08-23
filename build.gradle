@@ -117,6 +117,7 @@ task copyRuntimeLibs(type: Copy) {
 }
 
 build.dependsOn(copyRuntimeLibs)
+jar.dependsOn gitInfo
 
 jar {
     if (!releaseMode) {
