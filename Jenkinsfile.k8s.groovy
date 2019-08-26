@@ -52,10 +52,6 @@ podTemplate(
                 cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
                 """
             }
-            container('helm') {
-                sh 'helm init --client-only'
-                sh 'helm repo update'
-            }
         }
 
         parallel 'Checkout Infra': {
@@ -83,8 +79,10 @@ podTemplate(
 
         def test = load "${ciDir}/jenkins/scripts/test.groovy"
         def utils = load "${ciDir}/jenkins/scripts/util.groovy"
+        def helm = load "${ciDir}/jenkins/scripts/helm.groovy"
 
         utils.scheduleRepoPoll()
+        helm.init()
 
 
         dir('app') {
