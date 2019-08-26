@@ -132,7 +132,7 @@ podTemplate(
                 error("Unable to retrieve service URL")
             }
             container('httpie') {
-                snapshotVersion = utils.readProperty("app/gradle.properties", "version")
+                def snapshotVersion = utils.readProperty("app/gradle.properties", "version")
                 test.checkVersion("http://$srvUrl", "$snapshotVersion-$srvVersion")
             }
         }
