@@ -116,11 +116,11 @@ podTemplate(
         }
         stage('Deploy to Dev Environment') {
             container('helm') {
-                dir('kubernetes/reportportal/v5/v5') {
+                dir('kubernetes/reportportal/v5') {
                     sh 'helm dependency update'
                 }
                 sh "date"
-                sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./reportportal-ci/rp/values-ci.yml reportportal ./kubernetes/reportportal/v5/v5"
+                sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./reportportal-ci/rp/values-ci.yml reportportal ./kubernetes/reportportal/v5"
                 sh "date"
             }
         }
