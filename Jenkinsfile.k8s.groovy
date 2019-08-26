@@ -89,7 +89,7 @@ podTemplate(
             try {
                 container('gradle') {
                     stage('Build App') {
-                        sh "gradle build --full-stacktrace -P buildVersion=$srvVersion"
+                        sh "gradle build --full-stacktrace -P buildNumber=$srvVersion"
                     }
                     stage('Test') {
                         sh "gradle test --full-stacktrace"
