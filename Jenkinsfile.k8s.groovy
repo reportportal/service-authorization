@@ -83,7 +83,6 @@ podTemplate(
 
         def test = load "${ciDir}/jenkins/scripts/test.groovy"
         def utils = load "${ciDir}/jenkins/scripts/util.groovy"
-        def props = load "${ciDir}/jenkins/scripts/props.groovy"
 
         utils.scheduleRepoPoll()
 
@@ -135,7 +134,7 @@ podTemplate(
                 error("Unable to retrieve service URL")
             }
             container('httpie') {
-                snapshotVersion = props.readProperty("app/gradle.properties", "version")
+                snapshotVersion = utils.readProperty("app/gradle.properties", "version")
                 test.checkVersion("http://$srvUrl", "$snapshotVersion-$srvVersion")
             }
         }
