@@ -121,12 +121,12 @@ jar.dependsOn gitInfo
 
 jar {
     if (!releaseMode) {
-        getArchiveFileName().set("${baseName}.${extension}")
+        getArchiveFileName().set("${archiveBaseName}.${archiveExtension}")
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     manifest {
         attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': version,
+                'Implementation-Version': archiveVersion,
                 'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
                 'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
     }
