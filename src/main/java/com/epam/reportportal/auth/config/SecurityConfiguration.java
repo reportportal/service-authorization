@@ -333,22 +333,22 @@ public class SecurityConfiguration {
             //@formatter:off
             clients.inMemory()
                     .withClient(ReportPortalClient.ui.name())
-                    .secret("{bcrypt}$2a$10$ka8W./nA2Uiqsd2uOzazdu2lMbipaMB6RJNInB1Y0NMKQzj7plsie")
-                    .authorizedGrantTypes("refresh_token", "password")
-                    .scopes("ui")
-                    .accessTokenValiditySeconds(tokenValidity)
+                        .secret("{bcrypt}$2a$10$ka8W./nA2Uiqsd2uOzazdu2lMbipaMB6RJNInB1Y0NMKQzj7plsie")
+                        .authorizedGrantTypes("refresh_token", "password")
+                        .scopes("ui")
+                        .accessTokenValiditySeconds(tokenValidity)
                     .and()
                     .withClient(ReportPortalClient.api.name())
-                    .secret("{bcrypt}$2a$10$MmIoRgvpDHlZWdXxhu4YDu8hq98fvZobrSVLTlv/xA0qXdaGzSJba")
-                    .authorizedGrantTypes("refresh_token", "password")
-                    .scopes("api")
-                    .accessTokenValiditySeconds(tokenValidity)
-                    .refreshTokenValiditySeconds(-1)
+                        .secret("{bcrypt}$2a$10$MmIoRgvpDHlZWdXxhu4YDu8hq98fvZobrSVLTlv/xA0qXdaGzSJba")
+                        .authorizedGrantTypes("refresh_token", "password")
+                        .scopes("api")
+                        .accessTokenValiditySeconds(-1)
+                        .refreshTokenValiditySeconds(-1)
                     .and()
-                    .withClient(ReportPortalClient.internal.name())
-                    .secret("internal_man")
-                    .authorizedGrantTypes("client_credentials").authorities("ROLE_INTERNAL")
-                    .scopes("internal");
+                        .withClient(ReportPortalClient.internal.name())
+                        .secret("internal_man")
+                        .authorizedGrantTypes("client_credentials").authorities("ROLE_INTERNAL")
+                        .scopes("internal");
             //@formatter:on
         }
 
