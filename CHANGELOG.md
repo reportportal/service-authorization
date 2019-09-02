@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.x.x
+##### Released: XXX 2019
+
+### Bugfixes
+
+EPMRPP-40474 - Incorrect message appeared after clicking 'Login with GitHub' if user has been registered as internal user with the same username as he has in GitHub
+
+
 ## 3.2.1
 ##### Released: September, 8 2017
 
