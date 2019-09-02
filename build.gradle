@@ -121,7 +121,7 @@ jar.dependsOn gitInfo
 
 jar {
     if (!releaseMode) {
-        getArchiveFileName().set("${archiveBaseName}.${archiveExtension}")
+        getArchiveFileName().set("${baseName}.${extension}")
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     manifest {
