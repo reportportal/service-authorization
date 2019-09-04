@@ -16,6 +16,7 @@
 package com.epam.reportportal.auth.integration.saml;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
+import com.epam.ta.reportportal.binary.DataStoreService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.SamlProviderDetailsRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -24,8 +25,6 @@ import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
-import com.epam.ta.reportportal.filesystem.DataEncoder;
-import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -50,9 +49,9 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	private SamlProviderDetailsRepository samlProviderDetailsRepository;
 
 	public SamlUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder,
+			PersonalProjectService personalProjectService, DataStoreService dataStoreService,
 			SamlProviderDetailsRepository samlProviderDetailsRepository) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage, encoder);
+		super(userRepository, projectRepository, personalProjectService, dataStoreService);
 		this.samlProviderDetailsRepository = samlProviderDetailsRepository;
 	}
 

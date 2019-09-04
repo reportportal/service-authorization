@@ -16,13 +16,12 @@
 package com.epam.reportportal.auth.integration;
 
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.ta.reportportal.BinaryData;
+import com.epam.ta.reportportal.binary.DataStoreService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
+import com.epam.ta.reportportal.entity.attachment.BinaryData;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.filesystem.DataEncoder;
-import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.google.common.collect.Maps;
 import org.apache.tika.io.TikaInputStream;
@@ -52,16 +51,14 @@ public class AbstractUserReplicator {
 	protected final UserRepository userRepository;
 	protected final ProjectRepository projectRepository;
 	protected final PersonalProjectService personalProjectService;
-	protected final DataStore dataStorage;
-	protected final DataEncoder encoder;
+	protected DataStoreService dataStoreService;
 
 	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
+			PersonalProjectService personalProjectService, DataStoreService dataStoreService) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.personalProjectService = personalProjectService;
-		this.dataStorage = dataStorage;
-		this.encoder = encoder;
+		this.dataStoreService = dataStoreService;
 	}
 
 	/**
@@ -111,17 +108,12 @@ public class AbstractUserReplicator {
 		}
 	}
 
-	protected String uploadPhoto(String login, byte[] data) {
-		return uploadPhoto(login, data, resolveContentType(data));
+	protected void uploadPhoto(User user, BinaryData data) {
+		dataStoreService.saveUserPhoto(user, data);
 	}
 
-	protected String uploadPhoto(String login, byte[] data, String contentType) {
-		BinaryData photo = new BinaryData(contentType, (long) data.length, new ByteArrayInputStream(data));
-		return uploadPhoto(login, photo);
-	}
-
-	protected String uploadPhoto(String login, BinaryData data) {
-		return encoder.encode(dataStorage.save(login, data.getInputStream()));
+	protected void uploadPhoto(User user, byte[] data) {
+		uploadPhoto(user, new BinaryData(resolveContentType(data), (long) data.length, new ByteArrayInputStream(data)));
 	}
 
 	private String resolveContentType(byte[] data) {
