@@ -16,25 +16,31 @@
 
 package com.epam.reportportal.auth.plugin;
 
+import com.epam.reportportal.extension.auth.BeanProvider;
 import com.epam.reportportal.extension.auth.InitializingExtensionPoint;
+import com.epam.reportportal.extension.auth.data.BeanData;
+import com.epam.reportportal.extension.auth.data.BeanProviderData;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.integration.IntegrationTypeDetails;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import org.apache.commons.collections.CollectionUtils;
 import org.pf4j.DefaultExtensionFactory;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
@@ -76,23 +82,37 @@ public class ReportPortalExtensionFactory extends DefaultExtensionFactory {
 				initParams.put(IntegrationDetailsProperties.RESOURCES_DIRECTORY.getAttribute(),
 						Paths.get(resourcesDir, pluginWrapper.getPluginId()).toString()
 				);
-				Object withoutSpring = extensionClass.getDeclaredConstructor(Map.class).newInstance(initParams);
-				if (InitializingExtensionPoint.class.isAssignableFrom(withoutSpring.getClass())) {
-					InitializingExtensionPoint initializingExtensionPoint = (InitializingExtensionPoint) withoutSpring;
-					ofNullable(initializingExtensionPoint.getBeansToInitialize()).ifPresent(beansMapping -> {
-						Set<String> beanNames = Sets.newLinkedHashSetWithExpectedSize(beansMapping.size());
-						for (Map.Entry<String, Class<?>> entry : beansMapping.entrySet()) {
+
+				Object plugin = extensionClass.getDeclaredConstructor(Map.class).newInstance(initParams);
+				if (InitializingExtensionPoint.class.isAssignableFrom(plugin.getClass())) {
+					InitializingExtensionPoint initializingExtensionPoint = (InitializingExtensionPoint) plugin;
+					ofNullable(initializingExtensionPoint.getBeanProviders()).ifPresent(beanProvidersData -> {
+						Map<String, Set<String>> providedBeansMapping = Maps.newLinkedHashMapWithExpectedSize(beanProvidersData.size());
+						for (BeanProviderData beanProviderData : beanProvidersData) {
 							try {
-								Object bean = context.createBean(entry.getValue());
-								((AbstractAutowireCapableBeanFactory) context).registerSingleton(entry.getKey(), bean);
-								beanNames.add(entry.getKey());
+								BeanProvider beanProvider = context.createBean(beanProviderData.getBeanProviderClass());
+								((AbstractAutowireCapableBeanFactory) context).registerSingleton(beanProviderData.getName(), beanProvider);
+								List<BeanData> beanDataList = beanProvider.getBeansToInitialize();
+								Set<String> beanNames = beanDataList.stream().peek(beanData -> {
+									((DefaultListableBeanFactory) context).registerSingleton(beanData.getName(), beanData.getBeanObject());
+								}).map(BeanData::getName).collect(Collectors.toSet());
+								providedBeansMapping.put(beanProviderData.getName(), beanNames);
 							} catch (Exception ex) {
-								beanNames.forEach(beanName -> {
-									if (context.containsBean(beanName)) {
-										((AbstractAutowireCapableBeanFactory) context).destroySingleton(beanName);
+								providedBeansMapping.forEach((beanProvider, resolvedBeanNames) -> {
+									if (CollectionUtils.isNotEmpty(resolvedBeanNames)) {
+										resolvedBeanNames.forEach(beanName -> {
+											if (context.containsBean(beanName)) {
+												((AbstractAutowireCapableBeanFactory) context).destroySingleton(beanName);
+											}
+										});
 									}
+
+									if (context.containsBean(beanProvider)) {
+										((AbstractAutowireCapableBeanFactory) context).destroySingleton(beanProvider);
+									}
+
 								});
-								beanNames.clear();
+								providedBeansMapping.clear();
 								throw new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
 										"Error during beans initialization: " + ex.getMessage()
 								);
@@ -102,13 +122,11 @@ public class ReportPortalExtensionFactory extends DefaultExtensionFactory {
 					});
 
 				}
-				context.autowireBean(withoutSpring);
-				context.initializeBean(withoutSpring, pluginWrapper.getDescriptor().getPluginId());
-				((AbstractAutowireCapableBeanFactory) context).registerSingleton(pluginWrapper.getDescriptor().getPluginId(),
-						withoutSpring
-				);
-				cache.put(pluginWrapper.getDescriptor().getPluginId(), withoutSpring);
-				return withoutSpring;
+				context.autowireBean(plugin);
+				context.initializeBean(plugin, pluginWrapper.getDescriptor().getPluginId());
+				((AbstractAutowireCapableBeanFactory) context).registerSingleton(pluginWrapper.getDescriptor().getPluginId(), plugin);
+				cache.put(pluginWrapper.getDescriptor().getPluginId(), plugin);
+				return plugin;
 			} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 				throw new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR, "Unable to create plugin instance: " + e.getMessage());
 			}

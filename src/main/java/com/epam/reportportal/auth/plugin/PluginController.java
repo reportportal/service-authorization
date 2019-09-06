@@ -42,7 +42,7 @@ import java.util.List;
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
 @RestController
-@RequestMapping(value = "/v1/plugin")
+@RequestMapping(value = "/plugin")
 public class PluginController {
 
 	private final CreatePluginHandler createPluginHandler;

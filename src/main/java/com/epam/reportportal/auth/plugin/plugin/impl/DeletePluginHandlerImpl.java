@@ -56,7 +56,7 @@ public class DeletePluginHandlerImpl implements DeletePluginHandler {
 						Suppliers.formattedSupplier("Plugin with id = '{}' not found", id).get()
 				));
 
-		if (pluginBox.deletePlugin(pluginWrapper.getPluginId())) {
+		if (pluginBox.deletePlugin(integrationType)) {
 			integrationTypeRepository.deleteById(integrationType.getId());
 			return new OperationCompletionRS(Suppliers.formattedSupplier("Plugin = '{}' has been successfully removed",
 					integrationType.getName()

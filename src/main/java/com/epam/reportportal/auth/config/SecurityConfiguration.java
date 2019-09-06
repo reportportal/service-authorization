@@ -171,8 +171,7 @@ public class SecurityConfiguration {
 
 		@Bean("activeDirectoryDetailsContextMapper")
 		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
-			return new DetailsContextMapper(
-					ldapUserReplicator,
+			return new DetailsContextMapper(ldapUserReplicator,
 					() -> authConfigRepository.findActiveDirectory(true)
 							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
 							.getSynchronizationAttributes()
@@ -181,8 +180,7 @@ public class SecurityConfiguration {
 
 		@Bean("ldapDetailsContextMapper")
 		public DetailsContextMapper ldapDetailsContextMapper() {
-			return new DetailsContextMapper(
-					ldapUserReplicator,
+			return new DetailsContextMapper(ldapUserReplicator,
 					() -> authConfigRepository.findLdap(true)
 							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
 							.getSynchronizationAttributes()
@@ -227,6 +225,8 @@ public class SecurityConfiguration {
 				.formLogin().disable()
 				.sessionManagement()
                 	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				.and()
+					.httpBasic()
 				.and()
 				.addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
        		 //@formatter:on
@@ -284,7 +284,6 @@ public class SecurityConfiguration {
 		}
 
 		@Override
-		@Primary
 		@Bean
 		public AuthenticationManager authenticationManager() throws Exception {
 			return super.authenticationManager();
@@ -419,10 +418,10 @@ public class SecurityConfiguration {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			http.requestMatchers()
-					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**")
+					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**", "/plugin/**")
 					.and()
 					.authorizeRequests()
-					.antMatchers("/settings/**")
+					.antMatchers("/settings/**", "/plugin/**")
 					.hasRole("ADMINISTRATOR")
 					.antMatchers("/sso/internal/**")
 					.hasRole("INTERNAL")

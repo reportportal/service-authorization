@@ -15,36 +15,29 @@
  */
 package com.epam.reportportal.auth.event;
 
-import com.epam.reportportal.auth.integration.converter.SamlDetailsConverter;
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
 import org.springframework.context.ApplicationListener;
-import org.springframework.security.saml.provider.SamlServerConfiguration;
-import org.springframework.security.saml.provider.service.config.LocalServiceProviderConfiguration;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Handles SAML settings changes event and reload configuration of IDP in service provider configuration
  *
  * @author Yevgeniy Svalukhin
  */
-@Component
+//@Component
 public class SamlProvidersReloadEventHandler implements ApplicationListener<SamlProvidersReloadEvent> {
 
-	private SamlServerConfiguration samlConfiguration;
-
-	public SamlProvidersReloadEventHandler(SamlServerConfiguration spConfiguration) {
-		this.samlConfiguration = spConfiguration;
-	}
+//	private SamlServerConfiguration samlConfiguration;
+//
+//	public SamlProvidersReloadEventHandler(SamlServerConfiguration spConfiguration) {
+//		this.samlConfiguration = spConfiguration;
+//	}
 
 	@Override
 	public void onApplicationEvent(SamlProvidersReloadEvent event) {
-		List<SamlProviderDetails> details = event.getDetails();
-
-		LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
-
-		serviceProvider.getProviders().clear();
-		serviceProvider.getProviders().addAll(SamlDetailsConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(details));
+//		List<SamlProviderDetails> details = event.getDetails();
+//
+//		LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
+//
+//		serviceProvider.getProviders().clear();
+//		serviceProvider.getProviders().addAll(SamlDetailsConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(details));
 	}
 }

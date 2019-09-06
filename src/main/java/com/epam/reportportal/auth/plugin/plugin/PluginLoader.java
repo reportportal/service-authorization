@@ -57,14 +57,40 @@ public interface PluginLoader {
 	boolean validatePluginExtensionClasses(PluginWrapper plugin);
 
 	/**
-	 * Save plugin in the file system
+	 * Save plugin in the {@link com.epam.ta.reportportal.filesystem.DataStore}
 	 *
 	 * @param fileName   New plugin file name
 	 * @param fileStream {@link InputStream} of the new plugin file
 	 * @return File id of the saved file in the file system
 	 * @throws ReportPortalException
 	 */
-	String savePlugin(String fileName, InputStream fileStream) throws ReportPortalException;
+	String saveToDataStore(String fileName, InputStream fileStream) throws ReportPortalException;
+
+	/**
+	 * Copy plugin from the {@link com.epam.ta.reportportal.filesystem.DataStore} to the provided path
+	 *
+	 * @param fileId     {@link com.epam.reportportal.auth.plugin.IntegrationDetailsProperties#FILE_ID} value
+	 * @param pluginPath Path where to copy plugin file
+	 */
+	void copyFromDataStore(String fileId, Path pluginPath) throws IOException;
+
+	/**
+	 * Copy plugin with resources from the {@link com.epam.ta.reportportal.filesystem.DataStore} to the provided path
+	 *
+	 * @param fileId              {@link com.epam.reportportal.auth.plugin.IntegrationDetailsProperties#FILE_ID} value
+	 * @param pluginPath          Path where to copy plugin file
+	 * @param pluginResourcesPath Path were to copy plugin resources
+	 */
+	void copyFromDataStore(String fileId, Path pluginPath, Path pluginResourcesPath) throws IOException;
+
+	/**
+	 * Copy plugin resources to the target path
+	 *
+	 * @param pluginPath          Plugin path in the filesystem
+	 * @param resourcesTargetPath Path to copy plugin resources
+	 * @throws IOException
+	 */
+	void copyPluginResource(Path pluginPath, Path resourcesTargetPath) throws IOException;
 
 	/**
 	 * Upload plugin file to the directory.

@@ -15,8 +15,8 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
-import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.extension.auth.AbstractUserReplicator;
 import com.epam.ta.reportportal.BinaryData;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.ProjectRepository;

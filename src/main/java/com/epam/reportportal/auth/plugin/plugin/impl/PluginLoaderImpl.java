@@ -28,6 +28,8 @@ import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.ws.model.ErrorType;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginException;
@@ -37,6 +39,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -45,6 +48,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -111,8 +116,50 @@ public class PluginLoaderImpl implements PluginLoader {
 	}
 
 	@Override
-	public String savePlugin(String fileName, InputStream fileStream) throws ReportPortalException {
+	public String saveToDataStore(String fileName, InputStream fileStream) throws ReportPortalException {
 		return dataStore.save(fileName, fileStream);
+	}
+
+	@Override
+	public void copyFromDataStore(String fileId, Path pluginPath) throws IOException {
+		Files.createDirectories(pluginPath);
+		Files.copy(dataStore.load(fileId), pluginPath);
+	}
+
+	@Override
+	public void copyFromDataStore(String fileId, Path pluginPath, Path resourcesPath) throws IOException {
+		copyFromDataStore(fileId, pluginPath);
+		copyPluginResource(pluginPath, resourcesPath);
+	}
+
+	@Override
+	public void copyPluginResource(Path pluginPath, Path resourcesTargetPath) throws IOException {
+		JarFile jar = new JarFile(pluginPath.toFile());
+		if (!Files.isDirectory(resourcesTargetPath)) {
+			Files.createDirectories(resourcesTargetPath);
+		}
+		copyJarResourcesRecursively(resourcesTargetPath.toFile(), jar);
+	}
+
+	private void copyJarResourcesRecursively(File destination, JarFile jarFile) {
+		jarFile.stream().filter(jarEntry -> jarEntry.getName().startsWith("resources")).forEach(entry -> {
+			try {
+				copyResources(jarFile, entry, destination);
+			} catch (IOException e) {
+				throw new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR, e.getMessage());
+			}
+		});
+	}
+
+	private void copyResources(JarFile jarFile, JarEntry entry, File destination) throws IOException {
+		String fileName = StringUtils.substringAfter(entry.getName(), "resources/");
+		if (!entry.isDirectory()) {
+			try (InputStream entryInputStream = jarFile.getInputStream(entry)) {
+				FileUtils.copyToFile(entryInputStream, new File(destination, fileName));
+			}
+		} else {
+			Files.createDirectories(Paths.get(destination.getAbsolutePath(), fileName));
+		}
 	}
 
 	@Override

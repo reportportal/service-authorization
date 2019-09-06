@@ -56,10 +56,10 @@ public interface Pf4jPluginBox extends PluginBox {
 	/**
 	 * Delete plugin by id
 	 *
-	 * @param pluginId {@link PluginWrapper#getPluginId()}
+	 * @param integrationType {@link IntegrationType}
 	 * @return 'true' if a plugin was successfully deleted, else 'false'
 	 */
-	boolean deletePlugin(String pluginId);
+	boolean deletePlugin(IntegrationType integrationType);
 
 	/**
 	 * Get plugin from the plugin manager by id
