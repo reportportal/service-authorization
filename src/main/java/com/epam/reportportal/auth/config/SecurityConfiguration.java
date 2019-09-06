@@ -302,6 +302,9 @@ public class SecurityConfiguration {
 		@Value("${rp.jwt.signing-key}")
 		private String signingKey;
 
+		@Value("${rp.jwt.token.validity-period}")
+		private Integer tokenValidity;
+
 		@Autowired
 		public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
 			this.authenticationManager = authenticationManager;
@@ -332,7 +335,7 @@ public class SecurityConfiguration {
                     	.secret("{bcrypt}$2a$10$ka8W./nA2Uiqsd2uOzazdu2lMbipaMB6RJNInB1Y0NMKQzj7plsie")
                     	.authorizedGrantTypes("refresh_token", "password")
                     	.scopes("ui")
-						.accessTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(1))
+						.accessTokenValiditySeconds(tokenValidity)
                     .and()
                     .withClient(ReportPortalClient.api.name())
                     	.secret("apiman")

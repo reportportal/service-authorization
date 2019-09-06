@@ -127,7 +127,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 				updateUser(u, userResource, gitHubClient);
 			} else {
 				//if user with such login exists, but it's not GitHub user than throw an exception
-				throw new UserSynchronizationException("User with login '" + u.getId() + "' already exists");
+				throw new UserSynchronizationException("User with login '" + u.getLogin() + "' already exists");
 			}
 			return u;
 		}).orElseGet(() -> userRepository.save(createUser(userResource, gitHubClient)));
