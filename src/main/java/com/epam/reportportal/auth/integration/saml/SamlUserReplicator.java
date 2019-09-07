@@ -16,7 +16,7 @@
 package com.epam.reportportal.auth.integration.saml;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
-import com.epam.ta.reportportal.binary.DataStoreService;
+import com.epam.ta.reportportal.binary.UserDataStoreService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.SamlProviderDetailsRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -49,9 +49,9 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	private SamlProviderDetailsRepository samlProviderDetailsRepository;
 
 	public SamlUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStoreService dataStoreService,
+			PersonalProjectService personalProjectService, UserDataStoreService userDataStoreService,
 			SamlProviderDetailsRepository samlProviderDetailsRepository) {
-		super(userRepository, projectRepository, personalProjectService, dataStoreService);
+		super(userRepository, projectRepository, personalProjectService, userDataStoreService);
 		this.samlProviderDetailsRepository = samlProviderDetailsRepository;
 	}
 

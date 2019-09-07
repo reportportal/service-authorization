@@ -16,7 +16,7 @@
 package com.epam.reportportal.auth.integration;
 
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.ta.reportportal.binary.DataStoreService;
+import com.epam.ta.reportportal.binary.UserDataStoreService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.attachment.BinaryData;
@@ -51,14 +51,14 @@ public class AbstractUserReplicator {
 	protected final UserRepository userRepository;
 	protected final ProjectRepository projectRepository;
 	protected final PersonalProjectService personalProjectService;
-	protected DataStoreService dataStoreService;
+	protected UserDataStoreService userDataStoreService;
 
 	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStoreService dataStoreService) {
+			PersonalProjectService personalProjectService, UserDataStoreService userDataStoreService) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.personalProjectService = personalProjectService;
-		this.dataStoreService = dataStoreService;
+		this.userDataStoreService = userDataStoreService;
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class AbstractUserReplicator {
 	}
 
 	protected void uploadPhoto(User user, BinaryData data) {
-		dataStoreService.saveUserPhoto(user, data);
+		userDataStoreService.saveUserPhoto(user, data);
 	}
 
 	protected void uploadPhoto(User user, byte[] data) {

@@ -17,7 +17,7 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.ta.reportportal.binary.DataStoreService;
+import com.epam.ta.reportportal.binary.UserDataStoreService;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -32,7 +32,6 @@ import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -58,10 +57,9 @@ import static java.util.Optional.ofNullable;
 @Component
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
-	@Autowired
 	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStoreService dataStoreService) {
-		super(userRepository, projectRepository, personalProjectService, dataStoreService);
+			PersonalProjectService personalProjectService, UserDataStoreService userDataStoreService) {
+		super(userRepository, projectRepository, personalProjectService, userDataStoreService);
 	}
 
 	public User synchronizeUser(String accessToken) {

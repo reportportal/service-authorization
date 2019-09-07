@@ -17,7 +17,7 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.ta.reportportal.binary.DataStoreService;
+import com.epam.ta.reportportal.binary.UserDataStoreService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
@@ -48,8 +48,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
 	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStoreService dataStoreService) {
-		super(userRepository, projectRepository, personalProjectService, dataStoreService);
+			PersonalProjectService personalProjectService, UserDataStoreService userDataStoreService) {
+		super(userRepository, projectRepository, personalProjectService, userDataStoreService);
 	}
 
 	/**
