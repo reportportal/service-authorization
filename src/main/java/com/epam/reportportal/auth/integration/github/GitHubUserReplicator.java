@@ -16,24 +16,23 @@
 package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.ta.reportportal.binary.UserDataStoreService;
 import com.epam.reportportal.extension.auth.AbstractUserReplicator;
 import com.epam.ta.reportportal.BinaryData;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.Metadata;
+import com.epam.ta.reportportal.entity.attachment.BinaryData;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
-import com.epam.ta.reportportal.filesystem.DataEncoder;
-import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -59,10 +58,9 @@ import static java.util.Optional.ofNullable;
 @Component
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
-	@Autowired
 	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage, encoder);
+			PersonalProjectService personalProjectService, UserDataStoreService userDataStoreService) {
+		super(userRepository, projectRepository, personalProjectService, userDataStoreService);
 	}
 
 	public User synchronizeUser(String accessToken) {
@@ -89,11 +87,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		metadata.getMetadata().put("synchronizationDate", Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant()));
 		user.setMetadata(metadata);
 
-		String newPhotoId = uploadAvatar(gitHubClient, userResource.getLogin(), userResource.getAvatarUrl());
-		if (!Strings.isNullOrEmpty(newPhotoId)) {
-			dataStorage.delete(user.getAttachment());
-			user.setAttachment(newPhotoId);
-		}
+		uploadAvatar(gitHubClient, user, userResource.getAvatarUrl());
 		userRepository.save(user);
 		return user;
 	}
@@ -123,7 +117,6 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		String login = normalizeId(userResource.getLogin());
 		return userRepository.findByLogin(login).map(u -> {
 			if (UserType.GITHUB.equals(u.getUserType())) {
-				dataStorage.delete(u.getAttachment());
 				updateUser(u, userResource, gitHubClient);
 			} else {
 				//if user with such login exists, but it's not GitHub user than throw an exception
@@ -145,7 +138,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		}
 		user.setFullName(isNullOrEmpty(userResource.getName()) ? user.getLogin() : userResource.getName());
 		user.setMetadata(defaultMetaData());
-		user.setAttachment(uploadAvatar(gitHubClient, userResource.getLogin(), userResource.getAvatarUrl()));
+		uploadAvatar(gitHubClient, user, userResource.getAvatarUrl());
 	}
 
 	private User createUser(UserResource userResource, GitHubClient gitHubClient) {
@@ -161,8 +154,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 		return user;
 	}
 
-	private String uploadAvatar(GitHubClient gitHubClient, String login, String avatarUrl) {
-		String photoId = null;
+	private void uploadAvatar(GitHubClient gitHubClient, User user, String avatarUrl) {
 		if (null != avatarUrl) {
 			ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl);
 			try (InputStream photoStream = photoRs.getBody().getInputStream()) {
@@ -170,12 +162,11 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 						photoRs.getBody().contentLength(),
 						photoStream
 				);
-				photoId = uploadPhoto(login, photo);
+				uploadPhoto(user, photo);
 			} catch (IOException e) {
-				LOGGER.error("Unable to load photo for user {}", login);
+				LOGGER.error("Unable to load photo for user {}", user.getLogin());
 			}
 		}
-		return photoId;
 	}
 
 	private Optional<String> retrieveEmail(GitHubClient gitHubClient) {
