@@ -15,6 +15,7 @@
  */
 package com.epam.reportportal.auth.event;
 
+import com.epam.reportportal.extension.auth.UiUserSignedInEvent;
 import com.epam.ta.reportportal.dao.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
