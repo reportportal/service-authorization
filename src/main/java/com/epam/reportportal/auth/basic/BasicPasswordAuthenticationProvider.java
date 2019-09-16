@@ -16,7 +16,7 @@
 package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
-import com.epam.reportportal.extension.auth.UiUserSignedInEvent;
+import com.epam.reportportal.extension.auth.event.UiUserSignedInEvent;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;

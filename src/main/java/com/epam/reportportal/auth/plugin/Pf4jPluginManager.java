@@ -18,8 +18,8 @@ package com.epam.reportportal.auth.plugin;
 
 import com.epam.reportportal.auth.plugin.plugin.PluginLoader;
 import com.epam.reportportal.extension.auth.AuthExtension;
-import com.epam.reportportal.extension.auth.InitializingExtensionPoint;
 import com.epam.reportportal.extension.common.ExtensionPoint;
+import com.epam.reportportal.extension.common.InitializingExtensionPoint;
 import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.commons.validation.Suppliers;

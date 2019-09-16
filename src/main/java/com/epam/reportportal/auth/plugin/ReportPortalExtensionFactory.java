@@ -16,10 +16,10 @@
 
 package com.epam.reportportal.auth.plugin;
 
-import com.epam.reportportal.extension.auth.BeanProvider;
-import com.epam.reportportal.extension.auth.InitializingExtensionPoint;
 import com.epam.reportportal.extension.auth.data.BeanData;
 import com.epam.reportportal.extension.auth.data.BeanProviderData;
+import com.epam.reportportal.extension.auth.provider.BeanProvider;
+import com.epam.reportportal.extension.common.InitializingExtensionPoint;
 import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;

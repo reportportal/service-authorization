@@ -16,7 +16,7 @@
 package com.epam.reportportal.auth.endpoint;
 
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import com.epam.reportportal.extension.auth.AuthProviderInfo;
+import com.epam.reportportal.extension.auth.info.AuthProviderInfo;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import org.springframework.beans.factory.annotation.Autowired;

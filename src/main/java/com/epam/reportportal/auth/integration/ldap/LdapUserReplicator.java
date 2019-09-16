@@ -16,7 +16,7 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.extension.auth.AbstractUserReplicator;
-import com.epam.reportportal.extension.auth.UserSynchronizationException;
+import com.epam.reportportal.extension.auth.exception.UserSynchronizationException;
 import com.epam.ta.reportportal.binary.UserDataStoreService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
