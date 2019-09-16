@@ -17,6 +17,7 @@
 package com.epam.reportportal.auth.plugin.plugin;
 
 import com.epam.reportportal.auth.plugin.PluginInfo;
+import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.pf4j.PluginException;
@@ -69,7 +70,7 @@ public interface PluginLoader {
 	/**
 	 * Copy plugin from the {@link com.epam.ta.reportportal.filesystem.DataStore} to the provided path
 	 *
-	 * @param fileId     {@link com.epam.reportportal.auth.plugin.IntegrationDetailsProperties#FILE_ID} value
+	 * @param fileId     {@link IntegrationTypeProperties#FILE_ID} value
 	 * @param pluginPath Path where to copy plugin file
 	 */
 	void copyFromDataStore(String fileId, Path pluginPath) throws IOException;
@@ -77,11 +78,18 @@ public interface PluginLoader {
 	/**
 	 * Copy plugin with resources from the {@link com.epam.ta.reportportal.filesystem.DataStore} to the provided path
 	 *
-	 * @param fileId              {@link com.epam.reportportal.auth.plugin.IntegrationDetailsProperties#FILE_ID} value
+	 * @param fileId              {@link IntegrationTypeProperties#FILE_ID} value
 	 * @param pluginPath          Path where to copy plugin file
 	 * @param pluginResourcesPath Path were to copy plugin resources
 	 */
 	void copyFromDataStore(String fileId, Path pluginPath, Path pluginResourcesPath) throws IOException;
+
+	/**
+	 * Delete plugin file from the {@link com.epam.ta.reportportal.filesystem.DataStore}
+	 *
+	 * @param fileId {@link IntegrationTypeProperties#FILE_ID} value
+	 */
+	void deleteFromDataStore(String fileId);
 
 	/**
 	 * Copy plugin resources to the target path

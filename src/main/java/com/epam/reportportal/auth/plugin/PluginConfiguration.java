@@ -40,8 +40,7 @@ public class PluginConfiguration {
 	@Autowired
 	private IntegrationTypeRepository integrationTypeRepository;
 
-	//TODO resolve multiple references on the same variable by different names
-	@Value("${rp.plugins.resolved..path}")
+	@Value("${rp.plugins.resolved.path}")
 	private String pluginsPath;
 
 	@Value("${rp.plugins.temp.path}")
@@ -57,7 +56,8 @@ public class PluginConfiguration {
 				resourcesDir,
 				pluginLoader,
 				integrationTypeRepository,
-				pluginManager()
+				pluginManager(),
+				context
 		);
 		manager.startAsync();
 		return manager;

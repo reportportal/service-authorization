@@ -18,12 +18,15 @@ package com.epam.reportportal.auth.plugin;
 
 import com.epam.reportportal.auth.plugin.plugin.PluginLoader;
 import com.epam.reportportal.extension.auth.AuthExtension;
+import com.epam.reportportal.extension.auth.InitializingExtensionPoint;
 import com.epam.reportportal.extension.common.ExtensionPoint;
+import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.enums.IntegrationGroupEnum;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import com.epam.ta.reportportal.entity.integration.IntegrationTypeDetails;
 import com.epam.ta.reportportal.entity.plugin.PluginFileExtension;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.filesystem.DataStore;
@@ -39,7 +42,8 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +52,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -76,9 +81,11 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 	private final IntegrationTypeRepository integrationTypeRepository;
 
 	private PluginManager pluginManager;
+	private AutowireCapableBeanFactory autowireCapableBeanFactory;
 
 	public Pf4jPluginManager(String pluginsDir, String pluginsTempPath, String resourcesDir, PluginLoader pluginLoader,
-			IntegrationTypeRepository integrationTypeRepository, PluginManager pluginManager) throws IOException {
+			IntegrationTypeRepository integrationTypeRepository, PluginManager pluginManager,
+			AutowireCapableBeanFactory autowireCapableBeanFactory) throws IOException {
 		this.pluginsDir = pluginsDir;
 		Files.createDirectories(Paths.get(this.pluginsDir));
 		this.pluginsTempDir = pluginsTempPath;
@@ -92,10 +99,7 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 				.expireAfterWrite(PLUGIN_LIVE_TIME, TimeUnit.MINUTES)
 				.build();
 		this.pluginManager = pluginManager;
-	}
-
-	public void setPluginManager(PluginManager pluginManager) {
-		this.pluginManager = pluginManager;
+		this.autowireCapableBeanFactory = autowireCapableBeanFactory;
 	}
 
 	@Override
@@ -131,28 +135,96 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 	}
 
 	@Override
-	@Nullable
-	public String loadPlugin(Path path) {
-		return pluginManager.loadPlugin(path);
+	public boolean loadPlugin(String pluginId, IntegrationTypeDetails integrationTypeDetails) {
+		return ofNullable(integrationTypeDetails.getDetails()).map(details -> {
+			String fileName = IntegrationTypeProperties.FILE_NAME.getValue(details)
+					.map(String::valueOf)
+					.orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
+							Suppliers.formattedSupplier("'File name' property of the plugin - '{}' is not specified", pluginId).get()
+					));
+
+			Path pluginPath = Paths.get(pluginsDir, fileName);
+			if (Files.notExists(pluginPath)) {
+				String fileId = IntegrationTypeProperties.FILE_ID.getValue(details)
+						.map(String::valueOf)
+						.orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
+								Suppliers.formattedSupplier("'File id' property of the plugin - '{}' is not specified", pluginId).get()
+						));
+				try {
+					pluginLoader.copyFromDataStore(fileId, pluginPath, Paths.get(resourcesDir, pluginId));
+				} catch (IOException e) {
+					throw new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
+							Suppliers.formattedSupplier("Unable to load plugin - '{}' from the data store", pluginId).get()
+					);
+				}
+			}
+
+			return ofNullable(pluginManager.loadPlugin(pluginPath)).map(id -> {
+				if (PluginState.STARTED == pluginManager.startPlugin(pluginId)) {
+					Optional<AuthExtension> authExtension = this.getInstance(pluginId, AuthExtension.class);
+					authExtension.ifPresent(extension -> LOGGER.info(Suppliers.formattedSupplier("Plugin - '{}' initialized.", pluginId)
+							.get()));
+					return true;
+				} else {
+					return false;
+				}
+			}).orElse(Boolean.FALSE);
+		}).orElse(Boolean.FALSE);
+
 	}
 
-	@Override
-	public boolean unloadPlugin(String pluginId) {
-		return pluginManager.unloadPlugin(pluginId);
+	public boolean unloadPlugin(IntegrationType integrationType) {
+		ofNullable(integrationType.getDetails()).flatMap(details -> ofNullable(details.getDetails())).ifPresent(details -> {
+			removeDependencies(integrationType.getName(), details);
+			destroyDependency(integrationType.getName());
+		});
+
+		return pluginManager.unloadPlugin(integrationType.getName());
 	}
 
 	@Override
 	public boolean deletePlugin(IntegrationType integrationType) {
-		ofNullable(integrationType.getDetails()).flatMap(details -> ofNullable(details.getDetails()))
-				.flatMap(details -> IntegrationDetailsProperties.RESOURCES_DIRECTORY.getValue(details).map(String::valueOf))
-				.ifPresent(resourcesDir -> {
-					try {
-						FileUtils.deleteDirectory(new File(resourcesDir));
-					} catch (IOException e) {
-						throw new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR, e.getMessage());
-					}
-				});
+		ofNullable(integrationType.getDetails()).flatMap(details -> ofNullable(details.getDetails())).ifPresent(details -> {
+			deletePluginFiles(details);
+			removeDependencies(integrationType.getName(), details);
+			destroyDependency(integrationType.getName());
+		});
+
 		return pluginManager.deletePlugin(integrationType.getName());
+	}
+
+	private void deletePluginFiles(Map<String, Object> details) {
+		IntegrationTypeProperties.RESOURCES_DIRECTORY.getValue(details).map(String::valueOf).ifPresent(resourcesDir -> {
+			try {
+				FileUtils.deleteDirectory(FileUtils.getFile(resourcesDir));
+			} catch (IOException e) {
+				throw new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR, "Unable to delete plugin file.");
+			}
+		});
+		IntegrationTypeProperties.FILE_ID.getValue(details).map(String::valueOf).ifPresent(pluginLoader::deleteFromDataStore);
+	}
+
+	private void removeDependencies(String pluginId, Map<String, Object> details) {
+		Class<?> pluginClass = pluginManager.getExtensionClasses(pluginId)
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new ReportPortalException(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION,
+						Suppliers.formattedSupplier("Plugin with id = '{}' is not installed", pluginId).get()
+				));
+		if (InitializingExtensionPoint.class.isAssignableFrom(pluginClass)) {
+			IntegrationTypeProperties.DEPENDENCIES.getValue(details)
+					.ifPresent(dependenciesMapping -> ((Map<String, List<String>>) dependenciesMapping).forEach((provider, dependencies) -> {
+						dependencies.forEach(this::destroyDependency);
+						destroyDependency(provider);
+					}));
+		}
+	}
+
+	private void destroyDependency(String name) {
+		AbstractAutowireCapableBeanFactory beanFactory = (AbstractAutowireCapableBeanFactory) this.autowireCapableBeanFactory;
+		if (beanFactory.containsSingleton(name)) {
+			beanFactory.destroySingleton(name);
+		}
 	}
 
 	@Override
@@ -176,47 +248,10 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 		integrationTypeRepository.findAll()
 				.stream()
 				.filter(IntegrationType::isEnabled)
-				.forEach(integrationType -> ofNullable(integrationType.getDetails()).flatMap(details -> ofNullable(details.getDetails()))
-						.ifPresent(integrationTypeDetails -> {
-							String fileName = IntegrationDetailsProperties.FILE_NAME.getValue(integrationTypeDetails)
-									.map(String::valueOf)
-									.orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
-											Suppliers.formattedSupplier("'File name' property of the plugin - '{}' is not specified",
-													integrationType.getName()
-											).get()
-									));
-
-							Path pluginPath = Paths.get(pluginsDir, fileName);
-							if (Files.notExists(pluginPath)) {
-								String fileId = IntegrationDetailsProperties.FILE_ID.getValue(integrationTypeDetails)
-										.map(String::valueOf)
-										.orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
-												Suppliers.formattedSupplier("'File id' property of the plugin - '{}' is not specified",
-														integrationType.getName()
-												).get()
-										));
-								try {
-									pluginLoader.copyFromDataStore(fileId, pluginPath, Paths.get(resourcesDir, integrationType.getName()));
-								} catch (IOException e) {
-									throw new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
-											Suppliers.formattedSupplier("Unable to load plugin - '{}' from the data store",
-													integrationType.getName()
-											).get()
-									);
-								}
-							}
-
-							ofNullable(pluginManager.loadPlugin(pluginPath)).ifPresent(pluginId -> {
-								if (PluginState.STARTED == pluginManager.startPlugin(pluginId)) {
-									Optional<AuthExtension> authExtension = this.getInstance(pluginId, AuthExtension.class);
-									authExtension.ifPresent(extension -> LOGGER.info(Suppliers.formattedSupplier(
-											"Plugin - '{}' initialized.",
-											pluginId
-									).get()));
-								}
-							});
-
-						}));
+				.forEach(integrationType -> ofNullable(integrationType.getDetails()).ifPresent(integrationTypeDetails -> loadPlugin(
+						integrationType.getName(),
+						integrationTypeDetails
+				)));
 
 	}
 
@@ -235,8 +270,7 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 		Optional<PluginWrapper> previousPlugin = getPluginById(newPluginInfo.getId());
 		validateNewPluginFile(previousPlugin, newPluginFileName);
 		previousPlugin.ifPresent(this::unloadPlugin);
-
-		String newPluginId = loadPlugin(Paths.get(pluginsTempDir, newPluginFileName));
+		String newPluginId = pluginManager.loadPlugin(Paths.get(pluginsTempDir, newPluginFileName));
 
 		if (ofNullable(newPluginId).isPresent()) {
 			IntegrationType newIntegrationType = startUpPlugin(newPluginId, previousPlugin, newPluginFileName, fileStream, integrationType);
@@ -377,7 +411,7 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 	}
 
 	private void unloadPlugin(PluginWrapper pluginWrapper) {
-		if (!unloadPlugin(pluginWrapper.getPluginId())) {
+		if (!pluginManager.unloadPlugin(pluginWrapper.getPluginId())) {
 			throw new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR,
 					Suppliers.formattedSupplier("Failed to stop old plugin with id = {}", pluginWrapper.getPluginId()).get()
 			);
@@ -400,15 +434,15 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 
 		startUpPlugin(newPluginId);
 		validateNewPluginExtensionClasses(newPluginId, previousPlugin, newPluginFileName);
-		unloadPlugin(newPluginId);
+		pluginManager.unloadPlugin(newPluginId);
 
 		String fileId = uploadPlugin(newPluginFileName, fileStream, previousPlugin, newPluginId);
-		IntegrationDetailsProperties.FILE_ID.setValue(integrationType.getDetails(), fileId);
+		IntegrationTypeProperties.FILE_ID.setValue(integrationType.getDetails(), fileId);
 
 		copyPluginToRootDirectory(newPluginFileName, previousPlugin, newPluginId);
 		previousPlugin.ifPresent(p -> this.deletePreviousPlugin(p, newPluginFileName));
 
-		return ofNullable(loadPlugin(Paths.get(pluginsDir, newPluginFileName))).map(newLoadedPluginId -> {
+		return ofNullable(pluginManager.loadPlugin(Paths.get(pluginsDir, newPluginFileName))).map(newLoadedPluginId -> {
 			try {
 				pluginLoader.copyPluginResource(Paths.get(pluginsDir, newPluginFileName), Paths.get(resourcesDir, newLoadedPluginId));
 			} catch (IOException | ReportPortalException e) {
@@ -423,11 +457,11 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 			Optional<AuthExtension> instance = getInstance(integrationType.getName(), AuthExtension.class);
 
 			if (instance.isPresent()) {
-				IntegrationDetailsProperties.COMMANDS.setValue(integrationType.getDetails(), instance.get().getCommandNames());
+				IntegrationTypeProperties.COMMANDS.setValue(integrationType.getDetails(), instance.get().getCommandNames());
 				integrationType.setIntegrationGroup(IntegrationGroupEnum.valueOf(instance.get().getIntegrationGroup().name()));
 			}
 
-			IntegrationDetailsProperties.FILE_NAME.setValue(integrationType.getDetails(), newPluginFileName);
+			IntegrationTypeProperties.FILE_NAME.setValue(integrationType.getDetails(), newPluginFileName);
 			integrationType.setEnabled(true);
 			return integrationTypeRepository.save(integrationType);
 		})
@@ -450,7 +484,7 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 				Suppliers.formattedSupplier("Plugin with id = {} has not been found.", newPluginId).get()
 		));
 		if (!pluginLoader.validatePluginExtensionClasses(newPlugin)) {
-			unloadPlugin(newPluginId);
+			pluginManager.unloadPlugin(newPluginId);
 			previousPlugin.ifPresent(this::loadAndStartUpPlugin);
 			deleteTempPlugin(newPluginFileName);
 
@@ -535,7 +569,8 @@ public class Pf4jPluginManager extends AbstractIdleService implements Pf4jPlugin
 			return plugin.getPluginState();
 		}
 
-		return startUpPlugin(ofNullable(loadPlugin(plugin.getPluginPath())).orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_UPLOAD_ERROR,
+		return startUpPlugin(ofNullable(pluginManager.loadPlugin(plugin.getPluginPath())).orElseThrow(() -> new ReportPortalException(
+				ErrorType.PLUGIN_UPLOAD_ERROR,
 				Suppliers.formattedSupplier("Unable to reload plugin with id = '{}", plugin.getPluginId()).get()
 		)));
 	}

@@ -16,11 +16,11 @@
 
 package com.epam.reportportal.auth.plugin.plugin.impl;
 
-import com.epam.reportportal.auth.plugin.IntegrationDetailsProperties;
 import com.epam.reportportal.auth.plugin.IntegrationTypeBuilder;
 import com.epam.reportportal.auth.plugin.PluginInfo;
 import com.epam.reportportal.auth.plugin.plugin.PluginLoader;
 import com.epam.reportportal.extension.common.ExtensionPoint;
+import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
@@ -83,7 +83,7 @@ public class PluginLoaderImpl implements PluginLoader {
 	public IntegrationType retrieveIntegrationType(PluginInfo pluginInfo) {
 
 		IntegrationType integrationType = integrationTypeRepository.findByName(pluginInfo.getId()).map(it -> {
-			IntegrationDetailsProperties.VERSION.getValue(it.getDetails().getDetails())
+			IntegrationTypeProperties.VERSION.getValue(it.getDetails().getDetails())
 					.map(String::valueOf)
 					.ifPresent(version -> BusinessRule.expect(version, v -> !v.equalsIgnoreCase(pluginInfo.getVersion()))
 							.verify(ErrorType.PLUGIN_UPLOAD_ERROR,
@@ -101,7 +101,7 @@ public class PluginLoaderImpl implements PluginLoader {
 
 		integrationType.setIntegrationGroup(integrationType.getIntegrationGroup());
 		integrationType.setCreationDate(LocalDateTime.now());
-		IntegrationDetailsProperties.VERSION.setValue(integrationType.getDetails(), pluginInfo.getVersion());
+		IntegrationTypeProperties.VERSION.setValue(integrationType.getDetails(), pluginInfo.getVersion());
 
 		return integrationType;
 	}
@@ -130,6 +130,11 @@ public class PluginLoaderImpl implements PluginLoader {
 	public void copyFromDataStore(String fileId, Path pluginPath, Path resourcesPath) throws IOException {
 		copyFromDataStore(fileId, pluginPath);
 		copyPluginResource(pluginPath, resourcesPath);
+	}
+
+	@Override
+	public void deleteFromDataStore(String fileId) {
+		dataStore.delete(fileId);
 	}
 
 	@Override

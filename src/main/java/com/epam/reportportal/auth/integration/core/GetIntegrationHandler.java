@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
-import org.springframework.context.ApplicationEvent;
+package com.epam.reportportal.auth.integration.core;
+
+import com.epam.ta.reportportal.ws.model.integration.IntegrationResource;
 
 import java.util.List;
 
 /**
- * Event for reloading SAML IDPs settings
- *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-public class SamlProvidersReloadEvent extends ApplicationEvent {
+public interface GetIntegrationHandler {
 
-	private static final long serialVersionUID = 2314984509233L;
+	IntegrationResource getGlobalIntegrationById(Long integrationId);
 
-	public SamlProvidersReloadEvent(List<SamlProviderDetails> externalProviders) {
-		super(externalProviders);
-	}
+	List<IntegrationResource> getGlobalIntegrations();
 
-	List<SamlProviderDetails> getDetails() {
-		return (List<SamlProviderDetails>) super.getSource();
-	}
+	List<IntegrationResource> getGlobalIntegrations(String pluginName);
 }
