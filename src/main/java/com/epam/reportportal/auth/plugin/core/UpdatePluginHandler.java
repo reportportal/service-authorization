@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin;
+package com.epam.reportportal.auth.plugin.core;
 
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+import com.epam.ta.reportportal.ws.model.integration.UpdatePluginStateRQ;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public interface DeletePluginHandler {
+public interface UpdatePluginHandler {
 
 	/**
-	 * Delete plugin representation from the database and from the {@link com.epam.ta.reportportal.core.plugin.Pf4jPluginBox} instance
+	 * Updates plugin state. If 'enabled == true', plugin file will be downloaded from the {@link com.epam.ta.reportportal.filesystem.DataStore}
+	 * (if not exists in the plugins' root path) and loaded in the memory.
+	 * If 'enabled == false', plugin will be unloaded from the memory
 	 *
-	 * @param id {@link com.epam.ta.reportportal.entity.integration.IntegrationType#id}
-	 * @return {@link OperationCompletionRS} with result message
+	 * @param id                  {@link com.epam.ta.reportportal.entity.integration.IntegrationType#id}
+	 * @param updatePluginStateRQ {@link UpdatePluginStateRQ}
+	 * @return {@link OperationCompletionRS}
 	 */
-	OperationCompletionRS deleteById(Long id);
+	OperationCompletionRS updatePluginState(Long id, UpdatePluginStateRQ updatePluginStateRQ);
 }

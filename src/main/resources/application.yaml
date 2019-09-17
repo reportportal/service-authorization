@@ -76,7 +76,8 @@ rp:
     # could be one of [seaweed, filesystem, minio]
     type: filesystem
   plugins:
-    rootDir: /Users/yumfriez/plugins/auth
+    service: uat
+    rootDir: /plugins/auth
     resolved:
       path: ${rp.plugins.rootDir}/resolved
       resources: ${rp.plugins.rootDir}/resources

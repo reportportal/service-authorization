@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin;
+package com.epam.reportportal.auth.plugin.core;
 
 import com.epam.ta.reportportal.ws.model.EntryCreatedRS;
 import org.springframework.web.multipart.MultipartFile;

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin.impl;
+package com.epam.reportportal.auth.plugin.core.impl;
 
-import com.epam.reportportal.auth.plugin.Pf4jPluginBox;
-import com.epam.reportportal.auth.plugin.plugin.UpdatePluginHandler;
+import com.epam.reportportal.auth.plugin.core.UpdatePluginHandler;
+import com.epam.reportportal.extension.common.IntegrationTypeProperties;
+import com.epam.reportportal.extension.plugin.manager.Pf4jPluginBox;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.integration.UpdatePluginStateRQ;
@@ -32,24 +32,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
+import static java.util.Optional.ofNullable;
+
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
 @Service
 public class UpdatePluginHandlerImpl implements UpdatePluginHandler {
 
+	private final String pluginService;
 	private final Pf4jPluginBox pluginBox;
 	private final IntegrationTypeRepository integrationTypeRepository;
-	private final DataStore dataStore;
-	private final String pluginsRootPath;
 
 	@Autowired
-	public UpdatePluginHandlerImpl(Pf4jPluginBox pluginBox, IntegrationTypeRepository integrationTypeRepository, DataStore dataStore,
-			@Value("${rp.plugins.resolved.path}") String pluginsRootPath) {
+	public UpdatePluginHandlerImpl(@Value("${rp.plugins.service}") String pluginService, Pf4jPluginBox pluginBox,
+			IntegrationTypeRepository integrationTypeRepository) {
+		this.pluginService = pluginService;
 		this.pluginBox = pluginBox;
 		this.integrationTypeRepository = integrationTypeRepository;
-		this.dataStore = dataStore;
-		this.pluginsRootPath = pluginsRootPath;
 	}
 
 	@Override
@@ -80,6 +82,16 @@ public class UpdatePluginHandlerImpl implements UpdatePluginHandler {
 					isEnabled
 			).get());
 		}
+
+		Map<String, Object> details = ofNullable(integrationType.getDetails()).flatMap(integrationTypeDetails -> ofNullable(
+				integrationTypeDetails.getDetails()))
+				.orElseThrow(() -> new ReportPortalException(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION));
+
+		String service = IntegrationTypeProperties.SERVICE.getValue(details).map(String::valueOf).orElse("");
+		BusinessRule.expect(service, pluginService::equalsIgnoreCase)
+				.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION,
+						Suppliers.formattedSupplier("Plugin service = '{}', but expected - '{}'", service, pluginService).get()
+				);
 
 		if (isEnabled) {
 			loadPlugin(integrationType);

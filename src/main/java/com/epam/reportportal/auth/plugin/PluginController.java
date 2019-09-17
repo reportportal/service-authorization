@@ -16,10 +16,10 @@
 
 package com.epam.reportportal.auth.plugin;
 
-import com.epam.reportportal.auth.plugin.plugin.CreatePluginHandler;
-import com.epam.reportportal.auth.plugin.plugin.DeletePluginHandler;
-import com.epam.reportportal.auth.plugin.plugin.GetPluginHandler;
-import com.epam.reportportal.auth.plugin.plugin.UpdatePluginHandler;
+import com.epam.reportportal.auth.plugin.core.CreatePluginHandler;
+import com.epam.reportportal.auth.plugin.core.DeletePluginHandler;
+import com.epam.reportportal.auth.plugin.core.GetPluginHandler;
+import com.epam.reportportal.auth.plugin.core.UpdatePluginHandler;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.ws.model.EntryCreatedRS;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;

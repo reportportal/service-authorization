@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin;
+package com.epam.reportportal.auth.plugin.core;
 
-import com.epam.ta.reportportal.ws.model.integration.IntegrationTypeResource;
-
-import java.util.List;
+import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public interface GetPluginHandler {
+public interface DeletePluginHandler {
 
 	/**
-	 * Get a list of all existing plugins
+	 * Delete plugin representation from the database and from the {@link com.epam.ta.reportportal.core.plugin.Pf4jPluginBox} instance
 	 *
-	 * @return {@link List} of the {@link IntegrationTypeResource}
+	 * @param id {@link com.epam.ta.reportportal.entity.integration.IntegrationType#id}
+	 * @return {@link OperationCompletionRS} with result message
 	 */
-	List<IntegrationTypeResource> getPlugins();
-
+	OperationCompletionRS deleteById(Long id);
 }

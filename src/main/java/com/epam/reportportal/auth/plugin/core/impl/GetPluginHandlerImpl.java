@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin.impl;
+package com.epam.reportportal.auth.plugin.core.impl;
 
 import com.epam.reportportal.auth.plugin.IntegrationTypeConverter;
-import com.epam.reportportal.auth.plugin.plugin.GetPluginHandler;
+import com.epam.reportportal.auth.plugin.core.GetPluginHandler;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.ws.model.integration.IntegrationTypeResource;
 import org.springframework.beans.factory.annotation.Autowired;

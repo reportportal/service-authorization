@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin.impl;
+package com.epam.reportportal.auth.plugin.core.impl;
 
-import com.epam.reportportal.auth.plugin.Pf4jPluginBox;
-import com.epam.reportportal.auth.plugin.plugin.DeletePluginHandler;
+import com.epam.reportportal.auth.plugin.core.DeletePluginHandler;
+import com.epam.reportportal.extension.plugin.manager.Pf4jPluginBox;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
@@ -37,8 +37,7 @@ public class DeletePluginHandlerImpl implements DeletePluginHandler {
 	private final Pf4jPluginBox pluginBox;
 
 	@Autowired
-	public DeletePluginHandlerImpl(IntegrationTypeRepository integrationTypeRepository,
-			Pf4jPluginBox pluginBox) {
+	public DeletePluginHandlerImpl(IntegrationTypeRepository integrationTypeRepository, Pf4jPluginBox pluginBox) {
 		this.integrationTypeRepository = integrationTypeRepository;
 		this.pluginBox = pluginBox;
 	}
@@ -50,11 +49,11 @@ public class DeletePluginHandlerImpl implements DeletePluginHandler {
 				.orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR,
 						Suppliers.formattedSupplier("Plugin with id = '{}' not found", id).get()
 				));
-		pluginBox.getPluginById(integrationType.getName()).ifPresent(pluginWrapper -> {
-			if (!pluginBox.deletePlugin(integrationType)) {
-				throw new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR, "Unable to remove from plugin manager.");
-			}
-		});
+
+		if (!pluginBox.deletePlugin(integrationType)) {
+			throw new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR, "Unable to remove from plugin manager.");
+		}
+
 		integrationTypeRepository.deleteById(integrationType.getId());
 
 		return new OperationCompletionRS(Suppliers.formattedSupplier("Plugin = '{}' has been successfully removed",
@@ -62,6 +61,5 @@ public class DeletePluginHandlerImpl implements DeletePluginHandler {
 		).get());
 
 	}
-
 
 }

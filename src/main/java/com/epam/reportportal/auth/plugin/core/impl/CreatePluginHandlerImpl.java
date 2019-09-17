@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.plugin.plugin.impl;
+package com.epam.reportportal.auth.plugin.core.impl;
 
-import com.epam.reportportal.auth.plugin.Pf4jPluginBox;
-import com.epam.reportportal.auth.plugin.plugin.CreatePluginHandler;
+import com.epam.reportportal.auth.plugin.core.CreatePluginHandler;
+import com.epam.reportportal.extension.plugin.manager.Pf4jPluginBox;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
