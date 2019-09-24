@@ -15,8 +15,6 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.extension.auth.ReportPortalClient;
-import com.epam.reportportal.extension.auth.TokenServicesFacade;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
