@@ -17,7 +17,10 @@
 package com.epam.reportportal.auth.plugin.core.impl;
 
 import com.epam.reportportal.auth.plugin.core.DeletePluginHandler;
+import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.reportportal.extension.plugin.manager.Pf4jPluginBox;
+import com.epam.reportportal.extension.util.IntegrationTypeDetailsUtil;
+import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
@@ -25,6 +28,7 @@ import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,11 +37,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class DeletePluginHandlerImpl implements DeletePluginHandler {
 
+	private final String pluginService;
 	private final IntegrationTypeRepository integrationTypeRepository;
 	private final Pf4jPluginBox pluginBox;
 
 	@Autowired
-	public DeletePluginHandlerImpl(IntegrationTypeRepository integrationTypeRepository, Pf4jPluginBox pluginBox) {
+	public DeletePluginHandlerImpl(@Value("${rp.plugins.service}") String pluginService,
+			IntegrationTypeRepository integrationTypeRepository, Pf4jPluginBox pluginBox) {
+		this.pluginService = pluginService;
 		this.integrationTypeRepository = integrationTypeRepository;
 		this.pluginBox = pluginBox;
 	}
@@ -49,6 +56,12 @@ public class DeletePluginHandlerImpl implements DeletePluginHandler {
 				.orElseThrow(() -> new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR,
 						Suppliers.formattedSupplier("Plugin with id = '{}' not found", id).get()
 				));
+
+		String service = IntegrationTypeDetailsUtil.getDetailsValueByKey(IntegrationTypeProperties.SERVICE, integrationType).orElse("");
+		BusinessRule.expect(service, pluginService::equalsIgnoreCase)
+				.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION,
+						Suppliers.formattedSupplier("Plugin service = '{}', but expected - '{}'", service, pluginService).get()
+				);
 
 		if (!pluginBox.deletePlugin(integrationType)) {
 			throw new ReportPortalException(ErrorType.PLUGIN_REMOVE_ERROR, "Unable to remove from plugin manager.");

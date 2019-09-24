@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.plugin.core.impl;
 import com.epam.reportportal.auth.plugin.core.UpdatePluginHandler;
 import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.reportportal.extension.plugin.manager.Pf4jPluginBox;
+import com.epam.reportportal.extension.util.IntegrationTypeDetailsUtil;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
@@ -31,10 +32,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-
-import static java.util.Optional.ofNullable;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -83,11 +80,7 @@ public class UpdatePluginHandlerImpl implements UpdatePluginHandler {
 			).get());
 		}
 
-		Map<String, Object> details = ofNullable(integrationType.getDetails()).flatMap(integrationTypeDetails -> ofNullable(
-				integrationTypeDetails.getDetails()))
-				.orElseThrow(() -> new ReportPortalException(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION));
-
-		String service = IntegrationTypeProperties.SERVICE.getValue(details).map(String::valueOf).orElse("");
+		String service = IntegrationTypeDetailsUtil.getDetailsValueByKey(IntegrationTypeProperties.SERVICE, integrationType).orElse("");
 		BusinessRule.expect(service, pluginService::equalsIgnoreCase)
 				.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION,
 						Suppliers.formattedSupplier("Plugin service = '{}', but expected - '{}'", service, pluginService).get()
