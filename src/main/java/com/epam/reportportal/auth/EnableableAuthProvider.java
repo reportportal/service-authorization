@@ -15,7 +15,7 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.event.UiUserSignedInEvent;
+import com.epam.reportportal.extension.auth.event.UiUserSignedInEvent;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;

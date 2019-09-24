@@ -15,7 +15,8 @@
  */
 package com.epam.reportportal.auth;
 
-import com.epam.reportportal.auth.event.UiUserSignedInEvent;
+import com.epam.reportportal.extension.auth.TokenServicesFacade;
+import com.epam.reportportal.extension.auth.event.UiUserSignedInEvent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;

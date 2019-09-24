@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.integration.saml;
 
-import java.io.Serializable;
+package com.epam.reportportal.auth.plugin.core;
+
+import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 
 /**
- * Represents information about subject of authentication stored in SAML response
- *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public class Subject implements Serializable {
+public interface DeletePluginHandler {
 
-	private static final long serialVersionUID = 2390092323L;
-
-	private SamlPrincipal samlPrincipal;
-
-	public SamlPrincipal getSamlPrincipal() {
-		return samlPrincipal;
-	}
-
-	public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
-		this.samlPrincipal = samlPrincipal;
-		return this;
-	}
+	/**
+	 * Delete plugin representation from the database and from the {@link com.epam.ta.reportportal.core.plugin.Pf4jPluginBox} instance
+	 *
+	 * @param id {@link com.epam.ta.reportportal.entity.integration.IntegrationType#id}
+	 * @return {@link OperationCompletionRS} with result message
+	 */
+	OperationCompletionRS deleteById(Long id);
 }

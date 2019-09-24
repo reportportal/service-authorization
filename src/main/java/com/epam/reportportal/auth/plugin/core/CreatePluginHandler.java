@@ -13,27 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
-import org.springframework.context.ApplicationEvent;
+package com.epam.reportportal.auth.plugin.core;
 
-import java.util.List;
+import com.epam.ta.reportportal.ws.model.EntryCreatedRS;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Event for reloading SAML IDPs settings
- *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public class SamlProvidersReloadEvent extends ApplicationEvent {
+public interface CreatePluginHandler {
 
-	private static final long serialVersionUID = 2314984509233L;
-
-	public SamlProvidersReloadEvent(List<SamlProviderDetails> externalProviders) {
-		super(externalProviders);
-	}
-
-	List<SamlProviderDetails> getDetails() {
-		return (List<SamlProviderDetails>) super.getSource();
-	}
+	/**
+	 * Upload and start up the plugin
+	 *
+	 * @param pluginFile Plugin file
+	 * @return {@link EntryCreatedRS} with the newly created {@link com.epam.ta.reportportal.entity.integration.IntegrationType#id}
+	 */
+	EntryCreatedRS uploadPlugin(MultipartFile pluginFile);
 }

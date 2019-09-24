@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.integration.saml;
+
+package com.epam.reportportal.auth.integration.core;
+
+import com.epam.ta.reportportal.ws.model.integration.IntegrationResource;
+
+import java.util.List;
 
 /**
- * Used for population of user settings from SAML response
- *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-public enum UserAttribute {
-	FIRST_NAME("FirstName"),
-	LAST_NAME("LastName"),
-	EMAIL("Email");
+public interface GetIntegrationHandler {
 
-	private String value;
+	IntegrationResource getGlobalIntegrationById(Long integrationId);
 
-	UserAttribute(String value) {
-		this.value = value;
-	}
+	List<IntegrationResource> getGlobalIntegrations();
 
-	@Override
-	public String toString() {
-		return value;
-	}
+	List<IntegrationResource> getGlobalIntegrations(String pluginName);
 }
-

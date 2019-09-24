@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.event;
 
-import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.core.Authentication;
+package com.epam.reportportal.auth.plugin.core;
+
+import com.epam.ta.reportportal.ws.model.integration.IntegrationTypeResource;
+
+import java.util.List;
 
 /**
- * UI user has signed in
- * 
- * @author Andrei Varabyeu
- * 
+ * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public class UiUserSignedInEvent extends AuthenticationSuccessEvent {
+public interface GetPluginHandler {
 
-	private static final long serialVersionUID = -6746135168882975399L;
-
-	public UiUserSignedInEvent(Authentication authentication) {
-		super(authentication);
-	}
+	/**
+	 * Get a list of all existing plugins
+	 *
+	 * @return {@link List} of the {@link IntegrationTypeResource}
+	 */
+	List<IntegrationTypeResource> getPlugins();
 
 }

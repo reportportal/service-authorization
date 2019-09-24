@@ -15,8 +15,8 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
-import com.epam.reportportal.auth.ReportPortalClient;
-import com.epam.reportportal.auth.TokenServicesFacade;
+import com.epam.reportportal.extension.auth.ReportPortalClient;
+import com.epam.reportportal.extension.auth.TokenServicesFacade;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.ws.model.ErrorType;

@@ -28,7 +28,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
 @SpringBootApplication(exclude = { LdapHealthIndicatorAutoConfiguration.class, FlywayAutoConfiguration.class })
-@ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth" })
+@ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth", "com.epam.reportportal.extension" })
 public class AuthServerApplication {
 
 	public static void main(String[] args) {

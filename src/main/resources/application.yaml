@@ -64,17 +64,6 @@ rp:
       validity-period: 86400
   auth:
     server: default
-    saml:
-      # base-path: ${SP_BASE_PATH:${server.contextPath:http://localhost:8080}}/${spring.application.name}
-      base-path: ${SP_BASE_PATH:${server.contextPath:http://localhost:9999}}
-      key-password: ${SP_KEY_PASSWORD:password}
-      key-alias: ${SP_KEY_ALIAS:report-portal-sp}
-      key-store: ${SP_KEY_STORE:file://C:\Users\Ihar_Kahadouski\IdeaProjects\service-authorization-saml\src\main\resources\saml\keystore.jks}
-      key-store-password: ${SP_KEY_STORE_PASSWORD:password}
-      network-connection-timeout: ${SP_NETWORK_CONNECTION_TIMEOUT:5000}
-      network-read-timeout: ${SP_NETWORK_READ_TIMEOUT:10000}
-      signed-requests: ${SP_SIGNED_REQUESTS:false}
-      active-key-name: sp-signing-key
   binarystore:
     path: /data/storage
     master:
@@ -86,3 +75,11 @@ rp:
       secretKey: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
     # could be one of [seaweed, filesystem, minio]
     type: filesystem
+  plugins:
+    service: uat
+    rootDir: /plugins/auth
+    resolved:
+      path: ${rp.plugins.rootDir}/resolved
+      resources: ${rp.plugins.rootDir}/resources
+    temp:
+      path: ${rp.plugins.rootDir}/temp
