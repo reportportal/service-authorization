@@ -61,7 +61,9 @@ rp:
   jwt:
     signing-key: 123
     token:
-      validity-period: 86400
+      validity-period: ${rp.session.live}
+  session:
+    live: 86400
   auth:
     server: default
     saml:
