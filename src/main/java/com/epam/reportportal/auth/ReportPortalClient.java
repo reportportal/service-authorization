@@ -13,25 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.epam.reportportal.auth.integration.core;
-
-import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+package com.epam.reportportal.auth;
 
 /**
+ * Client types
+ *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
-public interface DeleteIntegrationHandler {
-
-	/**
-	 * @param integrationId Integration id
-	 * @return Response data
-	 */
-	OperationCompletionRS deleteGlobalIntegration(Long integrationId);
-
-	/**
-	 * @param type {@link com.epam.ta.reportportal.entity.integration.IntegrationType#name}
-	 * @return Response data
-	 */
-	OperationCompletionRS deleteGlobalIntegrationsByType(String type);
+public enum ReportPortalClient {
+	ui,
+	api,
+	internal
 }
