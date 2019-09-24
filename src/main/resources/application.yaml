@@ -28,6 +28,9 @@ spring:
   profiles:
     ## Profiles list
     active: ${rp.profiles:default}
+  mvc:
+    locale: en_US
+    locale-resolver: fixed
 
 logging:
   level:
