@@ -52,6 +52,9 @@ public class SamlServiceProviderConfiguration {
 	@Value("${rp.auth.saml.base-path}")
 	private String basePath;
 
+	@Value("${rp.auth.saml.entity-id}")
+	private String entityId;
+
 	@Value("${rp.auth.saml.key-alias}")
 	private String keyAlias;
 
@@ -96,8 +99,8 @@ public class SamlServiceProviderConfiguration {
 		LocalServiceProviderConfiguration serviceProviderConfiguration = new LocalServiceProviderConfiguration();
 		serviceProviderConfiguration.setSignRequests(signedRequests)
 				.setWantAssertionsSigned(signedRequests)
-				.setEntityId("report.portal.sp.id")
-				.setAlias("report-portal-sp")
+				.setEntityId(entityId)
+				.setAlias(keyAlias)
 				.setSignMetadata(signedRequests)
 				.setSingleLogoutEnabled(true)
 				.setNameIds(Arrays.asList(NameID.EMAIL, NameID.PERSISTENT, NameID.UNSPECIFIED))
