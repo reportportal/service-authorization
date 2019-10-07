@@ -56,6 +56,9 @@ import static java.util.stream.Collectors.toSet;
 @Service
 public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHandler {
 
+	private static final String ACTIVE_DIRECTORY_INTEGRATION_NAME = "ad";
+	private static final String LDAP_INTEGRATION_NAME = "ldap";
+
 	private final IntegrationRepository integrationRepository;
 
 	private final IntegrationTypeRepository integrationTypeRepository;
@@ -82,7 +85,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 			updateWithAuthIntegrationParameters(config);
 			return config;
 		});
-
+		ldapConfig.setName(ofNullable(ldapConfig.getName()).orElse(LDAP_INTEGRATION_NAME));
 		return LdapConverter.TO_RESOURCE.apply(integrationRepository.save(ldapConfig));
 	}
 
@@ -99,7 +102,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 			updateWithAuthIntegrationParameters(config);
 			return config;
 		});
-
+		activeDirectoryConfig.setName(ofNullable(activeDirectoryConfig.getName()).orElse(ACTIVE_DIRECTORY_INTEGRATION_NAME));
 		return ActiveDirectoryConverter.TO_RESOURCE.apply(integrationRepository.save(activeDirectoryConfig));
 
 	}
