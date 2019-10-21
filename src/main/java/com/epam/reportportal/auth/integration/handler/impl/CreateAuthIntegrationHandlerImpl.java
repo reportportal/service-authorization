@@ -85,7 +85,8 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 			BusinessRule.expect(lc.getType().getIntegrationGroup(), equalTo(IntegrationGroupEnum.AUTH))
 					.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION, "Wrong integration group");
 			if (!StringUtils.isEmpty(lc.getManagerPassword())) {
-				if (!encryptor.decrypt(lc.getManagerPassword()).equals(updateLdapRQ.getManagerPassword())) {
+				if (!lc.getManagerPassword().equals(updateLdapRQ.getManagerPassword()) && !encryptor.decrypt(lc.getManagerPassword())
+						.equals(updateLdapRQ.getManagerPassword())) {
 					encryptPassword(updateLdapRQ);
 				} else {
 					updateLdapRQ.setManagerPassword(lc.getManagerPassword());
