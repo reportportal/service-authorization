@@ -18,6 +18,8 @@ package com.epam.reportportal.auth.integration.saml;
 import com.epam.reportportal.auth.AuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.TokenServicesFacade;
+import com.epam.reportportal.auth.integration.builder.LdapBuilder;
+import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -43,6 +45,7 @@ public class SamlAuthSuccessHandler extends AuthSuccessHandler {
 			AuthorizationServerTokenServices tokenServices) {
 		super(tokenServicesFacade, eventPublisher, tokenServices);
 	}
+
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)

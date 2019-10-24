@@ -16,9 +16,9 @@
 package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
-import com.epam.reportportal.auth.integration.handler.impl.GetActiveDirectoryStrategy;
-import com.epam.reportportal.auth.integration.handler.impl.GetLdapStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.*;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
+
+import static com.epam.reportportal.auth.integration.AuthIntegrationType.*;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -41,12 +43,23 @@ public class AuthIntegrationConfig {
 		this.applicationContext = applicationContext;
 	}
 
-	@Bean("authIntegrationStrategyMapping")
-	public Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping() {
-		return new ImmutableMap.Builder<AuthIntegrationType, GetAuthIntegrationStrategy>().put(AuthIntegrationType.LDAP,
+	@Bean("getAuthIntegrationStrategyMapping")
+	public Map<AuthIntegrationType, GetAuthIntegrationStrategy> getAuthIntegrationStrategyMapping() {
+		return new ImmutableMap.Builder<AuthIntegrationType, GetAuthIntegrationStrategy>().put(LDAP,
 				applicationContext.getBean(GetLdapStrategy.class)
 		)
-				.put(AuthIntegrationType.ACTIVE_DIRECTORY, applicationContext.getBean(GetActiveDirectoryStrategy.class))
+				.put(ACTIVE_DIRECTORY, applicationContext.getBean(GetActiveDirectoryStrategy.class))
+				.put(SAML, applicationContext.getBean(GetSamlIntegrationsStrategy.class))
+				.build();
+	}
+
+	@Bean("createOrUpdateIntegrationStrategyMapping")
+	public Map<AuthIntegrationType, CreateOrUpdateIntegrationStrategy> createOrUpdateIntegrationStrategyMapping() {
+		return new ImmutableMap.Builder<AuthIntegrationType, CreateOrUpdateIntegrationStrategy>().put(LDAP,
+				applicationContext.getBean(CreateOrUpdateLdapIntegrationStrategy.class)
+		)
+				.put(ACTIVE_DIRECTORY, applicationContext.getBean(CreateOrUpdateActiveDirectoryIntegrationStrategy.class))
+				.put(SAML, applicationContext.getBean(CreateOrUpdateSamlIntegrationStrategy.class))
 				.build();
 	}
 }

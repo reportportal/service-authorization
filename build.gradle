@@ -46,9 +46,9 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
         compile 'com.epam.reportportal:commons-model:5.0.0-RC-1'
     } else {
-        compile 'com.github.reportportal:commons-dao:5.0.0-RC-2'
+        compile 'com.github.reportportal:commons-dao:d8f50a1'
         compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.github.reportportal:commons-model:5.0.0-RC-1'
+        compile 'com.github.reportportal:commons-model:3153c74'
     }
 
     compile 'javax.inject:javax.inject:1'

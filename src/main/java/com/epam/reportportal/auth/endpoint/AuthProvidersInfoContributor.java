@@ -15,11 +15,16 @@
  */
 package com.epam.reportportal.auth.endpoint;
 
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
-import com.epam.ta.reportportal.dao.SamlProviderDetailsRepository;
+import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
+import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
@@ -29,6 +34,7 @@ import org.springframework.web.util.UriUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.epam.reportportal.auth.config.SecurityConfiguration.GlobalWebSecurityConfig.SSO_LOGIN_PATH;
@@ -46,14 +52,17 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 	private static final String SAML_BUTTON = "<span>Login with SAML</span>";
 
 	private final OAuthRegistrationRepository oAuthRegistrationRepository;
-	private final SamlProviderDetailsRepository samlProviderDetailsRepository;
+	private final IntegrationRepository integrationRepository;
+	private final IntegrationTypeRepository integrationTypeRepository;
 	private final Map<String, OAuthProvider> providersMap;
 
 	@Autowired
 	public AuthProvidersInfoContributor(OAuthRegistrationRepository oAuthRegistrationRepository,
-			SamlProviderDetailsRepository samlProviderDetailsRepository, Map<String, OAuthProvider> providersMap) {
+			IntegrationRepository integrationRepository, IntegrationTypeRepository integrationTypeRepository,
+			Map<String, OAuthProvider> providersMap) {
 		this.oAuthRegistrationRepository = oAuthRegistrationRepository;
-		this.samlProviderDetailsRepository = samlProviderDetailsRepository;
+		this.integrationRepository = integrationRepository;
+		this.integrationTypeRepository = integrationTypeRepository;
 		this.providersMap = providersMap;
 	}
 
@@ -64,17 +73,24 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 		final Map<String, AuthProviderInfo> providers = providersMap.values()
 				.stream()
 				.filter(p -> !p.isConfigDynamic() || oauth2Details.stream().anyMatch(it -> it.getId().equalsIgnoreCase(p.getName())))
-				.collect(Collectors.toMap(OAuthProvider::getName, p -> new OAuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))
+				.collect(Collectors.toMap(OAuthProvider::getName,
+						p -> new OAuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))
 				));
 
-		Map<String, String> samlProviders = samlProviderDetailsRepository.findAll()
-				.stream()
-				.filter(SamlProviderDetails::isEnabled)
-				.collect(Collectors.toMap(SamlProviderDetails::getIdpName,
-						it -> fromCurrentContextPath().path(String.format("/saml/sp/discovery?idp=%s",
-								UriUtils.encode(it.getIdpUrl(), UTF_8.toString())
-						)).build().getPath()
-				));
+		Optional<IntegrationType> samlIntegrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName());
+
+		Map<String, String> samlProviders = Maps.newHashMap();
+
+		if (samlIntegrationType.isPresent()) {
+			samlProviders = integrationRepository.findAllGlobalByType(samlIntegrationType.get())
+					.stream()
+					.filter(Integration::isEnabled)
+					.filter(it -> SamlParameter.IDP_URL.getParameter(it).isPresent())
+					.collect(Collectors.toMap(Integration::getName, it -> fromCurrentContextPath().path(String.format(
+							"/saml/sp/discovery?idp=%s",
+							UriUtils.encode(SamlParameter.IDP_URL.getParameter(it).get(), UTF_8.toString())
+					)).build().getPath()));
+		}
 
 		if (!CollectionUtils.isEmpty(samlProviders)) {
 			providers.put("samlProviders", new SamlProviderInfo(SAML_BUTTON, samlProviders));

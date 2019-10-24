@@ -70,7 +70,7 @@ rp:
   auth:
     server: default
     saml:
-      base-path: ${SP_BASE_PATH:${server.contextPath}/${spring.application.name}
+      base-path:
       entity-id: ${SP_ENTITY_ID:report.portal.sp.id}
       key-password: ${SP_KEY_PASSWORD:password}
       key-alias: ${SP_KEY_ALIAS:report-portal-sp}

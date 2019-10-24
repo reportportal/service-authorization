@@ -21,11 +21,13 @@ import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.oauth.AccessTokenStore;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
@@ -77,7 +79,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -173,9 +174,9 @@ public class SecurityConfiguration {
 		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
 			return new DetailsContextMapper(
 					ldapUserReplicator,
-					() -> authConfigRepository.findActiveDirectory(true)
-							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
-							.getSynchronizationAttributes()
+					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
+
 			);
 		}
 
@@ -183,9 +184,10 @@ public class SecurityConfiguration {
 		public DetailsContextMapper ldapDetailsContextMapper() {
 			return new DetailsContextMapper(
 					ldapUserReplicator,
-					() -> authConfigRepository.findLdap(true)
+					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName())
 							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
-							.getSynchronizationAttributes()
+
+					)
 			);
 		}
 

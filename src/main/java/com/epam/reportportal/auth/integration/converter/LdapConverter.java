@@ -15,12 +15,15 @@
  */
 package com.epam.reportportal.auth.integration.converter;
 
-import com.epam.ta.reportportal.entity.ldap.AbstractLdapIntegration;
-import com.epam.ta.reportportal.entity.ldap.LdapConfig;
+import com.epam.reportportal.auth.integration.parameter.LdapParameter;
+import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.ws.model.integration.auth.LdapAttributes;
 import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttributesResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
@@ -34,38 +37,50 @@ public final class LdapConverter {
 		//static only
 	}
 
-	public static final Function<? super AbstractLdapIntegration, LdapAttributes> LDAP_ATTRIBUTES_TO_RESOURCE = ldapIntegration -> {
-
+	static final Function<Integration, LdapAttributes> LDAP_ATTRIBUTES_TO_RESOURCE = ldapIntegration -> {
 		LdapAttributes ldapAttributes = new LdapAttributes();
-		ldapAttributes.setBaseDn(ldapIntegration.getBaseDn());
 		ldapAttributes.setEnabled(ldapIntegration.isEnabled());
-		ldapAttributes.setUrl(ldapIntegration.getUrl());
+		LdapParameter.BASE_DN.getParameter(ldapIntegration).ifPresent(ldapAttributes::setBaseDn);
+		LdapParameter.URL.getParameter(ldapIntegration).ifPresent(ldapAttributes::setUrl);
 
-		ofNullable(ldapIntegration.getSynchronizationAttributes()).ifPresent(synchronizationAttributes -> {
-			SynchronizationAttributesResource attributes = new SynchronizationAttributesResource();
-			attributes.setPhoto(synchronizationAttributes.getPhoto());
-			attributes.setEmail(synchronizationAttributes.getEmail());
-			attributes.setFullName(synchronizationAttributes.getFullName());
-			ldapAttributes.setSynchronizationAttributes(attributes);
-		});
-
+		SynchronizationAttributesResource attributes = new SynchronizationAttributesResource();
+		LdapParameter.EMAIL_ATTRIBUTE.getParameter(ldapIntegration).ifPresent(attributes::setEmail);
+		LdapParameter.FULL_NAME_ATTRIBUTE.getParameter(ldapIntegration).ifPresent(attributes::setFullName);
+		LdapParameter.PHOTO_ATTRIBUTE.getParameter(ldapIntegration).ifPresent(attributes::setPhoto);
+		ldapAttributes.setSynchronizationAttributes(attributes);
 		return ldapAttributes;
 	};
 
-	public static final Function<LdapConfig, LdapResource> TO_RESOURCE = ldapConfig -> {
-
+	public static final Function<Integration, LdapResource> TO_RESOURCE = integration -> {
 		LdapResource ldapResource = new LdapResource();
-		ldapResource.setId(ldapConfig.getId());
-		ldapResource.setLdapAttributes(LDAP_ATTRIBUTES_TO_RESOURCE.apply(ldapConfig));
-		ldapResource.setGroupSearchFilter(ldapConfig.getGroupSearchFilter());
-		ldapResource.setGroupSearchBase(ldapConfig.getGroupSearchBase());
-		ldapResource.setManagerDn(ldapConfig.getManagerDn());
-		ldapResource.setManagerPassword(ldapConfig.getManagerPassword());
-		ldapResource.setPasswordAttribute(ldapConfig.getPasswordAttribute());
-		ofNullable(ldapConfig.getPasswordEncoderType()).ifPresent(type -> ldapResource.setPasswordEncoderType(type.name()));
-		ldapResource.setUserDnPattern(ldapConfig.getUserDnPattern());
-		ldapResource.setUserSearchFilter(ldapConfig.getUserSearchFilter());
-
+		ldapResource.setId(integration.getId());
+		ldapResource.setLdapAttributes(LDAP_ATTRIBUTES_TO_RESOURCE.apply(integration));
+		LdapParameter.GROUP_SEARCH_FILTER.getParameter(integration).ifPresent(ldapResource::setGroupSearchFilter);
+		LdapParameter.GROUP_SEARCH_BASE.getParameter(integration).ifPresent(ldapResource::setGroupSearchBase);
+		LdapParameter.MANAGER_DN.getParameter(integration).ifPresent(ldapResource::setManagerDn);
+		LdapParameter.MANAGER_PASSWORD.getParameter(integration).ifPresent(ldapResource::setManagerPassword);
+		LdapParameter.PASSWORD_ATTRIBUTE.getParameter(integration).ifPresent(ldapResource::setPasswordAttribute);
+		LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(ldapResource::setPasswordEncoderType);
+		LdapParameter.USER_DN_PATTERN.getParameter(integration).ifPresent(ldapResource::setUserDnPattern);
+		LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(ldapResource::setUserSearchFilter);
 		return ldapResource;
+	};
+
+	static final BiFunction<LdapAttributes, Integration, Integration> LDAP_ATTRIBUTES_FROM_RESOURCE = (attributes, integration) -> {
+		ofNullable(attributes.getEnabled()).ifPresent(integration::setEnabled);
+		ofNullable(attributes.getBaseDn()).ifPresent(it -> LdapParameter.BASE_DN.setParameter(integration, it));
+		ofNullable(attributes.getUrl()).ifPresent(it -> LdapParameter.URL.setParameter(integration, it));
+		ofNullable(attributes.getSynchronizationAttributes()).ifPresent(syncAttr -> {
+			ofNullable(syncAttr.getEmail()).ifPresent(it -> LdapParameter.EMAIL_ATTRIBUTE.setParameter(integration, it));
+			ofNullable(syncAttr.getFullName()).ifPresent(it -> LdapParameter.FULL_NAME_ATTRIBUTE.setParameter(integration, it));
+			ofNullable(syncAttr.getPhoto()).ifPresent(it -> LdapParameter.PHOTO_ATTRIBUTE.setParameter(integration, it));
+		});
+		return integration;
+	};
+
+	public static final BiFunction<UpdateAuthRQ, Integration, Integration> UPDATE_FROM_REQUEST = (request, integration) -> {
+		ParameterUtils.setLdapParameters(request, integration);
+		integration.setEnabled(ofNullable(request.getEnabled()).orElse(false));
+		return integration;
 	};
 }

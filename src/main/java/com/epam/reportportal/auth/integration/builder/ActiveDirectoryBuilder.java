@@ -15,52 +15,24 @@
  */
 package com.epam.reportportal.auth.integration.builder;
 
-import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
-import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
-import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttributesResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateActiveDirectoryRQ;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
-import javax.validation.constraints.NotNull;
-
-import static java.util.Optional.ofNullable;
+import static com.epam.reportportal.auth.integration.converter.LdapConverter.UPDATE_FROM_REQUEST;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public final class ActiveDirectoryBuilder {
-
-	private final ActiveDirectoryConfig activeDirectoryConfig;
+public final class ActiveDirectoryBuilder extends AuthIntegrationBuilder {
 
 	public ActiveDirectoryBuilder() {
-		activeDirectoryConfig = new ActiveDirectoryConfig();
+		super();
+		integration.setName(AuthIntegrationType.ACTIVE_DIRECTORY.getName());
 	}
 
-	public ActiveDirectoryBuilder(ActiveDirectoryConfig activeDirectoryConfig) {
-		this.activeDirectoryConfig = activeDirectoryConfig;
-	}
-
-	public ActiveDirectoryBuilder addUpdateRq(UpdateActiveDirectoryRQ updateActiveDirectoryRQ) {
-
-		SynchronizationAttributes attributes = ofNullable(activeDirectoryConfig.getSynchronizationAttributes()).orElseGet(
-				SynchronizationAttributes::new);
-
-		SynchronizationAttributesResource attributesResource = updateActiveDirectoryRQ.getLdapAttributes().getSynchronizationAttributes();
-		attributes.setPhoto(attributesResource.getPhoto());
-		attributes.setEmail(attributesResource.getEmail());
-		attributes.setFullName(attributesResource.getFullName());
-		activeDirectoryConfig.setSynchronizationAttributes(attributes);
-
-		activeDirectoryConfig.setEnabled(updateActiveDirectoryRQ.getLdapAttributes().getEnabled());
-		activeDirectoryConfig.setUrl(updateActiveDirectoryRQ.getLdapAttributes().getUrl());
-		activeDirectoryConfig.setBaseDn(updateActiveDirectoryRQ.getLdapAttributes().getBaseDn());
-
-		activeDirectoryConfig.setDomain(updateActiveDirectoryRQ.getDomain());
-
+	@Override
+	public AuthIntegrationBuilder addUpdateRq(UpdateAuthRQ request) {
+		UPDATE_FROM_REQUEST.apply(request, integration);
 		return this;
 	}
-
-	public @NotNull ActiveDirectoryConfig build() {
-		return activeDirectoryConfig;
-	}
-
 }

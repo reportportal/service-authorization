@@ -15,10 +15,14 @@
  */
 package com.epam.reportportal.auth.config;
 
-import com.epam.reportportal.auth.integration.converter.SamlDetailsConverter;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.reportportal.auth.util.CertificationUtil;
-import com.epam.ta.reportportal.dao.SamlProviderDetailsRepository;
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
+import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import com.google.common.collect.Lists;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +41,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.util.Base64.getEncoder;
@@ -79,10 +84,14 @@ public class SamlServiceProviderConfiguration {
 	@Value("${rp.auth.saml.signed-requests}")
 	private Boolean signedRequests;
 
-	private SamlProviderDetailsRepository samlProviderDetailsRepository;
+	private IntegrationTypeRepository integrationTypeRepository;
 
-	public SamlServiceProviderConfiguration(SamlProviderDetailsRepository samlProviderDetailsRepository) {
-		this.samlProviderDetailsRepository = samlProviderDetailsRepository;
+	private IntegrationRepository integrationRepository;
+
+	public SamlServiceProviderConfiguration(IntegrationTypeRepository integrationTypeRepository,
+			IntegrationRepository integrationRepository) {
+		this.integrationTypeRepository = integrationTypeRepository;
+		this.integrationRepository = integrationRepository;
 	}
 
 	@Bean(name = "spConfiguration")
@@ -112,14 +121,17 @@ public class SamlServiceProviderConfiguration {
 	}
 
 	private List<ExternalIdentityProviderConfiguration> providers() {
-
-		List<SamlProviderDetails> providers = samlProviderDetailsRepository.findAll();
+		Optional<IntegrationType> saml = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName());
+		List<Integration> providers = Lists.newArrayList();
+		if (saml.isPresent()) {
+			providers = integrationRepository.findAllGlobalByType(saml.get());
+		}
 
 		if (CollectionUtils.isEmpty(providers)) {
 			return new CopyOnWriteArrayList<>();
 		}
 
-		return new CopyOnWriteArrayList<>(SamlDetailsConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(providers));
+		return new CopyOnWriteArrayList<>(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(providers));
 	}
 
 	private RotatingKeys rotatingKeys() {

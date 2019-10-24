@@ -20,7 +20,6 @@ import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandl
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +39,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  */
 @Controller
 @RequestMapping("/settings/oauth")
-@Api(description = "OAuth Configuration Endpoint")
 public class OAuthConfigurationEndpoint {
 
 	private final CreateAuthIntegrationHandler createAuthIntegrationHandler;
@@ -70,7 +68,7 @@ public class OAuthConfigurationEndpoint {
 	@ApiOperation(value = "Creates/Updates OAuth Integration Settings")
 	public OAuthRegistrationResource updateOAuthSettings(@PathVariable("authId") String oauthProviderId,
 			@RequestBody @Validated OAuthRegistrationResource clientRegistrationResource) {
-		return createAuthIntegrationHandler.updateOauthSettings(oauthProviderId, clientRegistrationResource);
+		return createAuthIntegrationHandler.createOrUpdateOauthSettings(oauthProviderId, clientRegistrationResource);
 	}
 
 	/**
