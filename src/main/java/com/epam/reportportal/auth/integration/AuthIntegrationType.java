@@ -54,8 +54,8 @@ public enum AuthIntegrationType {
 		}
 
 		@Override
-		public Function<Integration, LdapResource> getToResourceMapper() {
-			return LdapConverter.TO_RESOURCE;
+		public Function<Integration, ActiveDirectoryResource> getToResourceMapper() {
+			return ActiveDirectoryConverter.TO_RESOURCE;
 		}
 	},
 	LDAP("ldap") {
@@ -75,8 +75,8 @@ public enum AuthIntegrationType {
 		}
 
 		@Override
-		public Function<Integration, ActiveDirectoryResource> getToResourceMapper() {
-			return ActiveDirectoryConverter.TO_RESOURCE;
+		public Function<Integration, LdapResource> getToResourceMapper() {
+			return LdapConverter.TO_RESOURCE;
 		}
 	},
 	SAML("saml") {

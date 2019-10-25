@@ -24,6 +24,7 @@ import org.springframework.security.saml.provider.service.config.ExternalIdentit
 import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -76,7 +77,9 @@ public class SamlConverter {
 
 	public final static Function<List<Integration>, SamlProvidersResource> TO_PROVIDERS_RESOURCE = integrations -> {
 		if (CollectionUtils.isEmpty(integrations)) {
-			return new SamlProvidersResource();
+			SamlProvidersResource emptyResource = new SamlProvidersResource();
+			emptyResource.setProviders(Collections.emptyList());
+			return emptyResource;
 		}
 		SamlProvidersResource resource = new SamlProvidersResource();
 		resource.setProviders(integrations.stream().map(TO_RESOURCE).collect(Collectors.toList()));

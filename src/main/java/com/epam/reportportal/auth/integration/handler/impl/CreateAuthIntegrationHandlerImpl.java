@@ -55,7 +55,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 
 	@Override
 	public AbstractAuthResource createOrUpdateAuthSettings(UpdateAuthRQ request, AuthIntegrationType type, ReportPortalUser user) {
-		return strategyMap.get(type).createOrUpdate(request, type, user.getUsername());
+		return strategyMap.get(type).createOrUpdate(request, user.getUsername());
 	}
 
 	@Override
