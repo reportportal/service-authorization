@@ -54,7 +54,7 @@ public class SamlConverter {
 		resource.setEnabled(integration.isEnabled());
 
 		EMAIL_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
-		FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
+		FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFirstNameAttribute);
 		LAST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setLastNameAttribute);
 		FULL_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFullNameAttribute);
 		IDP_ALIAS.getParameter(integration).ifPresent(resource::setIdentityProviderAlias);
