@@ -26,7 +26,6 @@ import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.util.PersonalProjectService;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
@@ -34,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
@@ -68,7 +68,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 		}
 		email = normalizeId(email);
 
-		String login = normalizeId(StringUtils.substringBefore(name, "@"));
+		String login = CROP_DOMAIN.apply(name);
 		Optional<User> userOptional = userRepository.findByLogin(login);
 		if (!userOptional.isPresent()) {
 			User newUser = new User();

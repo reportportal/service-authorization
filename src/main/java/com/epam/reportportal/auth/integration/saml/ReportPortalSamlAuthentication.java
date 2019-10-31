@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
+
 /**
  * Information extracted from SAML response
  *
@@ -85,7 +87,7 @@ public class ReportPortalSamlAuthentication implements SamlAuthentication {
 				.getPrincipal()
 				.getFormat()
 				.getFormat()
-				.toString()).setValue(assertion.getSubject().getPrincipal().getValue()));
+				.toString()).setValue(CROP_DOMAIN.apply(assertion.getSubject().getPrincipal().getValue())));
 	}
 
 	@Override
