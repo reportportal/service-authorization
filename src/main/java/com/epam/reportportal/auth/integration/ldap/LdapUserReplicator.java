@@ -26,6 +26,7 @@ import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.util.PersonalProjectService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,6 @@ import java.util.Optional;
 
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -62,21 +62,24 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 	 */
 	@Transactional
 	public User replicateUser(String name, DirContextOperations ctx, SynchronizationAttributes attributes) {
-		String email = (String) ctx.getObjectAttribute(attributes.getEmail());
-		if (isNullOrEmpty(email)) {
-			throw new UserSynchronizationException("Email not provided");
-		}
-		email = normalizeId(email);
+		String email = ofNullable(attributes.getEmail()).filter(StringUtils::isNotBlank)
+				.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
+				.filter(StringUtils::isNotBlank)
+				.orElseThrow(() -> new UserSynchronizationException("Email not provided"));
 
+		email = normalizeId(email);
 		String login = CROP_DOMAIN.apply(name);
 		Optional<User> userOptional = userRepository.findByLogin(login);
 		if (!userOptional.isPresent()) {
 			User newUser = new User();
 			newUser.setLogin(login);
 
-			ofNullable(attributes.getFullName()).flatMap(it -> ofNullable(ctx.getStringAttribute(it))).ifPresent(newUser::setFullName);
+			ofNullable(attributes.getFullName()).filter(StringUtils::isNotBlank)
+					.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
+					.ifPresent(newUser::setFullName);
 
-			ofNullable(attributes.getPhoto()).flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
+			ofNullable(attributes.getPhoto()).filter(StringUtils::isNotBlank)
+					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
 					.filter(photo -> photo instanceof byte[])
 					.map(photo -> (byte[]) photo)
 					.ifPresent(photo -> uploadPhoto(newUser, photo));
