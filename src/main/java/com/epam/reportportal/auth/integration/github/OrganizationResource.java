@@ -28,12 +28,12 @@ import java.util.Map;
  */
 public class OrganizationResource {
 
-    public String login;
-    public Long id;
-    public String url;
-    public String description;
+    private String login;
+    private Long id;
+    private String url;
+    private String description;
 
-    public Map<String, Object> details = new HashMap<>();
+    private Map<String, Object> details = new HashMap<>();
 
     @JsonAnyGetter
     public Map<String, Object> any() {
@@ -45,4 +45,39 @@ public class OrganizationResource {
         details.put(name, value);
     }
 
+    public String getLogin() {
+        return login;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDetails(Map<String, Object> details) {
+        this.details = details;
+    }
 }
