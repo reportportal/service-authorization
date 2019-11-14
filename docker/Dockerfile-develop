@@ -15,6 +15,12 @@ COPY . ./
 RUN ./gradlew build
 
 FROM openjdk:8-jre
+
+### Set quay.io image cache. Since the build is for development only,
+### there is no need to keep them forever
+### details: https://support.coreos.com/hc/en-us/articles/115001384693-Tag-Expiration
+LABEL quay.expires-after=1w
+
 LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
 
 ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Djava.security.egd=file:/dev/./urandom"
