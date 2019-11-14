@@ -9,8 +9,6 @@ LABEL maintainer "Andrei Varabyeu <andrei_varabyeu@epam.com>"
 LABEL version="@version@"
 LABEL description="@description@"
 
-RUN apk --no-cache add unzip openssl
-
 ENV JAVA_OPTS="-Xmx512m -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_APP=/app/app.jar
 
