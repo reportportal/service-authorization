@@ -16,12 +16,10 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -42,16 +40,12 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
 	protected Provider<TokenServicesFacade> tokenServicesFacade;
 
-	protected ApplicationEventPublisher eventPublisher;
+	private ApplicationEventPublisher eventPublisher;
 
-	protected AuthorizationServerTokenServices tokenServices;
-
-	public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher,
-			@Qualifier("externalOauth2TokenServices") AuthorizationServerTokenServices tokenServices) {
+	public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher) {
 		super("/");
 		this.tokenServicesFacade = tokenServicesFacade;
 		this.eventPublisher = eventPublisher;
-		this.tokenServices = tokenServices;
 	}
 
 	@Override

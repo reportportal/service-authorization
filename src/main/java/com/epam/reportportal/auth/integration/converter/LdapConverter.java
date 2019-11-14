@@ -34,7 +34,7 @@ public final class LdapConverter {
 		//static only
 	}
 
-	public static final Function<? super AbstractLdapIntegration, LdapAttributes> LDAP_ATTRIBUTES_TO_RESOURCE = ldapIntegration -> {
+	static final Function<? super AbstractLdapIntegration, LdapAttributes> LDAP_ATTRIBUTES_TO_RESOURCE = ldapIntegration -> {
 
 		LdapAttributes ldapAttributes = new LdapAttributes();
 		ldapAttributes.setBaseDn(ldapIntegration.getBaseDn());
@@ -60,7 +60,6 @@ public final class LdapConverter {
 		ldapResource.setGroupSearchFilter(ldapConfig.getGroupSearchFilter());
 		ldapResource.setGroupSearchBase(ldapConfig.getGroupSearchBase());
 		ldapResource.setManagerDn(ldapConfig.getManagerDn());
-		ldapResource.setManagerPassword(ldapConfig.getManagerPassword());
 		ldapResource.setPasswordAttribute(ldapConfig.getPasswordAttribute());
 		ofNullable(ldapConfig.getPasswordEncoderType()).ifPresent(type -> ldapResource.setPasswordEncoderType(type.name()));
 		ldapResource.setUserDnPattern(ldapConfig.getUserDnPattern());
