@@ -134,15 +134,6 @@ podTemplate(
                 test.checkVersion("http://$srvUrl", "$snapshotVersion-$srvVersion")
             }
         }
-
-        stage('Deploy to QA Environment') {
-
-        }
-
-        stage('Execute functional tests') {
-
-        }
-
     }
 
 }
