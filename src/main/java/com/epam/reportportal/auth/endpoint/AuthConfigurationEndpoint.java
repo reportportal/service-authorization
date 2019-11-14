@@ -19,7 +19,6 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
-import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.beans.PropertyEditorSupport;
 
-import static java.util.Optional.ofNullable;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
@@ -53,16 +51,12 @@ public class AuthConfigurationEndpoint {
 
 	private final GetAuthIntegrationHandler getAuthIntegrationHandler;
 
-	private final Encryptor encryptor;
-
 	@Autowired
 	public AuthConfigurationEndpoint(CreateAuthIntegrationHandler createAuthIntegrationHandler,
-			DeleteAuthIntegrationHandler deleteAuthIntegrationHandler, GetAuthIntegrationHandler getAuthIntegrationHandler,
-			Encryptor encryptor) {
+			DeleteAuthIntegrationHandler deleteAuthIntegrationHandler, GetAuthIntegrationHandler getAuthIntegrationHandler) {
 		this.createAuthIntegrationHandler = createAuthIntegrationHandler;
 		this.deleteAuthIntegrationHandler = deleteAuthIntegrationHandler;
 		this.getAuthIntegrationHandler = getAuthIntegrationHandler;
-		this.encryptor = encryptor;
 	}
 
 	/**
@@ -76,8 +70,6 @@ public class AuthConfigurationEndpoint {
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
 	public LdapResource updateLdapSettings(@RequestBody @Valid UpdateLdapRQ updateLdapRQ, @AuthenticationPrincipal ReportPortalUser user) {
-
-		encryptPasswords(updateLdapRQ);
 		return createAuthIntegrationHandler.updateLdapSettings(updateLdapRQ, user);
 	}
 
@@ -136,10 +128,5 @@ public class AuthConfigurationEndpoint {
 						.orElseThrow(() -> new ReportPortalException(ErrorType.INCORRECT_AUTHENTICATION_TYPE, text)));
 			}
 		});
-	}
-
-	private void encryptPasswords(UpdateLdapRQ updateLdapRQ) {
-		ofNullable(updateLdapRQ).flatMap(ldap -> ofNullable(ldap.getManagerPassword()))
-				.ifPresent(pwd -> updateLdapRQ.setManagerPassword(encryptor.encrypt(updateLdapRQ.getManagerPassword())));
 	}
 }

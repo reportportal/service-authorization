@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
@@ -24,8 +25,6 @@ import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
-import com.epam.ta.reportportal.filesystem.DataEncoder;
-import com.epam.ta.reportportal.filesystem.DataStore;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +48,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
 	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, DataStore dataStorage, DataEncoder encoder) {
-		super(userRepository, projectRepository, personalProjectService, dataStorage, encoder);
+			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService) {
+		super(userRepository, projectRepository, personalProjectService, userBinaryDataService);
 	}
 
 	/**
@@ -80,8 +79,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			ofNullable(attributes.getPhoto()).flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
 					.filter(photo -> photo instanceof byte[])
 					.map(photo -> (byte[]) photo)
-					.ifPresent(photo -> newUser.setAttachment(uploadPhoto(login, photo)));
-
+					.ifPresent(photo -> uploadPhoto(newUser, photo));
 			checkEmail(email);
 			newUser.setEmail(email);
 			newUser.setMetadata(defaultMetaData());

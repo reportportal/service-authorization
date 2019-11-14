@@ -25,6 +25,7 @@ import com.epam.reportportal.auth.integration.converter.OAuthRestrictionConverte
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
@@ -43,6 +44,7 @@ import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateActiveDirectoryRQ;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,18 +58,25 @@ import static java.util.stream.Collectors.toSet;
 @Service
 public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHandler {
 
+	private static final String ACTIVE_DIRECTORY_INTEGRATION_NAME = "ad";
+	private static final String LDAP_INTEGRATION_NAME = "ldap";
+
 	private final IntegrationRepository integrationRepository;
 
 	private final IntegrationTypeRepository integrationTypeRepository;
 
 	private final MutableClientRegistrationRepository clientRegistrationRepository;
 
+	private final Encryptor encryptor;
+
 	@Autowired
 	public CreateAuthIntegrationHandlerImpl(IntegrationRepository integrationRepository,
-			IntegrationTypeRepository integrationTypeRepository, MutableClientRegistrationRepository clientRegistrationRepository) {
+			IntegrationTypeRepository integrationTypeRepository, MutableClientRegistrationRepository clientRegistrationRepository,
+			Encryptor encryptor) {
 		this.integrationRepository = integrationRepository;
 		this.integrationTypeRepository = integrationTypeRepository;
 		this.clientRegistrationRepository = clientRegistrationRepository;
+		this.encryptor = encryptor;
 	}
 
 	@Override
@@ -75,14 +84,23 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 		LdapConfig ldapConfig = integrationRepository.findLdap().map(lc -> {
 			BusinessRule.expect(lc.getType().getIntegrationGroup(), equalTo(IntegrationGroupEnum.AUTH))
 					.verify(ErrorType.UNABLE_INTERACT_WITH_INTEGRATION, "Wrong integration group");
+			if (!StringUtils.isEmpty(lc.getManagerPassword())) {
+				if (!lc.getManagerPassword().equals(updateLdapRQ.getManagerPassword()) && !encryptor.decrypt(lc.getManagerPassword())
+						.equals(updateLdapRQ.getManagerPassword())) {
+					encryptPassword(updateLdapRQ);
+				} else {
+					updateLdapRQ.setManagerPassword(lc.getManagerPassword());
+				}
+			}
 			return new LdapBuilder(lc).addUpdateRq(updateLdapRQ).build();
 		}).orElseGet(() -> {
+			ofNullable(updateLdapRQ.getManagerPassword()).ifPresent(it -> encryptPassword(updateLdapRQ));
 			LdapConfig config = new LdapBuilder().addUpdateRq(updateLdapRQ).build();
 			config.setCreator(user.getUsername());
 			updateWithAuthIntegrationParameters(config);
 			return config;
 		});
-
+		ldapConfig.setName(ofNullable(ldapConfig.getName()).orElse(LDAP_INTEGRATION_NAME));
 		return LdapConverter.TO_RESOURCE.apply(integrationRepository.save(ldapConfig));
 	}
 
@@ -99,7 +117,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 			updateWithAuthIntegrationParameters(config);
 			return config;
 		});
-
+		activeDirectoryConfig.setName(ofNullable(activeDirectoryConfig.getName()).orElse(ACTIVE_DIRECTORY_INTEGRATION_NAME));
 		return ActiveDirectoryConverter.TO_RESOURCE.apply(integrationRepository.save(activeDirectoryConfig));
 
 	}
@@ -140,5 +158,9 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 				.peek(scope -> scope.setRegistration(existingRegistration))
 				.collect(toSet())));
 		return existingRegistration;
+	}
+
+	private void encryptPassword(UpdateLdapRQ updateLdapRQ) {
+		updateLdapRQ.setManagerPassword(encryptor.encrypt(updateLdapRQ.getManagerPassword()));
 	}
 }
