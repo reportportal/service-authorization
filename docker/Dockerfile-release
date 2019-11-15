@@ -1,10 +1,10 @@
 FROM openjdk:8-jre-alpine
 
-LABEL maintainer "Andrei Varabyeu <andrei_varabyeu@epam.com>"
+LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
 LABEL version="@version@"
 LABEL description="@description@"
 
-RUN apk --no-cache add unzip openssl
+RUN apk --no-cache add ca-certificates unzip openssl
 
 ENV APP_FILE @name@-@version@
 ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/@name@/@version@/$APP_FILE.zip
@@ -12,7 +12,7 @@ ENV JAVA_OPTS="-Xmx512m -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_APP=/app/app.jar
 
 RUN sh -c "echo $'#!/bin/sh \n\
-exec java $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh"
+exec java \$JAVA_OPTS -jar \$JAVA_APP' > /start.sh && chmod +x /start.sh"
 
 VOLUME /tmp
 
@@ -22,4 +22,4 @@ RUN unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip
 RUN mv /app/$APP_FILE.jar $JAVA_APP
 
 EXPOSE 8080
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT /start.sh

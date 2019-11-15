@@ -6,6 +6,7 @@ plugins {
     id 'jacoco'
     id "io.spring.dependency-management" version "1.0.7.RELEASE"
     id "org.ajoberstar.grgit" version "3.1.1"
+    id "org.owasp.dependencycheck" version "5.2.1"
 }
 
 apply from: 'build-quality.gradle'
@@ -92,7 +93,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = '5.4.1'
+    gradleVersion = '5.5.1'
 }
 
 release {
@@ -116,6 +117,7 @@ task copyRuntimeLibs(type: Copy) {
 }
 
 build.dependsOn(copyRuntimeLibs)
+jar.dependsOn gitInfo
 
 jar {
     if (!releaseMode) {
@@ -124,7 +126,7 @@ jar {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     manifest {
         attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': version,
+                'Implementation-Version': archiveVersion,
                 'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
                 'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
     }
@@ -247,6 +249,10 @@ task removeDockerfileFromGit {
     }
 }
 
+dependencyCheck {
+    formats = ['HTML', 'XML']
+//    cveValidForHours = 1
+}
 
 addDockerfileToGit.dependsOn releaseDockerfile
 updateVersion.dependsOn removeDockerfileFromGit
