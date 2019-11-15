@@ -16,10 +16,10 @@ exec java \$JAVA_OPTS -jar \$JAVA_APP' > /start.sh && chmod +x /start.sh"
 
 VOLUME /tmp
 
-RUN mkdir /app
-RUN wget -O /app/$APP_FILE.zip $APP_DOWNLOAD_URL
-RUN unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip
-RUN mv /app/$APP_FILE.jar $JAVA_APP
+RUN mkdir /app && \
+    wget -O /app/$APP_FILE.zip $APP_DOWNLOAD_URL && \
+    unzip /app/$APP_FILE.zip -d /app/ && rm -rf /app/$APP_FILE.zip && \
+    mv /app/$APP_FILE.jar $JAVA_APP
 
 EXPOSE 8080
 ENTRYPOINT /start.sh
