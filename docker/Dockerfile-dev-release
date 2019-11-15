@@ -9,9 +9,9 @@ LABEL maintainer "Andrei Varabyeu <andrei_varabyeu@epam.com>"
 LABEL version="@version@"
 LABEL description="@description@"
 
-RUN apk --no-cache add unzip openssl
+RUN apk --no-cache add ca-certificates openssl
 
-ENV JAVA_OPTS="-Xmx512m -Djava.security.egd=file:/dev/./urandom"
+ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_APP=/app/app.jar
 
 RUN sh -c "echo $'#!/bin/sh \n\
@@ -23,5 +23,7 @@ RUN mkdir /app
 COPY build/libs/service-authorization.jar /app/app.jar
 COPY build/libs/lib/ /app/lib/
 
+RUN sh -c 'touch /app/app.jar'
+
 EXPOSE 8080
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT /start.sh

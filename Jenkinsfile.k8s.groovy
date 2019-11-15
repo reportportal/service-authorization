@@ -1,6 +1,5 @@
 #!groovy
 
-//String podTemplateConcat = "${serviceName}-${buildNumber}-${uuid}"
 def label = "worker-${UUID.randomUUID().toString()}"
 println("label")
 println("${label}")
@@ -60,18 +59,18 @@ podTemplate(
                 sh 'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts'
                 sh 'ssh-keyscan -t rsa git.epam.com >> ~/.ssh/known_hosts'
 
-                dir('kubernetes') {
+                dir(k8sDir) {
                     git branch: "master", url: 'https://github.com/reportportal/kubernetes.git'
                 }
 
-                dir('reportportal-ci') {
+                dir(ciDir) {
                     git credentialsId: 'epm-gitlab-key', branch: "master", url: 'git@git.epam.com:epmc-tst/reportportal-ci.git'
                 }
 
             }
         }, 'Checkout Service': {
             stage('Checkout Service') {
-                dir('app') {
+                dir(appDir) {
                     checkout scm
                 }
             }
@@ -85,7 +84,7 @@ podTemplate(
         helm.init()
 
 
-        dir('app') {
+        dir(appDir) {
             try {
                 container('gradle') {
                     stage('Build App') {
@@ -114,10 +113,10 @@ podTemplate(
         }
         stage('Deploy to Dev Environment') {
             container('helm') {
-                dir('kubernetes/reportportal/v5') {
+                dir("$k8sDir/reportportal/v5") {
                     sh 'helm dependency update'
                 }
-                sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./reportportal-ci/rp/values-ci.yml reportportal ./kubernetes/reportportal/v5"
+                sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./$ciDir/rp/values-ci.yml reportportal ./$k8sDir/reportportal/v5"
             }
         }
         stage('Execute DVT Tests') {
