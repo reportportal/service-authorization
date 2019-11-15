@@ -20,10 +20,10 @@ exec java \$JAVA_OPTS -jar \$JAVA_APP' > /start.sh && chmod +x /start.sh"
 VOLUME /tmp
 
 RUN mkdir /app
-COPY build/libs/service-authorization.jar /app/app.jar
+COPY build/libs/service-authorization.jar $JAVA_APP
 COPY build/libs/lib/ /app/lib/
 
-RUN sh -c 'touch /app/app.jar'
+RUN sh -c "touch $JAVA_APP"
 
 EXPOSE 8080
 ENTRYPOINT /start.sh
