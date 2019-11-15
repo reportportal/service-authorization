@@ -14,7 +14,7 @@ RUN ./gradlew resolveDependencies --stacktrace
 COPY . ./
 RUN ./gradlew build
 
-FROM openjdk:8-jre
+FROM openjdk:8-alpine
 
 ### Set quay.io image cache. Since the build is for development only,
 ### there is no need to keep them forever
@@ -27,7 +27,7 @@ ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Dja
 ENV JAVA_APP=/app.jar
 
 
-RUN echo '#!/bin/sh \n\
+RUN echo $'#!/bin/sh \n\
 exec java $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh
 
 VOLUME /tmp
