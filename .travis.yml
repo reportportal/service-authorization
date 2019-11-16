@@ -4,8 +4,13 @@ script: ./gradlew build
 
 dist: trusty
 
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.gradle
+
 jdk:
-  - openjdk8
+  - oraclejdk8
 
 notifications:
   slack: reportportal-dev:fl6xWHVQp1jvsMmCJxYW9YKP
