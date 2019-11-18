@@ -18,10 +18,10 @@ project.ext {
 }
 
 apply from: 'release.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-bom/build-docker.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-bom/build-info.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-bom/build-commons.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-bom/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-quality.gradle'
 
 repositories {
     mavenCentral()
@@ -66,6 +66,14 @@ dependencies {
 wrapper {
     gradleVersion = '5.4.1'
 }
+
+processResources {
+    filesMatching('application.properties') {
+        expand(project.properties)
+    }
+}
+
+processResources.dependsOn(gitInfo)
 
 jar {
     if (!releaseMode) {
