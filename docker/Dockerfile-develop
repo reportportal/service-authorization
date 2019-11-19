@@ -8,11 +8,11 @@ COPY gradle/ ./gradle
 COPY gradlew .
 RUN ./gradlew wrapper
 
-COPY build-quality.gradle build.gradle gradlew settings.gradle gradle.properties ./
+COPY release.gradle build.gradle gradlew settings.gradle gradle.properties ./
 RUN ./gradlew resolveDependencies --stacktrace
 
 COPY . ./
-RUN ./gradlew build
+RUN ./gradlew build --stacktrace
 
 FROM openjdk:8-alpine
 LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
