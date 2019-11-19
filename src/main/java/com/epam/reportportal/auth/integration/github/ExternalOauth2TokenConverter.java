@@ -29,7 +29,7 @@ import static java.util.Optional.ofNullable;
  */
 public class ExternalOauth2TokenConverter extends DefaultAccessTokenConverter {
 
-	public static final String UPSTREAM_TOKEN = "upstream_token";
+	static final String UPSTREAM_TOKEN = "upstream_token";
 
 	@Override
 	public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {

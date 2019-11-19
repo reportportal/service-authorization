@@ -6,7 +6,7 @@ rp:
       base-path: http://localhost:9999
   binarystore:
     type: filesystem
-    path: ${java.io.tmpdir}\reportportal\datastore\
+    path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
 server:
   port: 9999
 logging:
