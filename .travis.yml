@@ -1,16 +1,15 @@
 language: java
+dist: trusty
 
 script: ./gradlew build
 
-dist: trusty
+jdk:
+  - oraclejdk11
 
 cache:
   directories:
     - $HOME/.m2
     - $HOME/.gradle
-
-jdk:
-  - oraclejdk8
 
 notifications:
   slack: reportportal-dev:fl6xWHVQp1jvsMmCJxYW9YKP

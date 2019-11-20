@@ -1,10 +1,11 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:11-jre-slim
 
 LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
 LABEL version="@version@"
 LABEL description="@description@"
 
-RUN apk --no-cache add ca-certificates unzip openssl
+RUN apt-get update && \
+    apt-get install wget unzip openssl -y
 
 ENV APP_FILE @name@-@version@
 ENV APP_DOWNLOAD_URL https://dl.bintray.com/epam/reportportal/com/epam/reportportal/@name@/@version@/$APP_FILE.zip

@@ -6,12 +6,13 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.0.0'
     id 'com.bmuschko.docker-remote-api' version '6.0.0'
     id "org.owasp.dependencycheck" version "5.2.1"
+    id "com.github.spotbugs" version "2.0.1"
 }
 
 description = 'EPAM Report portal. SSO Authorization Service'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 project.ext {
     releaseMode = project.hasProperty("releaseMode")
@@ -22,7 +23,7 @@ apply from: 'release.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-quality.gradle'
 
 repositories {
     mavenCentral()
@@ -43,9 +44,9 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
         compile 'com.epam.reportportal:commons-model:5.0.0-RC-1'
     } else {
-        compile 'com.github.reportportal:commons-dao:daf9668'
-        compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.github.reportportal:commons-model:435c977'
+        compile 'com.github.reportportal:commons-dao:94b0779'
+        compile 'com.github.reportportal:commons-rules:3c46d7c'
+        compile 'com.github.reportportal:commons-model:9213a59'
     }
 
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -61,11 +62,13 @@ dependencies {
     compile 'org.apache.tika:tika-core'
     compile 'org.apache.tika:tika-parsers'
 
+    compile 'javax.inject:javax.inject:1'
+
     compile('io.springfox:springfox-swagger2')
 }
 
 wrapper {
-    gradleVersion = '5.4.1'
+    gradleVersion = '6.0'
 }
 
 processResources {
