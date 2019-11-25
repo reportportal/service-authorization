@@ -48,7 +48,8 @@ public final class LdapBuilder {
 		} else {
 			PasswordEncoderType.findByType(updateLdapRQ.getPasswordEncoderType()).ifPresent(ldapConfig::setPasswordEncoderType);
 		}
-		ldapConfig.setManagerPassword(updateLdapRQ.getManagerPassword());
+
+		ofNullable(updateLdapRQ.getManagerPassword()).ifPresent(ldapConfig::setManagerPassword);
 		ldapConfig.setGroupSearchBase(updateLdapRQ.getGroupSearchBase());
 		ldapConfig.setGroupSearchFilter(updateLdapRQ.getGroupSearchFilter());
 		ldapConfig.setManagerDn(updateLdapRQ.getManagerDn());
