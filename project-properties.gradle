@@ -1,0 +1,11 @@
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+project.ext {
+    releaseMode = project.hasProperty("releaseMode")
+    isDebugMode = System.getProperty("DEBUG", "false") == "true"
+}
+
+wrapper {
+    gradleVersion = '5.4.1'
+}

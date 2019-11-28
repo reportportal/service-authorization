@@ -3,26 +3,15 @@ plugins {
     id 'com.jfrog.bintray' version '1.8.4'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
     id 'java'
-    id 'org.ajoberstar.grgit' version '4.0.0'
-    id 'com.bmuschko.docker-remote-api' version '6.0.0'
     id "org.owasp.dependencycheck" version "5.2.1"
 }
 
-description = 'EPAM Report portal. SSO Authorization Service'
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-project.ext {
-    releaseMode = project.hasProperty("releaseMode")
-    isDebugMode = System.getProperty("DEBUG", "false") == "true"
-}
-
+apply from: 'project-properties.gradle'
 apply from: 'release.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-plugins/build-docker.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-plugins/build-info.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-plugins/build-commons.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/update-plugins/build-quality.gradle'
 
 repositories {
     mavenCentral()
@@ -64,17 +53,13 @@ dependencies {
     compile('io.springfox:springfox-swagger2')
 }
 
-wrapper {
-    gradleVersion = '5.4.1'
-}
-
 processResources {
     filesMatching('application.properties') {
         expand(project.properties)
     }
 }
 
-processResources.dependsOn(gitInfo)
+processResources.dependsOn gitInfo
 
 jar {
     if (!releaseMode) {

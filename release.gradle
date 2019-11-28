@@ -5,14 +5,14 @@ apply plugin: 'maven-publish'
 
 /** Starting from 1.4 Spring Boot uses very strange repackage model which does not allow this JAR to be used as dependency
  * So package jar by hands */
-task copyRuntimeLibs(type: Copy) {
-    into "$buildDir/libs/lib"
-    from configurations.runtime
-}
-
-task bootRepackage {
-    enabled = false
-}
+//task copyRuntimeLibs(type: Copy) {
+//    into "$buildDir/libs/lib"
+//    from configurations.runtime
+//}
+//
+//task bootRepackage {
+//    enabled = false
+//}
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
@@ -24,20 +24,20 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     getArchiveClassifier().set('javadoc')
 }
 
-task fatDist(type: Zip) {
-    getArchiveAppendix().set('dist')
-    into('lib') {
-        from configurations.runtime
-    }
-    into('./') {
-        from jar
-    }
-}
+//task fatDist(type: Zip) {
+//    getArchiveAppendix().set('dist')
+//    into('lib') {
+//        from configurations.runtime
+//    }
+//    into('./') {
+//        from jar
+//    }
+//}
 
 artifacts {
     archives sourcesJar
     archives javadocJar
-    archives fatDist
+//    archives fatDist
 }
 
 javadoc() {
@@ -67,7 +67,7 @@ publishing {
             }
             artifact sourcesJar
             artifact javadocJar
-            artifact fatDist
+//            artifact fatDist
         }
     }
 }
@@ -122,8 +122,8 @@ release {
     pushReleaseVersionBranch = 'master'
 }
 
-build.dependsOn copyRuntimeLibs
-fatDist.dependsOn jar, copyRuntimeLibs
+//build.dependsOn copyRuntimeLibs
+//fatDist.dependsOn jar, copyRuntimeLibs
 addDockerfileToGit.dependsOn releaseDockerfile
 updateVersion.dependsOn removeDockerfileFromGit
 beforeReleaseBuild.dependsOn addDockerfileToGit
