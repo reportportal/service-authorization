@@ -66,6 +66,7 @@ bootJar {
 }
 
 processResources.dependsOn gitInfo
+bootJar.dependsOn gitInfo
 prepareDockerfile.dependsOn build
 buildDocker.dependsOn prepareDockerfile
 addDockerfileToGit.dependsOn releaseDockerfile
