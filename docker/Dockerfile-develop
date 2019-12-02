@@ -8,7 +8,7 @@ COPY gradle/ ./gradle
 COPY gradlew .
 RUN ./gradlew wrapper
 
-COPY release.gradle build.gradle gradlew settings.gradle gradle.properties ./
+COPY project-properties.gradle build.gradle gradlew settings.gradle gradle.properties ./
 RUN ./gradlew resolveDependencies --stacktrace
 
 COPY . ./
