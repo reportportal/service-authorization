@@ -44,53 +44,66 @@ import static java.util.Optional.ofNullable;
  */
 public class GitHubTokenServices implements ResourceServerTokenServices {
 
-    private final GitHubUserReplicator replicator;
-    private final Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier;
+	private final GitHubUserReplicator replicator;
+	private final Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier;
 
-    public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor,
-            Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier) {
-        this.replicator = replicatingPrincipalExtractor;
-        this.oAuthRegistrationSupplier = oAuthRegistrationSupplier;
-    }
+	public GitHubTokenServices(GitHubUserReplicator replicatingPrincipalExtractor,
+			Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier) {
+		this.replicator = replicatingPrincipalExtractor;
+		this.oAuthRegistrationSupplier = oAuthRegistrationSupplier;
+	}
 
-    @Override
-    public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException, InvalidTokenException {
-        GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
-        UserResource gitHubUser = gitHubClient.getUser();
+	@Override
+	public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException, InvalidTokenException {
+		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+		UserResource gitHubUser = gitHubClient.getUser();
 
-        OAuthRegistrationResource oAuthRegistrationResource = oAuthRegistrationSupplier.get();
-        List<String> allowedOrganizations = ofNullable(oAuthRegistrationResource.getRestrictions())
-                .flatMap(restrictions -> ofNullable(restrictions.get("organizations")))
-                .map(it -> Splitter.on(",").omitEmptyStrings().splitToList(it))
-                .orElse(emptyList());
-        if (!allowedOrganizations.isEmpty()) {
-            boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser).stream().map(userOrg -> userOrg.login)
-                    .anyMatch(allowedOrganizations::contains);
-            if (!assignedToOrganization) {
-                throw new InsufficientOrganizationException("User '" + gitHubUser.getLogin() + "' does not belong to allowed GitHUB organization");
-            }
-        }
+		OAuthRegistrationResource oAuthRegistrationResource = oAuthRegistrationSupplier.get();
+		List<String> allowedOrganizations = ofNullable(oAuthRegistrationResource.getRestrictions()).flatMap(restrictions -> ofNullable(
+				restrictions.get("organizations"))).map(it -> Splitter.on(",").omitEmptyStrings().splitToList(it)).orElse(emptyList());
+		if (!allowedOrganizations.isEmpty()) {
+			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser)
+					.stream()
+					.map(OrganizationResource::getLogin)
+					.anyMatch(allowedOrganizations::contains);
+			if (!assignedToOrganization) {
+				throw new InsufficientOrganizationException(
+						"User '" + gitHubUser.getLogin() + "' does not belong to allowed GitHUB organization");
+			}
+		}
 
-        User user = replicator.replicateUser(gitHubUser, gitHubClient);
+		User user = replicator.replicateUser(gitHubUser, gitHubClient);
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getLogin(), "N/A",
-                AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
+		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getLogin(),
+				"N/A",
+				AuthUtils.AS_AUTHORITIES.apply(user.getRole())
+		);
 
-        Map<String, Serializable> extensionProperties = Collections.singletonMap(UPSTREAM_TOKEN, accessToken);
-        OAuth2Request request = new OAuth2Request(null, oAuthRegistrationResource.getClientId(), null, true, null, null, null, null, extensionProperties);
-        return new OAuth2Authentication(request, token);
-    }
+		Map<String, Serializable> extensionProperties = Collections.singletonMap(UPSTREAM_TOKEN, accessToken);
+		OAuth2Request request = new OAuth2Request(
+				null,
+				oAuthRegistrationResource.getClientId(),
+				null,
+				true,
+				null,
+				null,
+				null,
+				null,
+				extensionProperties
+		);
+		return new OAuth2Authentication(request, token);
+	}
 
-    @Override
-    public OAuth2AccessToken readAccessToken(String accessToken) {
-        throw new UnsupportedOperationException("Not supported: read access token");
-    }
+	@Override
+	public OAuth2AccessToken readAccessToken(String accessToken) {
+		throw new UnsupportedOperationException("Not supported: read access token");
+	}
 
-    public static class InsufficientOrganizationException extends AuthenticationException {
+	public static class InsufficientOrganizationException extends AuthenticationException {
 
-        public InsufficientOrganizationException(String msg) {
-            super(msg);
-        }
-    }
+		public InsufficientOrganizationException(String msg) {
+			super(msg);
+		}
+	}
 
 }

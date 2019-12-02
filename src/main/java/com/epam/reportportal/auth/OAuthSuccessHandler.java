@@ -23,7 +23,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Provider;
@@ -41,9 +40,8 @@ import static java.util.Optional.ofNullable;
 public class OAuthSuccessHandler extends AuthSuccessHandler {
 
 	@Autowired
-	public OAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher,
-			AuthorizationServerTokenServices tokenServices) {
-		super(tokenServicesFacade, eventPublisher, tokenServices);
+	public OAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher) {
+		super(tokenServicesFacade, eventPublisher);
 	}
 
 	@Override
