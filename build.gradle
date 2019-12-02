@@ -1,5 +1,6 @@
 plugins {
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'java'
     id "org.owasp.dependencycheck" version "5.2.1"
 }
@@ -57,15 +58,14 @@ processResources {
     }
 }
 
-jar {
+bootJar {
     if (!releaseMode) {
         getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
     }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 processResources.dependsOn gitInfo
-jar.dependsOn gitInfo
+bootJar.dependsOn gitInfo
 prepareDockerfile.dependsOn build
 buildDocker.dependsOn prepareDockerfile
 addDockerfileToGit.dependsOn releaseDockerfile
