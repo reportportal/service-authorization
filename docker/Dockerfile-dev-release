@@ -21,7 +21,6 @@ VOLUME /tmp
 
 RUN mkdir /app
 COPY build/libs/service-authorization.jar $JAVA_APP
-COPY build/libs/lib/ /app/lib/
 
 RUN sh -c "touch $JAVA_APP"
 
