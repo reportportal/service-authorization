@@ -1,12 +1,3 @@
-management:
-  endpoints:
-    web:
-      base-path: /
-info:
-  build:
-    name: Authorization Service
-    description: Unified Authorization Trap for all ReportPortal's Services
-    version: ${rp.uat.version:5.0}
 server:
   port: 9999
   use-forward-headers: true
@@ -28,6 +19,9 @@ spring:
   profiles:
     ## Profiles list
     active: ${rp.profiles:default}
+  mvc:
+    locale: en_US
+    locale-resolver: fixed
 
 logging:
   level:
@@ -61,15 +55,17 @@ rp:
   jwt:
     signing-key: 123
     token:
-      validity-period: 86400
+      validity-period: ${rp.session.live}
+  session:
+    live: 86400
   auth:
     server: default
     saml:
-      # base-path: ${SP_BASE_PATH:${server.contextPath:http://localhost:8080}}/${spring.application.name}
-      base-path: ${SP_BASE_PATH:${server.contextPath:http://localhost:9999}}
+      base-path: ${SP_BASE_PATH:${server.contextPath}/${spring.application.name}
+      entity-id: ${SP_ENTITY_ID:report.portal.sp.id}
       key-password: ${SP_KEY_PASSWORD:password}
       key-alias: ${SP_KEY_ALIAS:report-portal-sp}
-      key-store: ${SP_KEY_STORE:file://C:\Users\Ihar_Kahadouski\IdeaProjects\service-authorization-saml\src\main\resources\saml\keystore.jks}
+      key-store: ${SP_KEY_STORE:saml/keystore.jks}
       key-store-password: ${SP_KEY_STORE_PASSWORD:password}
       network-connection-timeout: ${SP_NETWORK_CONNECTION_TIMEOUT:5000}
       network-read-timeout: ${SP_NETWORK_READ_TIMEOUT:10000}

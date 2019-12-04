@@ -16,10 +16,12 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -43,6 +45,9 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	private final DetailsContextMapper detailsContextMapper;
 
+	@Autowired
+	private Encryptor encryptor;
+
 	public LdapAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
 			DetailsContextMapper detailsContextMapper) {
 		super(integrationRepository, eventPublisher);
@@ -61,7 +66,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn()
 		);
-		ofNullable(ldap.getManagerPassword()).ifPresent(contextSource::setPassword);
+		ofNullable(ldap.getManagerPassword()).ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
 		ofNullable(ldap.getManagerDn()).ifPresent(contextSource::setUserDn);
 		contextSource.afterPropertiesSet();
 
