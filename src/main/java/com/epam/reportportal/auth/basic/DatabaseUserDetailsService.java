@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
@@ -44,32 +45,29 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findByLogin(normalizeId(username))
-				.orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found."));
+		Optional<ReportPortalUser> user = userRepository.findUserDetails(username);
+		if (!user.isPresent()) {
+			throw new UsernameNotFoundException("User not found");
+		}
 
-		String login = user.getLogin();
-		String password = ofNullable(user.getPassword()).orElse("");
+		String login = user.get().getUsername();
+		String password = user.get().getPassword() == null ? "" : user.get().getPassword();
 
-		org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(login,
+		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(login,
 				password,
 				true,
 				true,
 				true,
-				true, AuthUtils.AS_AUTHORITIES.apply(user.getRole())
+				true,
+				AuthUtils.AS_AUTHORITIES.apply(user.get().getUserRole())
 		);
 
-		return new ReportPortalUser(userDetails,
-				user.getId(),
-				user.getRole(),
-				user.getProjects()
-						.stream()
-						.collect(Collectors.toMap(projectUser -> projectUser.getProject().getName(),
-								projectUser -> new ReportPortalUser.ProjectDetails(projectUser.getProject().getId(),
-										projectUser.getProject().getName(),
-										projectUser.getProjectRole()
-								)
-						)),
-				user.getEmail()
+		return new ReportPortalUser(
+				u,
+				user.get().getUserId(),
+				user.get().getUserRole(),
+				user.get().getProjectDetails(),
+				user.get().getEmail()
 		);
 	}
 }
