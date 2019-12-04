@@ -1,8 +1,7 @@
 language: java
+dist: trusty
 
 script: ./gradlew build
-
-dist: trusty
 
 cache:
   directories:
