@@ -31,7 +31,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
         compile 'com.epam.reportportal:commons-model:5.0.0-RC-1'
     } else {
-        compile 'com.github.reportportal:commons-dao:3e9c759'
+        compile 'com.github.reportportal:commons-dao:d6a130e'
         compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
         compile 'com.github.reportportal:commons-model:68fb20b'
     }
@@ -59,10 +59,9 @@ processResources {
 }
 
 bootJar {
-    if (!releaseMode) {
-        getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
-    }
+    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
 }
+jar.enabled(true)
 
 processResources.dependsOn gitInfo
 bootJar.dependsOn gitInfo
