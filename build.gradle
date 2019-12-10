@@ -1,27 +1,16 @@
 plugins {
-    id 'net.researchgate.release' version '2.8.1'
-    id 'com.jfrog.bintray' version '1.8.4'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'java'
-    id 'org.ajoberstar.grgit' version '4.0.0'
     id "org.owasp.dependencycheck" version "5.2.1"
 }
 
-description = 'EPAM Report portal. SSO Authorization Service'
-
-sourceCompatibility = 11
-targetCompatibility = 11
-
-project.ext {
-    releaseMode = project.hasProperty("releaseMode")
-    isDebugMode = System.getProperty("DEBUG", "false") == "true"
-}
-
-apply from: 'release.gradle'
+apply from: 'project-properties.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-docker.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-info.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-commons.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/release-service.gradle'
 
 repositories {
     mavenCentral()
@@ -60,13 +49,7 @@ dependencies {
     compile 'org.apache.tika:tika-core'
     compile 'org.apache.tika:tika-parsers'
 
-    compile 'javax.inject:javax.inject:1'
-
     compile('io.springfox:springfox-swagger2')
-}
-
-wrapper {
-    gradleVersion = '6.0'
 }
 
 processResources {
@@ -75,18 +58,17 @@ processResources {
     }
 }
 
-processResources.dependsOn(gitInfo)
-
-jar {
-    if (!releaseMode) {
-        getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    manifest {
-        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': archiveVersion,
-                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-    }
+bootJar {
+    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
 }
+jar.enabled(true)
+
+processResources.dependsOn gitInfo
+bootJar.dependsOn gitInfo
+prepareDockerfile.dependsOn build
+buildDocker.dependsOn prepareDockerfile
+addDockerfileToGit.dependsOn releaseDockerfile
+updateVersion.dependsOn removeDockerfileFromGit
+beforeReleaseBuild.dependsOn addDockerfileToGit
+afterReleaseBuild.dependsOn bintrayUpload
 
