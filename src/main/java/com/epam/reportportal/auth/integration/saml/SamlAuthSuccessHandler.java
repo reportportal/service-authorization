@@ -23,7 +23,6 @@ import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Provider;
@@ -41,9 +40,8 @@ import java.util.Collections;
 @Component
 public class SamlAuthSuccessHandler extends AuthSuccessHandler {
 
-	public SamlAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher,
-			AuthorizationServerTokenServices tokenServices) {
-		super(tokenServicesFacade, eventPublisher, tokenServices);
+	public SamlAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher) {
+		super(tokenServicesFacade, eventPublisher);
 	}
 
 

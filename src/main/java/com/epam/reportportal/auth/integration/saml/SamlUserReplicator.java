@@ -43,7 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 
 /**
  * Replicates user from SAML response into database if it is not exist
@@ -67,7 +67,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	}
 
 	public User replicateUser(ReportPortalSamlAuthentication samlAuthentication) {
-		String userName = normalizeId(StringUtils.substringBefore(samlAuthentication.getPrincipal(), "@"));
+		String userName = CROP_DOMAIN.apply(samlAuthentication.getPrincipal());
 		Optional<User> userOptional = userRepository.findByLogin(userName);
 
 		if (userOptional.isPresent()) {

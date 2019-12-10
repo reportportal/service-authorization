@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
@@ -56,8 +57,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 	/**
 	 * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for that user
 	 *
-	 * @param name       Username
-	 * @param ctx        LDAP context
+	 * @param name           Username
+	 * @param ctx            LDAP context
 	 * @param syncAttributes Synchronization Attributes
 	 * @return Internal User representation
 	 */
@@ -70,21 +71,19 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			throw new UserSynchronizationException("Email not provided");
 		}
 		email = normalizeId(email);
-
-		String login = normalizeId(StringUtils.substringBefore(name, "@"));
+		String login = CROP_DOMAIN.apply(name);
 		Optional<User> userOptional = userRepository.findByLogin(login);
 		if (!userOptional.isPresent()) {
 			User newUser = new User();
 			newUser.setLogin(login);
 
-			ofNullable(syncAttributes.get(LdapParameter.FULL_NAME_ATTRIBUTE.getParameterName())).flatMap(it -> ofNullable(ctx.getStringAttribute(
-					it))).ifPresent(newUser::setFullName);
+			ofNullable(syncAttributes.get(LdapParameter.FULL_NAME_ATTRIBUTE.getParameterName())).filter(StringUtils::isNotBlank)
+					.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
+					.ifPresent(newUser::setFullName);
 
-			ofNullable(syncAttributes.get(LdapParameter.PHOTO_ATTRIBUTE.getParameterName())).flatMap(it -> ofNullable(ctx.getObjectAttribute(
-					it)))
-					.filter(photo -> photo instanceof byte[])
-					.map(photo -> (byte[]) photo)
-					.ifPresent(photo -> uploadPhoto(newUser, photo));
+			ofNullable(syncAttributes.get(LdapParameter.PHOTO_ATTRIBUTE.getParameterName())).filter(StringUtils::isNotBlank)
+					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)));
+
 			checkEmail(email);
 			newUser.setEmail(email);
 			newUser.setMetadata(defaultMetaData());

@@ -57,7 +57,6 @@ public final class LdapConverter {
 		ldapResource.setLdapAttributes(LDAP_ATTRIBUTES_TO_RESOURCE.apply(integration));
 		LdapParameter.GROUP_SEARCH_FILTER.getParameter(integration).ifPresent(ldapResource::setGroupSearchFilter);
 		LdapParameter.GROUP_SEARCH_BASE.getParameter(integration).ifPresent(ldapResource::setGroupSearchBase);
-		LdapParameter.MANAGER_PASSWORD.getParameter(integration).ifPresent(ldapResource::setManagerPassword);
 		LdapParameter.PASSWORD_ATTRIBUTE.getParameter(integration).ifPresent(ldapResource::setPasswordAttribute);
 		LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(ldapResource::setPasswordEncoderType);
 		LdapParameter.USER_DN_PATTERN.getParameter(integration).ifPresent(ldapResource::setUserDnPattern);
