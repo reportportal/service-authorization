@@ -25,11 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
-import static java.util.Optional.ofNullable;
 
 /**
  * Spring's {@link UserDetailsService} implementation. Uses {@link User} entity
@@ -39,35 +35,31 @@ import static java.util.Optional.ofNullable;
  */
 public class DatabaseUserDetailsService implements UserDetailsService {
 
-	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	public void setUserRepository(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Optional<ReportPortalUser> user = userRepository.findUserDetails(username);
-		if (!user.isPresent()) {
-			throw new UsernameNotFoundException("User not found");
-		}
+		ReportPortalUser user = userRepository.findUserDetails(normalizeId(username))
+				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-		String login = user.get().getUsername();
-		String password = user.get().getPassword() == null ? "" : user.get().getPassword();
+		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+				.username(user.getUsername())
+				.password(user.getPassword() == null ? "" : user.getPassword())
+				.authorities(AuthUtils.AS_AUTHORITIES.apply(user.getUserRole()))
+				.build();
 
-		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(login,
-				password,
-				true,
-				true,
-				true,
-				true,
-				AuthUtils.AS_AUTHORITIES.apply(user.get().getUserRole())
-		);
-
-		return new ReportPortalUser(
-				u,
-				user.get().getUserId(),
-				user.get().getUserRole(),
-				user.get().getProjectDetails(),
-				user.get().getEmail()
-		);
+		return ReportPortalUser.userBuilder()
+				.withUserDetails(userDetails)
+				.withProjectDetails(user.getProjectDetails())
+				.withUserId(user.getUserId())
+				.withUserRole(user.getUserRole())
+				.withEmail(user.getEmail())
+				.build();
 	}
 }
