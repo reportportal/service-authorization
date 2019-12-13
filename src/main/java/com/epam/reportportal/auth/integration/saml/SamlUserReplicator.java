@@ -56,7 +56,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	}
 
 	public User replicateUser(ReportPortalSamlAuthentication samlAuthentication) {
-		String userName = samlAuthentication.getPrincipal();
+		String userName = CROP_DOMAIN.apply(samlAuthentication.getPrincipal());
 		Optional<User> userOptional = userRepository.findByLogin(userName);
 
 		if (userOptional.isPresent()) {
