@@ -116,7 +116,7 @@ podTemplate(
                 dir("$k8sDir/reportportal/v5") {
                     sh 'helm dependency update'
                 }
-                sh "helm upgrade -n reportportal --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait reportportal ./$k8sDir/reportportal/v5"
+                sh "helm upgrade -n reportportal reportportal ./$k8sDir/reportportal/v5 --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait "
             }
         }
         stage('Execute DVT Tests') {
