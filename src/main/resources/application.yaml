@@ -64,15 +64,16 @@ rp:
     server: default
     saml:
       base-path: ${server.servlet.context-path}/${spring.application.name}
-      entity-id: ${SP_ENTITY_ID:report.portal.sp.id}
-      key-password: ${SP_KEY_PASSWORD:password}
-      key-alias: ${SP_KEY_ALIAS:report-portal-sp}
-      key-store: ${SP_KEY_STORE:saml/keystore.jks}
-      key-store-password: ${SP_KEY_STORE_PASSWORD:password}
-      network-connection-timeout: ${SP_NETWORK_CONNECTION_TIMEOUT:5000}
-      network-read-timeout: ${SP_NETWORK_READ_TIMEOUT:10000}
-      signed-requests: ${SP_SIGNED_REQUESTS:false}
+      entity-id: report.portal.sp.id
+      key-password: password
+      key-alias: report-portal-sp
+      key-store: saml/keystore.jks
+      key-store-password: password
+      network-connection-timeout: 5000
+      network-read-timeout: 10000
+      signed-requests: false
       active-key-name: sp-signing-key
+      prefix: saml/sp
   binarystore:
     path: /data/storage
     master:

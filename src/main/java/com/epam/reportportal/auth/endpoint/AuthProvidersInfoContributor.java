@@ -21,6 +21,7 @@ import com.epam.ta.reportportal.dao.SamlProviderDetailsRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,9 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 
 	private static final String SAML_BUTTON = "<span>Login with SAML</span>";
 
+	@Value("${rp.auth.saml.prefix}")
+	private String samlPrefix;
+
 	private final OAuthRegistrationRepository oAuthRegistrationRepository;
 	private final SamlProviderDetailsRepository samlProviderDetailsRepository;
 	private final Map<String, OAuthProvider> providersMap;
@@ -64,14 +68,17 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 		final Map<String, AuthProviderInfo> providers = providersMap.values()
 				.stream()
 				.filter(p -> !p.isConfigDynamic() || oauth2Details.stream().anyMatch(it -> it.getId().equalsIgnoreCase(p.getName())))
-				.collect(Collectors.toMap(OAuthProvider::getName, p -> new OAuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))
+				.collect(Collectors.toMap(
+						OAuthProvider::getName,
+						p -> new OAuthProviderInfo(p.getButton(), p.buildPath(getAuthBasePath()))
 				));
 
 		Map<String, String> samlProviders = samlProviderDetailsRepository.findAll()
 				.stream()
 				.filter(SamlProviderDetails::isEnabled)
 				.collect(Collectors.toMap(SamlProviderDetails::getIdpName,
-						it -> fromCurrentContextPath().path(String.format("/saml/sp/discovery?idp=%s",
+						it -> fromCurrentContextPath().path(String.format("/%s/discovery?idp=%s",
+								samlPrefix,
 								UriUtils.encode(it.getIdpUrl(), UTF_8.toString())
 						)).build().getPath()
 				));
