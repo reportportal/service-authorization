@@ -79,6 +79,9 @@ public class SamlServiceProviderConfiguration {
 	@Value("${rp.auth.saml.signed-requests}")
 	private Boolean signedRequests;
 
+	@Value("${rp.auth.saml.prefix}")
+	private String prefix;
+
 	private SamlProviderDetailsRepository samlProviderDetailsRepository;
 
 	public SamlServiceProviderConfiguration(SamlProviderDetailsRepository samlProviderDetailsRepository) {
@@ -106,7 +109,7 @@ public class SamlServiceProviderConfiguration {
 				.setNameIds(Arrays.asList(NameID.EMAIL, NameID.PERSISTENT, NameID.UNSPECIFIED))
 				.setKeys(rotatingKeys())
 				.setProviders(providers())
-				.setPrefix("saml/sp")
+				.setPrefix(prefix)
 				.setBasePath(basePath);
 		return serviceProviderConfiguration;
 	}
