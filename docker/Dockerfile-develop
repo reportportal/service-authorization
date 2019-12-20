@@ -8,11 +8,11 @@ COPY gradle/ ./gradle
 COPY gradlew .
 RUN ./gradlew wrapper
 
-COPY build-quality.gradle build.gradle gradlew settings.gradle gradle.properties ./
+COPY project-properties.gradle build.gradle gradlew settings.gradle gradle.properties ./
 RUN ./gradlew resolveDependencies --stacktrace
 
 COPY . ./
-RUN ./gradlew build
+RUN ./gradlew build --stacktrace
 
 FROM openjdk:8-alpine
 LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
@@ -27,7 +27,6 @@ exec java $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh
 VOLUME /tmp
 
 COPY --from=builder /usr/src/reportportal/build/libs/service-authorization.jar ./app.jar
-COPY --from=builder /usr/src/reportportal/build/libs/lib ./lib
 
 RUN sh -c 'touch /app.jar'
 

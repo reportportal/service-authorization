@@ -15,7 +15,7 @@
  */
 package com.epam.reportportal.auth;
 
-import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 
@@ -27,13 +27,13 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 public class ClientResources {
 
 	private OAuth2ProtectedResourceDetails client = new AuthorizationCodeResourceDetails();
-	private ResourceServerProperties resource = new ResourceServerProperties();
+	private OAuth2ResourceServerProperties resource = new OAuth2ResourceServerProperties();
 
 	public OAuth2ProtectedResourceDetails getClient() {
 		return client;
 	}
 
-	public ResourceServerProperties getResource() {
+	public OAuth2ResourceServerProperties getResource() {
 		return resource;
 	}
 }

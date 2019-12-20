@@ -1,253 +1,72 @@
 plugins {
-    id 'net.researchgate.release' version '2.8.0'
-    id "com.jfrog.bintray" version "1.8.4"
-    id "org.springframework.boot" version "2.1.5.RELEASE" apply false
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'java'
-    id 'jacoco'
-    id "io.spring.dependency-management" version "1.0.7.RELEASE"
-    id "org.ajoberstar.grgit" version "3.1.1"
+    id "org.owasp.dependencycheck" version "5.2.1"
 }
 
-apply from: 'build-quality.gradle'
+apply from: 'project-properties.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
-
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-description = 'EPAM Report portal. SSO Authorization Service'
-
-project.ext {
-    releaseMode = project.hasProperty("releaseMode")
-}
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/release-service.gradle'
 
 repositories {
     mavenCentral()
-
-//    if (!releaseMode) {
-    maven { url "https://jitpack.io" }
-//    }
-
     maven { url "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
+    maven { url "https://jitpack.io" }
 }
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:8706fef"
+        mavenBom "com.github.reportportal:commons-bom:14dab6c"
     }
 }
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:5.0.0-RC-2'
+        compile 'com.epam.reportportal:commons-dao:5.0.0-RC-5'
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.epam.reportportal:commons-model:5.0.0-RC-1'
+        compile 'com.epam.reportportal:commons-model:5.0.0-RC-5'
     } else {
-        compile 'com.github.reportportal:commons-dao:5.0.0-RC-2'
+        compile 'com.github.reportportal:commons-dao:5.0.0-RC-5'
         compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.github.reportportal:commons-model:5.0.0-RC-1'
+        compile 'com.github.reportportal:commons-model:5.0.0-RC-5'
     }
 
-    compile 'javax.inject:javax.inject:1'
-    compile 'org.hibernate:hibernate-validator:6.0.7.Final'
-    compile('io.springfox:springfox-swagger2')
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-security'
-    compile 'org.springframework.security.oauth:spring-security-oauth2:2.2.1.RELEASE'
+
     compile 'org.springframework.security:spring-security-oauth2-client'
-    compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.3.RELEASE'
-    compile 'org.springframework.security:spring-security-jwt'
-    compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
-
-    compile 'org.apache.tika:tika-core:1.17'
-    compile 'org.apache.tika:tika-parsers:1.17'
-
-    //LDAP stuff
-    compile("org.springframework.ldap:spring-ldap-core")
-    compile("org.springframework.security:spring-security-ldap")
-    compile("org.springframework:spring-tx")
-    compile("com.unboundid:unboundid-ldapsdk")
-    compile("org.apache.directory.server:apacheds-core:1.5.5")
-    compile("org.apache.directory.server:apacheds-protocol-ldap:1.5.5")
-    compile 'org.jasypt:jasypt:1.9.2'
-
-    //SAML
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE'
+    compile 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
+    compile 'org.springframework.security:spring-security-ldap'
     compile 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M26'
 
-    compile 'org.springframework.retry:spring-retry'
+    compile 'org.apache.tika:tika-core'
+    compile 'org.apache.tika:tika-parsers'
 
-    compile("org.springframework.boot:spring-boot-starter-data-jpa")
-    compile 'org.postgresql:postgresql:42.2.2'
-    compile group: 'org.jooq', name: 'jooq', version: '3.11.4'
-    compile 'commons-beanutils:commons-beanutils:1.9.3'
-
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
-    testCompile 'junit:junit'
-    testCompile 'org.springframework.boot:spring-boot-test'
-    testCompile 'org.springframework:spring-test'
+    compile('io.springfox:springfox-swagger2')
 }
 
-wrapper {
-    gradleVersion = '5.4.1'
-}
-
-release {
-    pushReleaseVersionBranch = 'master'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
+processResources {
+    filesMatching('application.properties') {
+        expand(project.properties)
     }
 }
 
-build.dependsOn jacocoTestReport
-
-
-/** Starting from 1.4 Spring Boot uses very strange repackage model which does not allow this JAR to be used as dependency
- * So package jar by hands */
-task copyRuntimeLibs(type: Copy) {
-    into "$buildDir/libs/lib"
-    from configurations.runtime
+bootJar {
+    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
 }
+jar.enabled(true)
 
-build.dependsOn(copyRuntimeLibs)
-
-jar {
-    if (!releaseMode) {
-        getArchiveFileName().set("${baseName}.${extension}")
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    manifest {
-        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': version,
-                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-    }
-
-}
-
-task bootRepackage {
-    enabled = false
-}
-
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-    getArchiveClassifier().set('sources')
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
-    getArchiveClassifier().set('javadoc')
-}
-
-task fatDist(type: Zip) {
-    appendix = 'dist'
-    into('lib') {
-        from configurations.runtime
-    }
-    into('./') {
-        from jar
-    }
-}
-
-fatDist.dependsOn 'jar', 'copyRuntimeLibs'
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-    archives fatDist
-}
-
-javadoc() {
-    failOnError = false
-}
-
-def pomConfig = {
-    licenses {
-        license {
-            name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
-        }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            groupId 'com.epam.reportportal'
-            artifactId "$project.name"
-
-            pom.withXml {
-                def root = asNode()
-                root.children().last() + pomConfig
-            }
-            artifact sourcesJar
-            artifact javadocJar
-            artifact fatDist
-        }
-    }
-}
-
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-    publications = ['mavenJava']
-    publish = true
-    pkg {
-        repo = 'reportportal'
-        name = "$project.name"
-        desc = "$project.description"
-        websiteUrl = 'https://reportportal.github.io/'
-        issueTrackerUrl = "https://github.com/reportportal/$project.name/issues"
-        vcsUrl = "https://github.com/reportportal/$project.name"
-        githubRepo = "reportportal/$project.name"
-        githubReleaseNotesFile = 'CHANGELOG.md'
-
-        userOrg = 'epam'
-        licenses = ['Apache-2.0']
-    }
-}
-
-afterReleaseBuild.dependsOn bintrayUpload
-
-
-task releaseDockerfile(type: Copy) {
-    /* copy dockerfile and replace version of JAR */
-    from('docker/Dockerfile-release')
-
-    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.properties.findAll { it.value instanceof String }.collectEntries {
-        [it.key, it.value]
-    })
-
-    into "${project.projectDir}/"
-    rename('Dockerfile-release', 'Dockerfile')
-}
-
-task addDockerfileToGit {
-    doLast {
-        grgit = grgit.open(dir: '.')
-        grgit.add(patterns: ['Dockerfile'])
-    }
-}
-
-task removeDockerfileFromGit {
-    doLast {
-        grgit = grgit.open(dir: '.')
-        grgit.remove(patterns: ['Dockerfile'])
-    }
-}
-
-
+processResources.dependsOn gitInfo
+bootJar.dependsOn gitInfo
+prepareDockerfile.dependsOn build
+buildDocker.dependsOn prepareDockerfile
 addDockerfileToGit.dependsOn releaseDockerfile
 updateVersion.dependsOn removeDockerfileFromGit
 beforeReleaseBuild.dependsOn addDockerfileToGit

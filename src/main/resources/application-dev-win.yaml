@@ -1,8 +1,12 @@
 rp:
   db:
-    url: jdbc:postgresql://localhost:5432/reportportal?user=rpuser&password=rppass
-  uat:
-    serviceUrl: http://localhost:8080/uat
+    host: localhost
+  auth:
+    saml:
+      base-path: http://localhost:9999
+  binarystore:
+    type: filesystem
+    path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
 server:
   port: 9999
 logging:

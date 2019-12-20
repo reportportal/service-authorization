@@ -21,6 +21,7 @@ import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.ldap.LdapConfig;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -66,7 +67,8 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
 				ldap.getBaseDn()
 		);
-		ofNullable(ldap.getManagerPassword()).ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
+		ofNullable(ldap.getManagerPassword()).filter(StringUtils::isNotEmpty)
+				.ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
 		ofNullable(ldap.getManagerDn()).ifPresent(contextSource::setUserDn);
 		contextSource.afterPropertiesSet();
 
