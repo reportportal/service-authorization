@@ -15,9 +15,6 @@
  */
 package com.epam.reportportal.auth;
 
-//import org.springframework.security.oauth2.provider.*;
-//import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
-
 import com.epam.ta.reportportal.dao.OAuth2AccessTokenRepository;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;

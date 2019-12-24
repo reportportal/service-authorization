@@ -1,10 +1,7 @@
 plugins {
-    id 'net.researchgate.release' version '2.8.1'
-    id 'com.jfrog.bintray' version '1.8.4'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'java'
-    id 'org.ajoberstar.grgit' version '4.0.0'
-    id 'com.bmuschko.docker-remote-api' version '6.0.0'
     id "org.owasp.dependencycheck" version "5.2.1"
     id "com.github.spotbugs" version "2.0.1"
 }
@@ -19,6 +16,7 @@ project.ext {
     isDebugMode = System.getProperty("DEBUG", "false") == "true"
 }
 
+apply from: 'project-properties.gradle'
 apply from: 'release.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
@@ -34,15 +32,15 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:f060f9c"
+        mavenBom "com.github.reportportal:commons-bom:14dab6c"
     }
 }
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:5.0.0-RC-2'
+        compile 'com.epam.reportportal:commons-dao:5.0.0-RC-5'
         compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.epam.reportportal:commons-model:5.0.0-RC-1'
+        compile 'com.epam.reportportal:commons-model:5.0.0-RC-5'
     } else {
         compile 'com.github.reportportal:commons-dao:94b0779'
         compile 'com.github.reportportal:commons-rules:3c46d7c'
@@ -77,18 +75,17 @@ processResources {
     }
 }
 
-processResources.dependsOn(gitInfo)
-
-jar {
-    if (!releaseMode) {
-        getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    manifest {
-        attributes 'Implementation-Title': 'ReportPortal Auth Server Commons',
-                'Implementation-Version': archiveVersion,
-                'Main-Class': 'com.epam.reportportal.auth.AuthServerApplication',
-                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-    }
+bootJar {
+    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
 }
+jar.enabled(true)
+
+processResources.dependsOn gitInfo
+bootJar.dependsOn gitInfo
+prepareDockerfile.dependsOn build
+buildDocker.dependsOn prepareDockerfile
+addDockerfileToGit.dependsOn releaseDockerfile
+updateVersion.dependsOn removeDockerfileFromGit
+beforeReleaseBuild.dependsOn addDockerfileToGit
+afterReleaseBuild.dependsOn bintrayUpload
 

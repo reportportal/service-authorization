@@ -18,7 +18,7 @@ podTemplate(
                         resourceLimitCpu: '1500m',
                         resourceRequestMemory: '2048Mi',
                         resourceLimitMemory: '3072Mi'),
-                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:v2.14.2', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:v3.0.2', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'httpie', image: 'blacktop/httpie', command: 'cat', ttyEnabled: true)
 
@@ -116,13 +116,13 @@ podTemplate(
                 dir("$k8sDir/reportportal/v5") {
                     sh 'helm dependency update'
                 }
-                sh "helm upgrade --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait -f ./$ciDir/rp/values-ci.yml reportportal ./$k8sDir/reportportal/v5"
+                sh "helm upgrade -n reportportal reportportal ./$k8sDir/reportportal/v5 --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait "
             }
         }
         stage('Execute DVT Tests') {
             def srvUrl
             container('kubectl') {
-                def srvName = utils.getServiceName(k8sNs, "uat")
+                def srvName = utils.getServiceName(k8sNs, "reportportal-uat")
                 srvUrl = utils.getServiceEndpoint(k8sNs, srvName)
             }
             if (srvUrl == null) {
