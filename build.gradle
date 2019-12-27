@@ -16,7 +16,9 @@ repositories {
     mavenCentral()
     maven { url "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
-    maven { url "https://jitpack.io" }
+    if (!releaseMode) {
+        maven { url 'https://jitpack.io' }
+    }
 }
 
 dependencyManagement {
