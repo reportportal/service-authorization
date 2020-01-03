@@ -3,7 +3,6 @@ plugins {
     id 'org.springframework.boot' version '2.2.1.RELEASE'
     id 'java'
     id "org.owasp.dependencycheck" version "5.2.1"
-    id "com.github.spotbugs" version "2.0.1"
 }
 
 description = 'EPAM Report portal. SSO Authorization Service'
@@ -11,16 +10,11 @@ description = 'EPAM Report portal. SSO Authorization Service'
 sourceCompatibility = 11
 targetCompatibility = 11
 
-project.ext {
-    releaseMode = project.hasProperty("releaseMode")
-    isDebugMode = System.getProperty("DEBUG", "false") == "true"
-}
-
 apply from: 'project-properties.gradle'
-apply from: 'release.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-docker.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-commons.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-info.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/release-service.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-quality.gradle'
 
 repositories {
