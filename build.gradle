@@ -14,20 +14,13 @@ apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/maste
 
 repositories {
     mavenCentral()
-    maven { url "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
-    if (!releaseMode) {
-        maven { url 'https://jitpack.io' }
-    }
+    releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
 }
 
 dependencyManagement {
     imports {
-        if (releaseMode) {
-            mavenBom "com.epam.reportportal:commons-bom:5.0.0-RC-5"
-        } else {
-            mavenBom "com.github.reportportal:commons-bom:4b7ed8a"
-        }
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0-RC-5' ? 'com.github.reportportal:commons-bom:4b7ed8a')
     }
 }
 
@@ -59,6 +52,7 @@ dependencies {
 }
 
 processResources {
+    dependsOn(gitInfo)
     filesMatching('application.properties') {
         expand(project.properties)
     }
@@ -69,10 +63,8 @@ bootJar {
 }
 jar.enabled(true)
 
-processResources.dependsOn gitInfo
-bootJar.dependsOn gitInfo
-addDockerfileToGit.dependsOn releaseDockerfile
-updateVersion.dependsOn removeDockerfileFromGit
+addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
+bintrayUpload.mustRunAfter build
 afterReleaseBuild.dependsOn bintrayUpload
 
