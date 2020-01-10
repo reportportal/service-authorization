@@ -20,7 +20,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0-RC-5' ? 'com.github.reportportal:commons-bom:4b7ed8a')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0-RC-5' : 'com.github.reportportal:commons-bom:4b7ed8a')
     }
 }
 
