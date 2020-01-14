@@ -7,15 +7,12 @@ plugins {
 
 description = 'EPAM Report portal. SSO Authorization Service'
 
-sourceCompatibility = 11
-targetCompatibility = 11
-
 apply from: 'project-properties.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-docker.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-commons.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-info.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/release-service.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-commons.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/release-service.gradle'
 
 repositories {
     mavenCentral()
@@ -44,7 +41,7 @@ dependencies {
     } else {
         compile 'com.github.reportportal:commons-dao:94b0779'
         compile 'com.github.reportportal:commons-rules:3c46d7c'
-        compile 'com.github.reportportal:commons-model:9213a59'
+        compile 'com.github.reportportal:commons-model:37a03a1d'
     }
 
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -65,10 +62,6 @@ dependencies {
     compile('io.springfox:springfox-swagger2')
 }
 
-wrapper {
-    gradleVersion = '6.0'
-}
-
 processResources {
     filesMatching('application.properties') {
         expand(project.properties)
@@ -82,10 +75,7 @@ jar.enabled(true)
 
 processResources.dependsOn gitInfo
 bootJar.dependsOn gitInfo
-prepareDockerfile.dependsOn build
-buildDocker.dependsOn prepareDockerfile
-addDockerfileToGit.dependsOn releaseDockerfile
-updateVersion.dependsOn removeDockerfileFromGit
+addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
-afterReleaseBuild.dependsOn bintrayUpload
+bintrayUpload.mustRunAfter build
 
