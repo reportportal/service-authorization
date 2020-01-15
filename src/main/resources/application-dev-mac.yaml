@@ -1,11 +1,3 @@
-
-spring:
-  cloud:
-    consul:
-      discovery:
-        hostname: docker.for.mac.localhost
-      host: localhost
-
 rp:
   amqp:
     addresses: amqp://rabbitmq:rabbitmq@localhost:5672

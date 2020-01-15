@@ -19,20 +19,13 @@ apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/
 
 repositories {
     mavenCentral()
-    maven { url "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
-    if (!releaseMode) {
-        maven { url 'https://jitpack.io' }
-    }
+    releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
 }
 
 dependencyManagement {
     imports {
-        if (releaseMode) {
-            mavenBom "com.epam.reportportal:commons-bom:5.0.0-RC-5"
-        } else {
-            mavenBom "com.github.reportportal:commons-bom:4b7ed8a"
-        }
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0-RC-5' : 'com.github.reportportal:commons-bom:4b7ed8a')
     }
 }
 
@@ -70,22 +63,19 @@ wrapper {
 }
 
 processResources {
+    dependsOn(gitInfo)
     filesMatching('application.properties') {
         expand(project.properties)
     }
 }
 
 bootJar {
-    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
+    project.hasProperty('gcp') ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
 jar.enabled(true)
 
-processResources.dependsOn gitInfo
-bootJar.dependsOn gitInfo
-prepareDockerfile.dependsOn build
-buildDocker.dependsOn prepareDockerfile
-addDockerfileToGit.dependsOn releaseDockerfile
-updateVersion.dependsOn removeDockerfileFromGit
+addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
+bintrayUpload.mustRunAfter build
 afterReleaseBuild.dependsOn bintrayUpload
 
