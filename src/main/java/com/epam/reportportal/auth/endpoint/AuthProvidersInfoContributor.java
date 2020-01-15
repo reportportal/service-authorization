@@ -26,6 +26,7 @@ import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
@@ -50,6 +51,9 @@ import static org.springframework.web.servlet.support.ServletUriComponentsBuilde
 public class AuthProvidersInfoContributor implements InfoContributor {
 
 	private static final String SAML_BUTTON = "<span>Login with SAML</span>";
+
+	@Value("${rp.auth.saml.prefix}")
+	private String samlPrefix;
 
 	private final OAuthRegistrationRepository oAuthRegistrationRepository;
 	private final IntegrationRepository integrationRepository;
@@ -86,10 +90,13 @@ public class AuthProvidersInfoContributor implements InfoContributor {
 					.stream()
 					.filter(Integration::isEnabled)
 					.filter(it -> SamlParameter.IDP_URL.getParameter(it).isPresent())
-					.collect(Collectors.toMap(Integration::getName, it -> fromCurrentContextPath().path(String.format(
-							"/saml/sp/discovery?idp=%s",
-							UriUtils.encode(SamlParameter.IDP_URL.getParameter(it).get(), UTF_8.toString())
-					)).build().getPath()));
+					.collect(Collectors.toMap(
+							Integration::getName,
+							it -> fromCurrentContextPath().path(String.format("/%s/discovery?idp=%s",
+									samlPrefix,
+									UriUtils.encode(SamlParameter.IDP_URL.getParameter(it).get(), UTF_8.toString())
+							)).build().getPath()
+					));
 		}
 
 		if (!CollectionUtils.isEmpty(samlProviders)) {

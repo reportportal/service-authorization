@@ -18,7 +18,7 @@ podTemplate(
                         resourceLimitCpu: '1500m',
                         resourceRequestMemory: '2048Mi',
                         resourceLimitMemory: '3072Mi'),
-                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:v3.0.0', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:v3.0.2', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'httpie', image: 'blacktop/httpie', command: 'cat', ttyEnabled: true)
 
@@ -88,7 +88,7 @@ podTemplate(
             try {
                 container('gradle') {
                     stage('Build App') {
-                        sh "gradle build --full-stacktrace -P buildNumber=$srvVersion"
+                        sh "gradle build --full-stacktrace -P gcp -P buildNumber=$srvVersion"
                     }
                     stage('Test') {
                         sh "gradle test --full-stacktrace"
@@ -116,7 +116,7 @@ podTemplate(
                 dir("$k8sDir/reportportal/v5") {
                     sh 'helm dependency update'
                 }
-                sh "helm upgrade -n reportportal --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait reportportal ./$k8sDir/reportportal/v5"
+                sh "helm upgrade -n reportportal reportportal ./$k8sDir/reportportal/v5 --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait "
             }
         }
         stage('Execute DVT Tests') {

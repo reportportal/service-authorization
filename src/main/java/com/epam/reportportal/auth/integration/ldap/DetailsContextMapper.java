@@ -17,7 +17,6 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.entity.user.ProjectUser;
 import com.epam.ta.reportportal.entity.user.User;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +24,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -48,27 +49,18 @@ public class DetailsContextMapper extends LdapUserDetailsMapper {
 	@Transactional
 	public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
 		UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
-
 		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes.get());
 
-		org.springframework.security.core.userdetails.User u = new org.springframework.security.core.userdetails.User(user.getLogin(),
-				"",
-				true,
-				true,
-				true,
-				true,
-				AuthUtils.AS_AUTHORITIES.apply(user.getRole())
-		);
-
-		Optional<Set<ProjectUser>> optionalProjectUser = ofNullable(user.getProjects());
-
-		return new ReportPortalUser(u,
-				user.getId(),
-				user.getRole(),
-				optionalProjectUser.map(it -> it.stream().collect(Collectors.toMap(p -> p.getProject().getName(),
+		return ReportPortalUser.userBuilder()
+				.withUserName(user.getLogin())
+				.withPassword("")
+				.withAuthorities(AuthUtils.AS_AUTHORITIES.apply(user.getRole()))
+				.withUserId(user.getId())
+				.withEmail(user.getEmail())
+				.withProjectDetails(ofNullable(user.getProjects()).map(it -> it.stream().collect(Collectors.toMap(
+						p -> p.getProject().getName(),
 						p -> new ReportPortalUser.ProjectDetails(p.getProject().getId(), p.getProject().getName(), p.getProjectRole())
-				))).orElseGet(Collections::emptyMap),
-				user.getEmail()
-		);
+				))).orElseGet(Collections::emptyMap))
+				.build();
 	}
 }
