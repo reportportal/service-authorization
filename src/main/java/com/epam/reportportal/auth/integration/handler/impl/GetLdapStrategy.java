@@ -16,11 +16,17 @@
 
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.LdapConverter;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.ldap.LdapConfig;
+import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
+import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.AbstractLdapResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,17 +36,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class GetLdapStrategy implements GetAuthIntegrationStrategy {
 
+	private final IntegrationTypeRepository integrationTypeRepository;
+
 	private final IntegrationRepository integrationRepository;
 
 	@Autowired
-	public GetLdapStrategy(IntegrationRepository integrationRepository) {
+	public GetLdapStrategy(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository) {
+		this.integrationTypeRepository = integrationTypeRepository;
 		this.integrationRepository = integrationRepository;
 	}
 
 	@Override
 	public AbstractLdapResource getIntegration() {
+		IntegrationType ldapIntegrationType = integrationTypeRepository.findByName(AuthIntegrationType.LDAP.getName())
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.LDAP.getName()));
 
 		//or else empty integration with default 'enabled = false' flag
-		return LdapConverter.TO_RESOURCE.apply(integrationRepository.findLdap().orElseGet(LdapConfig::new));
+		LdapResource ldapResource = LdapConverter.TO_RESOURCE.apply(integrationRepository.findByNameAndTypeId(AuthIntegrationType.LDAP.getName(),
+				ldapIntegrationType.getId()
+		).orElseGet(Integration::new));
+		ldapResource.setType(ldapIntegrationType.getName());
+		return ldapResource;
 	}
 }

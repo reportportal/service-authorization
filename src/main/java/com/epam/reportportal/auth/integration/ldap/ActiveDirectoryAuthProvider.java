@@ -16,14 +16,15 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Active Directory provider
@@ -42,18 +43,19 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		return integrationRepository.findActiveDirectory(true).isPresent();
+		return integrationRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
 
-		ActiveDirectoryConfig adConfig = integrationRepository.findActiveDirectory(true)
+		Integration integration = integrationRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
 				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
-		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(adConfig.getDomain(),
-				adConfig.getUrl(),
-				adConfig.getBaseDn()
+		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(
+				LdapParameter.DOMAIN.getParameter(integration).orElse(null),
+				LdapParameter.URL.getRequiredParameter(integration),
+				LdapParameter.BASE_DN.getRequiredParameter(integration)
 		);
 
 		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());

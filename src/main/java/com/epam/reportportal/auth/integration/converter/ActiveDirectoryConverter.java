@@ -15,7 +15,8 @@
  */
 package com.epam.reportportal.auth.integration.converter;
 
-import com.epam.ta.reportportal.entity.ldap.ActiveDirectoryConfig;
+import com.epam.reportportal.auth.integration.parameter.LdapParameter;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
 
 import java.util.function.Function;
@@ -29,13 +30,11 @@ public final class ActiveDirectoryConverter {
 		//static only
 	}
 
-	public static final Function<ActiveDirectoryConfig, ActiveDirectoryResource> TO_RESOURCE = activeDirectoryConfig -> {
-
+	public static final Function<Integration, ActiveDirectoryResource> TO_RESOURCE = adIntegration -> {
 		ActiveDirectoryResource resource = new ActiveDirectoryResource();
-		resource.setLdapAttributes(LdapConverter.LDAP_ATTRIBUTES_TO_RESOURCE.apply(activeDirectoryConfig));
-		resource.setId(activeDirectoryConfig.getId());
-		resource.setDomain(activeDirectoryConfig.getDomain());
-
+		resource.setId(adIntegration.getId());
+		LdapParameter.DOMAIN.getParameter(adIntegration).ifPresent(resource::setDomain);
+		resource.setLdapAttributes(LdapConverter.LDAP_ATTRIBUTES_TO_RESOURCE.apply(adIntegration));
 		return resource;
 	};
 }

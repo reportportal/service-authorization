@@ -5,31 +5,22 @@ plugins {
     id "org.owasp.dependencycheck" version "5.2.1"
 }
 
-description = 'EPAM Report portal. SSO Authorization Service'
-
 apply from: 'project-properties.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-docker.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-info.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-commons.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-info.gradle'
 apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/release-service.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/v5.1/build-quality.gradle'
 
 repositories {
     mavenCentral()
-    maven { url "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
-    if (!releaseMode) {
-        maven { url 'https://jitpack.io' }
-    }
+    releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
 }
 
 dependencyManagement {
     imports {
-        if (releaseMode) {
-            mavenBom "com.epam.reportportal:commons-bom:5.0.0-RC-5"
-        } else {
-            mavenBom "com.github.reportportal:commons-bom:4b7ed8a"
-        }
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0-RC-5' : 'com.github.reportportal:commons-bom:4b7ed8a')
     }
 }
 
@@ -39,8 +30,8 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:94b0779'
-        compile 'com.github.reportportal:commons-rules:3c46d7c'
+        compile 'com.github.reportportal:commons-dao:f976bf4'
+        compile 'com.github.reportportal:commons-rules:524cac0'
         compile 'com.github.reportportal:commons-model:37a03a1d'
     }
 
@@ -63,19 +54,19 @@ dependencies {
 }
 
 processResources {
+    dependsOn(gitInfo)
     filesMatching('application.properties') {
         expand(project.properties)
     }
 }
 
 bootJar {
-    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
+    project.hasProperty('gcp') ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
 jar.enabled(true)
 
-processResources.dependsOn gitInfo
-bootJar.dependsOn gitInfo
 addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
 bintrayUpload.mustRunAfter build
+afterReleaseBuild.dependsOn bintrayUpload
 

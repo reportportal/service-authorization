@@ -23,14 +23,13 @@ import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
-import com.epam.ta.reportportal.ws.model.integration.auth.*;
-import io.swagger.annotations.Api;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +41,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @RestController
 @RequestMapping("/settings/auth")
-@Api(description = "Main Auth Configuration Endpoint")
 public class AuthConfigurationEndpoint {
 
 	private final CreateAuthIntegrationHandler createAuthIntegrationHandler;
@@ -60,37 +58,22 @@ public class AuthConfigurationEndpoint {
 	}
 
 	/**
-	 * Updates LDAP auth settings
+	 * Creates or updates auth integration settings
 	 *
-	 * @param updateLdapRQ LDAP configuration
+	 * @param request Update request
 	 * @return Successful message or an error
 	 */
 	@Transactional
-	@RequestMapping(value = "/ldap", method = { POST, PUT })
+	@RequestMapping(value = "/{authType}", method = { POST, PUT })
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Updates LDAP auth settings")
-	public LdapResource updateLdapSettings(@RequestBody @Valid UpdateLdapRQ updateLdapRQ, @AuthenticationPrincipal ReportPortalUser user) {
-		return createAuthIntegrationHandler.updateLdapSettings(updateLdapRQ, user);
+	public AbstractAuthResource updateLdapSettings(@RequestBody @Valid UpdateAuthRQ request, @AuthenticationPrincipal ReportPortalUser user,
+			@PathVariable AuthIntegrationType authType) {
+		return createAuthIntegrationHandler.createOrUpdateAuthSettings(request, authType, user);
 	}
 
 	/**
-	 * Updates LDAP auth settings
-	 *
-	 * @param updateActiveDirectoryRQ Active Directory configuration
-	 * @return Successful message or an error
-	 */
-	@Transactional
-	@RequestMapping(value = "/ad", method = { POST, PUT })
-	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates LDAP auth settings")
-	public ActiveDirectoryResource updateADSettings(@RequestBody @Validated UpdateActiveDirectoryRQ updateActiveDirectoryRQ,
-			@AuthenticationPrincipal ReportPortalUser user) {
-
-		return createAuthIntegrationHandler.updateActiveDirectorySettings(updateActiveDirectoryRQ, user);
-	}
-
-	/**
-	 * Updates LDAP auth settings
+	 * Get auth settings by type
 	 *
 	 * @param authType Type of Auth
 	 * @return Successful message or an error
@@ -99,8 +82,7 @@ public class AuthConfigurationEndpoint {
 	@GetMapping(value = "/{authType}")
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Retrieves auth settings")
-	public AbstractLdapResource getSettings(@PathVariable AuthIntegrationType authType) {
-
+	public AbstractAuthResource getSettings(@PathVariable AuthIntegrationType authType) {
 		return getAuthIntegrationHandler.getIntegrationByType(authType);
 	}
 
@@ -115,7 +97,6 @@ public class AuthConfigurationEndpoint {
 	@ResponseStatus(HttpStatus.OK)
 	@ApiOperation(value = "Retrieves auth settings")
 	public OperationCompletionRS deleteSettings(@PathVariable Long integrationId) {
-
 		return deleteAuthIntegrationHandler.deleteAuthIntegrationById(integrationId);
 	}
 

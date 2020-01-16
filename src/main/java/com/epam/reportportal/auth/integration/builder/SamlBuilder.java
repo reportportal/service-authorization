@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.builder;
 
-import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
-import static com.epam.reportportal.auth.integration.converter.LdapConverter.UPDATE_FROM_REQUEST;
+import static com.epam.reportportal.auth.integration.converter.SamlConverter.UPDATE_FROM_REQUEST;
 
 /**
- * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
+ * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
-public final class ActiveDirectoryBuilder extends AuthIntegrationBuilder {
+public class SamlBuilder extends AuthIntegrationBuilder {
 
-	public ActiveDirectoryBuilder() {
+	public SamlBuilder() {
 		super();
-		integration.setName(AuthIntegrationType.ACTIVE_DIRECTORY.getName());
 	}
 
 	@Override

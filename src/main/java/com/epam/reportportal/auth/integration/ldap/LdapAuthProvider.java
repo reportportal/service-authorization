@@ -16,10 +16,12 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.ldap.LdapConfig;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 
 /**
  * Plain LDAP auth provider
@@ -57,19 +57,21 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		return integrationRepository.findLdap(true).isPresent();
+		return integrationRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName()).isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
-		LdapConfig ldap = integrationRepository.findLdap(true).orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
-		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(ldap.getUrl()),
-				ldap.getBaseDn()
+		Integration integration = integrationRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName())
+				.orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
+
+		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(
+				singletonList(LdapParameter.URL.getRequiredParameter(integration)),
+				LdapParameter.BASE_DN.getRequiredParameter(integration)
 		);
-		ofNullable(ldap.getManagerPassword()).filter(StringUtils::isNotEmpty)
-				.ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
-		ofNullable(ldap.getManagerDn()).ifPresent(contextSource::setUserDn);
+		LdapParameter.MANAGER_PASSWORD.getParameter(integration).ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
+		LdapParameter.MANAGER_DN.getParameter(integration).ifPresent(contextSource::setUserDn);
 		contextSource.afterPropertiesSet();
 
 		LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder = new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
@@ -80,16 +82,14 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 		/*
 		 * Basically, groups are not used
 		 */
-		ofNullable(ldap.getGroupSearchFilter()).ifPresent(builder::groupSearchFilter);
-		ofNullable(ldap.getGroupSearchBase()).ifPresent(builder::groupSearchBase);
-		ofNullable(ldap.getUserSearchFilter()).ifPresent(builder::userSearchFilter);
+		LdapParameter.GROUP_SEARCH_FILTER.getParameter(integration).ifPresent(builder::groupSearchFilter);
+		LdapParameter.GROUP_SEARCH_BASE.getParameter(integration).ifPresent(builder::groupSearchBase);
+		LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(builder::userSearchFilter);
 
-		ofNullable(ldap.getPasswordEncoderType()).ifPresent(it -> {
+		LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(it -> {
 			LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>.PasswordCompareConfigurer passwordCompareConfigurer = builder
 					.passwordCompare();
-			if (!isNullOrEmpty(ldap.getPasswordAttribute())) {
-				passwordCompareConfigurer.passwordAttribute(ldap.getPasswordAttribute());
-			}
+			LdapParameter.PASSWORD_ATTRIBUTE.getParameter(integration).ifPresent(passwordCompareConfigurer::passwordAttribute);
 
 			/*
 			 * DIRTY HACK. If LDAP's password has solt, ldaptemplate.compare operation does not work
@@ -111,12 +111,9 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 					return delegate.matches(rawPassword, encodedPassword);
 				}
 			});
-
 		});
 
-		if (!isNullOrEmpty(ldap.getUserDnPattern())) {
-			builder.userDnPatterns(ldap.getUserDnPattern());
-		}
+		LdapParameter.USER_DN_PATTERN.getParameter(integration).ifPresent(builder::userDnPatterns);
 
 		try {
 			return (AuthenticationProvider) Accessible.on(builder)
