@@ -16,15 +16,15 @@
 
 package com.epam.reportportal.auth.integration.handler.impl;
 
-import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.commons.validation.Suppliers;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractLdapResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,7 +47,7 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
 	private final MutableClientRegistrationRepository clientRegistrationRepository;
 
 	@Autowired
-	public GetAuthIntegrationHandlerImpl(@Qualifier(value = "authIntegrationStrategyMapping")
+	public GetAuthIntegrationHandlerImpl(@Qualifier(value = "getAuthIntegrationStrategyMapping")
 			Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping,
 			MutableClientRegistrationRepository clientRegistrationRepository) {
 		this.authIntegrationStrategyMapping = authIntegrationStrategyMapping;
@@ -55,7 +55,7 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
 	}
 
 	@Override
-	public AbstractLdapResource getIntegrationByType(AuthIntegrationType integrationType) {
+	public AbstractAuthResource getIntegrationByType(AuthIntegrationType integrationType) {
 		return ofNullable(authIntegrationStrategyMapping.get(integrationType)).orElseThrow(() -> new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
 				"Unable to find suitable auth integration strategy for type= " + integrationType
 		))

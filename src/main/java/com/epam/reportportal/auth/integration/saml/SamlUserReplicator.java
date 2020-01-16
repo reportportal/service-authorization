@@ -16,22 +16,30 @@
 package com.epam.reportportal.auth.integration.saml;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.dao.ProjectRepository;
-import com.epam.ta.reportportal.dao.SamlProviderDetailsRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
+import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.project.Project;
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
+import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,13 +54,16 @@ import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 @Transactional
 public class SamlUserReplicator extends AbstractUserReplicator {
 
-	private SamlProviderDetailsRepository samlProviderDetailsRepository;
+	private IntegrationTypeRepository integrationTypeRepository;
+	private IntegrationRepository integrationRepository;
 
+	@Autowired
 	public SamlUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
 			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-			SamlProviderDetailsRepository samlProviderDetailsRepository) {
+			IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository) {
 		super(userRepository, projectRepository, personalProjectService, userBinaryDataService);
-		this.samlProviderDetailsRepository = samlProviderDetailsRepository;
+		this.integrationTypeRepository = integrationTypeRepository;
+		this.integrationRepository = integrationRepository;
 	}
 
 	public User replicateUser(ReportPortalSamlAuthentication samlAuthentication) {
@@ -63,11 +74,15 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 			return userOptional.get();
 		}
 
-		List<SamlProviderDetails> providers = samlProviderDetailsRepository.findAll();
+		IntegrationType samlIntegrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.SAML.getName()));
 
-		Optional<SamlProviderDetails> samlProvider = providers.stream()
-				.filter(provider -> provider.getIdpUrl().equalsIgnoreCase(samlAuthentication.getIssuer()))
-				.findFirst();
+		List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
+
+		Optional<Integration> samlProvider = providers.stream().filter(provider -> {
+			Optional<String> idpUrlOptional = SamlParameter.IDP_URL.getParameter(provider);
+			return idpUrlOptional.isPresent() && idpUrlOptional.get().equalsIgnoreCase(samlAuthentication.getIssuer());
+		}).findFirst();
 
 		User user = new User();
 		user.setLogin(userName);
@@ -104,23 +119,31 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 		user.setFullName(String.join(" ", firstName, lastName));
 	}
 
-	private void populateUserDetailsIfSettingsArePresent(User user, SamlProviderDetails providerDetails, List<Attribute> details) {
-		String email = findAttributeValue(details, providerDetails.getEmailAttributeId(), String.class);
+	private void populateUserDetailsIfSettingsArePresent(User user, Integration integration, List<Attribute> details) {
+		String email = findAttributeValue(details, SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null), String.class);
 		checkEmail(email);
 		user.setEmail(email);
 
-		if (StringUtils.isEmpty(providerDetails.getFullNameAttributeId())) {
-			String firstName = findAttributeValue(details, providerDetails.getFirstNameAttributeId(), String.class);
-			String lastName = findAttributeValue(details, providerDetails.getLastNameAttributeId(), String.class);
+		Optional<String> idpFullNameOptional = SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
+
+		if (!idpFullNameOptional.isPresent()) {
+			String firstName = findAttributeValue(details,
+					SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null),
+					String.class
+			);
+			String lastName = findAttributeValue(details,
+					SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null),
+					String.class
+			);
 			user.setFullName(String.join(" ", firstName, lastName));
 		} else {
-			String fullName = findAttributeValue(details, providerDetails.getFullNameAttributeId(), String.class);
+			String fullName = findAttributeValue(details, idpFullNameOptional.get(), String.class);
 			user.setFullName(fullName);
 		}
 	}
 
 	private <T> T findAttributeValue(List<Attribute> attributes, String lookingFor, Class<T> castTo) {
-		if (CollectionUtils.isEmpty(attributes)) {
+		if (Objects.isNull(lookingFor) || CollectionUtils.isEmpty(attributes)) {
 			return null;
 		}
 
