@@ -6,30 +6,29 @@ plugins {
 }
 
 apply from: 'project-properties.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-docker.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-info.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-commons.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/build-quality.gradle'
-apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/master/release-service.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/5.0.0-RC-6/build-docker.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/5.0.0-RC-6/build-info.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/5.0.0-RC-6/build-commons.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/5.0.0-RC-6/build-quality.gradle'
+apply from: 'https://raw.githubusercontent.com/reportportal/gradle-scripts/5.0.0-RC-6/release-service.gradle'
 
 repositories {
     mavenCentral()
-    maven { url "http://dl.bintray.com/epam/reportportal" }
     maven { url 'https://repo.spring.io/libs-milestone' }
-    maven { url "https://jitpack.io" }
+    releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
 }
 
 dependencyManagement {
     imports {
-        mavenBom "com.github.reportportal:commons-bom:14dab6c"
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0-RC-7' : 'com.github.reportportal:commons-bom:4b7ed8a')
     }
 }
 
 dependencies {
     if (releaseMode) {
-        compile 'com.epam.reportportal:commons-dao:5.0.0-RC-5'
-        compile 'com.epam.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.epam.reportportal:commons-model:5.0.0-RC-5'
+        compile 'com.epam.reportportal:commons-dao'
+        compile 'com.epam.reportportal:commons-rules'
+        compile 'com.epam.reportportal:commons-model'
     } else {
         compile 'com.github.reportportal:commons-dao:5.0.0-RC-5'
         compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
@@ -53,22 +52,19 @@ dependencies {
 }
 
 processResources {
+    dependsOn(gitInfo)
     filesMatching('application.properties') {
         expand(project.properties)
     }
 }
 
 bootJar {
-    releaseMode ? archiveClassifier.set('exec') : getArchiveFileName().set("${getArchiveBaseName().get()}.${getArchiveExtension().get()}")
+    project.hasProperty('gcp') ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
 jar.enabled(true)
 
-processResources.dependsOn gitInfo
-bootJar.dependsOn gitInfo
-prepareDockerfile.dependsOn build
-buildDocker.dependsOn prepareDockerfile
-addDockerfileToGit.dependsOn releaseDockerfile
-updateVersion.dependsOn removeDockerfileFromGit
+addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
+bintrayUpload.mustRunAfter build
 afterReleaseBuild.dependsOn bintrayUpload
 
