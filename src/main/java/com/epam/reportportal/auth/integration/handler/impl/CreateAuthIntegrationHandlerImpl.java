@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.integration.handler.impl;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
-import com.epam.reportportal.auth.integration.converter.OAuthRestrictionConverter;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
@@ -32,9 +31,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -62,27 +58,17 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 	public OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId,
 			OAuthRegistrationResource clientRegistrationResource) {
 
+		OAuthRegistration oAuthRegistration = OAuthProviderFactory.fillOAuthRegistration(oauthProviderId, clientRegistrationResource);
+
 		OAuthRegistration updatedOauthRegistration = clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
-				.map(existingRegistration -> updateRegistration(existingRegistration, clientRegistrationResource))
-				.orElseGet(() -> OAuthProviderFactory.fillOAuthRegistration(oauthProviderId,
-						OAuthRegistrationConverters.FROM_RESOURCE.apply(clientRegistrationResource)
-				));
+				.map(existingRegistration -> {
+					clientRegistrationRepository.deleteById(existingRegistration.getId());
+					oAuthRegistration.setId(existingRegistration.getId());
+					return oAuthRegistration;
+				})
+				.orElse(oAuthRegistration);
 
 		return OAuthRegistrationConverters.TO_RESOURCE.apply(clientRegistrationRepository.save(updatedOauthRegistration));
 	}
 
-	private OAuthRegistration updateRegistration(OAuthRegistration existingRegistration,
-			OAuthRegistrationResource clientRegistrationResource) {
-		existingRegistration.setClientId(clientRegistrationResource.getClientId());
-		existingRegistration.setClientSecret(clientRegistrationResource.getClientSecret());
-		existingRegistration.setRestrictions(OAuthRestrictionConverter.FROM_RESOURCE.apply(clientRegistrationResource)
-				.stream()
-				.peek(restriction -> restriction.setRegistration(existingRegistration))
-				.collect(toSet()));
-		ofNullable(clientRegistrationResource.getScopes()).ifPresent(scopes -> existingRegistration.setScopes(scopes.stream()
-				.map(OAuthRegistrationConverters.SCOPE_FROM_RESOURCE)
-				.peek(scope -> scope.setRegistration(existingRegistration))
-				.collect(toSet())));
-		return existingRegistration;
-	}
 }
