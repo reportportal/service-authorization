@@ -6,7 +6,7 @@ plugins {
 }
 
 apply from: 'project-properties.gradle'
-def branch = releaseMode ? '5.0.0' : 'master'
+def branch = releaseMode ? '5.0.0' : 'develop'
 apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-docker.gradle"
 apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-info.gradle"
 apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-commons.gradle"
@@ -31,9 +31,9 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:5.0.0-RC-5'
-        compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.github.reportportal:commons-model:5.0.0-RC-5'
+        compile 'com.github.reportportal:commons-dao:f976bf4'
+        compile 'com.github.reportportal:commons-rules:524cac0'
+        compile 'com.github.reportportal:commons-model:8da23df'
     }
 
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -48,6 +48,8 @@ dependencies {
 
     compile 'org.apache.tika:tika-core'
     compile 'org.apache.tika:tika-parsers'
+
+    compile 'javax.inject:javax.inject:1'
 
     compile('io.springfox:springfox-swagger2')
 }

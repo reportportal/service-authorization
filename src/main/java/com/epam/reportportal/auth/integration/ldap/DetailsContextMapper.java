@@ -17,7 +17,6 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.entity.user.User;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -38,9 +38,9 @@ import static java.util.Optional.ofNullable;
 public class DetailsContextMapper extends LdapUserDetailsMapper {
 
 	private final LdapUserReplicator ldapUserReplicator;
-	private final Supplier<SynchronizationAttributes> attributes;
+	private final Supplier<Map<String, String>> attributes;
 
-	public DetailsContextMapper(LdapUserReplicator ldapUserReplicator, Supplier<SynchronizationAttributes> attributes) {
+	public DetailsContextMapper(LdapUserReplicator ldapUserReplicator, Supplier<Map<String, String>> attributes) {
 		this.ldapUserReplicator = ldapUserReplicator;
 		this.attributes = attributes;
 	}

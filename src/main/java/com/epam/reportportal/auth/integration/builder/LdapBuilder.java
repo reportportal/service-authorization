@@ -15,63 +15,25 @@
  */
 package com.epam.reportportal.auth.integration.builder;
 
-import com.epam.ta.reportportal.entity.ldap.LdapConfig;
-import com.epam.ta.reportportal.entity.ldap.PasswordEncoderType;
-import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
-import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttributesResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
-import org.apache.commons.lang3.StringUtils;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
-import javax.validation.constraints.NotNull;
-
-import static java.util.Optional.ofNullable;
+import static com.epam.reportportal.auth.integration.converter.LdapConverter.UPDATE_FROM_REQUEST;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
-public final class LdapBuilder {
-
-	private final LdapConfig ldapConfig;
+public final class LdapBuilder extends AuthIntegrationBuilder {
 
 	public LdapBuilder() {
-		ldapConfig = new LdapConfig();
+		super();
+		integration.setName(AuthIntegrationType.LDAP.getName());
 	}
 
-	public LdapBuilder(LdapConfig ldapConfig) {
-		this.ldapConfig = ldapConfig;
-	}
-
-	public LdapBuilder addUpdateRq(UpdateLdapRQ updateLdapRQ) {
-		ldapConfig.setEnabled(updateLdapRQ.getLdapAttributes().getEnabled());
-		if (StringUtils.isBlank(updateLdapRQ.getPasswordEncoderType())) {
-			ldapConfig.setPasswordEncoderType(null);
-		} else {
-			PasswordEncoderType.findByType(updateLdapRQ.getPasswordEncoderType()).ifPresent(ldapConfig::setPasswordEncoderType);
-		}
-
-		ofNullable(updateLdapRQ.getManagerPassword()).ifPresent(ldapConfig::setManagerPassword);
-		ldapConfig.setGroupSearchBase(updateLdapRQ.getGroupSearchBase());
-		ldapConfig.setGroupSearchFilter(updateLdapRQ.getGroupSearchFilter());
-		ldapConfig.setManagerDn(updateLdapRQ.getManagerDn());
-		ldapConfig.setPasswordAttribute(updateLdapRQ.getPasswordAttribute());
-		ldapConfig.setUserDnPattern(updateLdapRQ.getUserDnPattern());
-		ldapConfig.setUserSearchFilter(updateLdapRQ.getUserSearchFilter());
-
-		ldapConfig.setUrl(updateLdapRQ.getLdapAttributes().getUrl());
-		ldapConfig.setBaseDn(updateLdapRQ.getLdapAttributes().getBaseDn());
-
-		SynchronizationAttributes attributes = ofNullable(ldapConfig.getSynchronizationAttributes()).orElseGet(SynchronizationAttributes::new);
-
-		SynchronizationAttributesResource attributesResource = updateLdapRQ.getLdapAttributes().getSynchronizationAttributes();
-		attributes.setPhoto(attributesResource.getPhoto());
-		attributes.setEmail(attributesResource.getEmail());
-		attributes.setFullName(attributesResource.getFullName());
-
-		ldapConfig.setSynchronizationAttributes(attributes);
+	@Override
+	public AuthIntegrationBuilder addUpdateRq(UpdateAuthRQ request) {
+		UPDATE_FROM_REQUEST.apply(request, integration);
 		return this;
 	}
 
-	public @NotNull LdapConfig build() {
-		return ldapConfig;
-	}
 }

@@ -16,11 +16,10 @@
 
 package com.epam.reportportal.auth.integration.handler;
 
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateActiveDirectoryRQ;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateLdapRQ;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 
 /**
@@ -28,9 +27,7 @@ import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
  */
 public interface CreateAuthIntegrationHandler {
 
-	LdapResource updateLdapSettings(UpdateLdapRQ updateLdapRQ, ReportPortalUser user);
+	AbstractAuthResource createOrUpdateAuthSettings(UpdateAuthRQ request, AuthIntegrationType type, ReportPortalUser user);
 
-	ActiveDirectoryResource updateActiveDirectorySettings(UpdateActiveDirectoryRQ updateActiveDirectoryRQ, ReportPortalUser user);
-
-	OAuthRegistrationResource updateOauthSettings(String oauthProviderId, OAuthRegistrationResource clientRegistrationResource);
+	OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId, OAuthRegistrationResource clientRegistrationResource);
 }

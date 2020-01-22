@@ -15,8 +15,8 @@
  */
 package com.epam.reportportal.auth.event;
 
-import com.epam.reportportal.auth.integration.converter.SamlDetailsConverter;
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
+import com.epam.reportportal.auth.integration.converter.SamlConverter;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.saml.provider.SamlServerConfiguration;
 import org.springframework.security.saml.provider.service.config.LocalServiceProviderConfiguration;
@@ -40,11 +40,11 @@ public class SamlProvidersReloadEventHandler implements ApplicationListener<Saml
 
 	@Override
 	public void onApplicationEvent(SamlProvidersReloadEvent event) {
-		List<SamlProviderDetails> details = event.getDetails();
+		List<Integration> details = event.getDetails();
 
 		LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
 
 		serviceProvider.getProviders().clear();
-		serviceProvider.getProviders().addAll(SamlDetailsConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(details));
+		serviceProvider.getProviders().addAll(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(details));
 	}
 }

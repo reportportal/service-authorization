@@ -4,7 +4,7 @@ dist: trusty
 script: ./gradlew buildDocker --full-stacktrace
 
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

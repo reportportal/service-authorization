@@ -16,6 +16,8 @@
 
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.event.SamlProvidersReloadEvent;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
@@ -28,6 +30,7 @@ import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import static com.epam.ta.reportportal.commons.Predicates.equalTo;
@@ -42,11 +45,14 @@ public class DeleteAuthIntegrationHandlerImpl implements DeleteAuthIntegrationHa
 
 	private final MutableClientRegistrationRepository clientRegistrationRepository;
 
+	private final ApplicationEventPublisher eventPublisher;
+
 	@Autowired
 	public DeleteAuthIntegrationHandlerImpl(IntegrationRepository integrationRepository,
-			MutableClientRegistrationRepository clientRegistrationRepository) {
+			MutableClientRegistrationRepository clientRegistrationRepository, ApplicationEventPublisher eventPublisher) {
 		this.integrationRepository = integrationRepository;
 		this.clientRegistrationRepository = clientRegistrationRepository;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
@@ -58,6 +64,10 @@ public class DeleteAuthIntegrationHandlerImpl implements DeleteAuthIntegrationHa
 				.verify(ErrorType.BAD_REQUEST_ERROR, "Integration should have an 'AUTH' integration group type.");
 
 		integrationRepository.deleteById(integrationId);
+
+		if (AuthIntegrationType.SAML.getName().equals(integration.getType().getName())) {
+			eventPublisher.publishEvent(new SamlProvidersReloadEvent(integrationRepository.findAllGlobalByType(integration.getType())));
+		}
 
 		return new OperationCompletionRS("Auth integration with id= " + integrationId + " has been successfully removed.");
 
