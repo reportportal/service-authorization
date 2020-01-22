@@ -15,7 +15,7 @@
  */
 package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.entity.saml.SamlProviderDetails;
+import com.epam.ta.reportportal.entity.integration.Integration;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.List;
@@ -29,11 +29,11 @@ public class SamlProvidersReloadEvent extends ApplicationEvent {
 
 	private static final long serialVersionUID = 2314984509233L;
 
-	public SamlProvidersReloadEvent(List<SamlProviderDetails> externalProviders) {
+	public SamlProvidersReloadEvent(List<Integration> externalProviders) {
 		super(externalProviders);
 	}
 
-	List<SamlProviderDetails> getDetails() {
-		return (List<SamlProviderDetails>) super.getSource();
+	List<Integration> getDetails() {
+		return (List<Integration>) super.getSource();
 	}
 }

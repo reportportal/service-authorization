@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:11-jre-slim
 
 ### Set quay.io image cache. Since the build is for development only,
 ### there is no need to keep them forever
@@ -9,7 +9,8 @@ LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
 LABEL version="@version@"
 LABEL description="@description@"
 
-RUN apk --no-cache add ca-certificates openssl
+RUN apt-get update && \
+    apt-get install openssl -y
 
 ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_APP=/app/app.jar

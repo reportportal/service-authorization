@@ -16,11 +16,11 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
+import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.ldap.SynchronizationAttributes;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
@@ -32,10 +32,12 @@ import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -55,18 +57,19 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 	/**
 	 * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for that user
 	 *
-	 * @param name       Username
-	 * @param ctx        LDAP context
-	 * @param attributes Synchronization Attributes
+	 * @param name           Username
+	 * @param ctx            LDAP context
+	 * @param syncAttributes Synchronization Attributes
 	 * @return Internal User representation
 	 */
 	@Transactional
-	public User replicateUser(String name, DirContextOperations ctx, SynchronizationAttributes attributes) {
-		String email = ofNullable(attributes.getEmail()).filter(StringUtils::isNotBlank)
-				.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
-				.filter(StringUtils::isNotBlank)
-				.orElseThrow(() -> new UserSynchronizationException("Email not provided"));
-
+	public User replicateUser(String name, DirContextOperations ctx, Map<String, String> syncAttributes) {
+		String emailAttribute = ofNullable(syncAttributes.get(LdapParameter.EMAIL_ATTRIBUTE.getParameterName())).orElseThrow(() -> new UserSynchronizationException(
+				"Email attribute not provided"));
+		String email = (String) ctx.getObjectAttribute(emailAttribute);
+		if (isNullOrEmpty(email)) {
+			throw new UserSynchronizationException("Email not provided");
+		}
 		email = normalizeId(email);
 		String login = CROP_DOMAIN.apply(name);
 		Optional<User> userOptional = userRepository.findByLogin(login);
@@ -74,15 +77,13 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 			User newUser = new User();
 			newUser.setLogin(login);
 
-			ofNullable(attributes.getFullName()).filter(StringUtils::isNotBlank)
+			ofNullable(syncAttributes.get(LdapParameter.FULL_NAME_ATTRIBUTE.getParameterName())).filter(StringUtils::isNotBlank)
 					.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
 					.ifPresent(newUser::setFullName);
 
-			ofNullable(attributes.getPhoto()).filter(StringUtils::isNotBlank)
-					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)))
-					.filter(photo -> photo instanceof byte[])
-					.map(photo -> (byte[]) photo)
-					.ifPresent(photo -> uploadPhoto(newUser, photo));
+			ofNullable(syncAttributes.get(LdapParameter.PHOTO_ATTRIBUTE.getParameterName())).filter(StringUtils::isNotBlank)
+					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)));
+
 			checkEmail(email);
 			newUser.setEmail(email);
 			newUser.setMetadata(defaultMetaData());
