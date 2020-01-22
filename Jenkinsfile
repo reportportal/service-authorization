@@ -21,7 +21,7 @@ node {
     }
     stage('Deploy container') {
         docker.withServer("$DOCKER_HOST") {
-            sh "docker-compose -p reportportal51 -f $COMPOSE_FILE_RP_5_1 up -d --force-recreate uat"
+            sh "docker-compose -p reportportal -f $COMPOSE_FILE_RP up -d --force-recreate uat"
         }
     }
 }
