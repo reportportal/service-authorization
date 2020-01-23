@@ -92,10 +92,10 @@ podTemplate(
                             sh "gradle --build-cache build --full-stacktrace -P buildNumber=$srvVersion"
                         }
                         stage('Test') {
-                            sh "gradle  --build-cache test --full-stacktrace"
+                            sh "gradle --build-cache test --full-stacktrace"
                         }
                         stage('Security/SAST') {
-                            sh "gradle dependencyCheckAnalyze"
+                            sh "gradle --build-cache dependencyCheckAnalyze"
                         }
                     }
 
