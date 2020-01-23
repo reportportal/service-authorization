@@ -25,7 +25,6 @@ podTemplate(
         ],
         imagePullSecrets: ["regcred"],
         volumes: [
-                hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle'),
                 emptyDirVolume(memory: false, mountPath: '/var/lib/docker'),
                 secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
         ]
