@@ -62,7 +62,7 @@ processResources {
 }
 
 bootJar {
-    project.hasProperty('gcp') ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
+    System.getenv().containsKey("K8S") ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
 jar.enabled(true)
 

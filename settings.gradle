@@ -1,7 +1,11 @@
-rootProject.name = 'service-authorization'
+ext.isCloud = System.getenv().containsKey("K8S")
 
 buildCache {
+    local {
+        enabled = !isCloud
+    }
     remote(HttpBuildCache) {
-        url = 'http://gradle-remote-cache.ci.svc.cluster.local'
+        url = 'http://gradle-remote-cache.ci.svc.cluster.local/cache/'
+        push = isCloud
     }
 }

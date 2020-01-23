@@ -87,15 +87,18 @@ podTemplate(
         dir(appDir) {
             try {
                 container('gradle') {
-                    stage('Build App') {
-                        sh "gradle build --full-stacktrace -P gcp -P buildNumber=$srvVersion"
+                    withEnv(['K8S=true']) {
+                        stage('Build App') {
+                            sh "gradle build --full-stacktrace -P gcp -P buildNumber=$srvVersion"
+                        }
+                        stage('Test') {
+                            sh "gradle test --full-stacktrace"
+                        }
+                        stage('Security/SAST') {
+                            sh "gradle dependencyCheckAnalyze"
+                        }
                     }
-                    stage('Test') {
-                        sh "gradle test --full-stacktrace"
-                    }
-                    stage('Security/SAST') {
-                        sh "gradle dependencyCheckAnalyze"
-                    }
+
                 }
             } finally {
 //                junit 'build/reports/**/*.xml'
