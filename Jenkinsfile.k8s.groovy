@@ -13,7 +13,7 @@ podTemplate(
                         resourceLimitCpu: '500m',
                         resourceRequestMemory: '512Mi',
                         resourceLimitMemory: '1024Mi'),
-                containerTemplate(name: 'gradle', image: 'gradle:5.5.1-jdk8', command: 'cat', ttyEnabled: true,
+                containerTemplate(name: 'gradle', image: 'gradle:5.5.1-jdk11', command: 'cat', ttyEnabled: true,
                         resourceRequestCpu: '800m',
                         resourceLimitCpu: '1500m',
                         resourceRequestMemory: '2048Mi',
