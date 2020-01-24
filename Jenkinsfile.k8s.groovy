@@ -78,7 +78,7 @@ podTemplate(
                 container('gradle') {
                     withEnv(['K8S=true']) {
                         stage('Build App') {
-                            sh "gradle --build-cache build --full-stacktrace -P buildNumber=$srvVersion"
+                            sh "gradle --build-cache build --full-stacktrace -P gcp -P buildNumber=$srvVersion"
                         }
                         stage('Test') {
                             sh "gradle --build-cache test --full-stacktrace"
