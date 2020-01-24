@@ -1,3 +1,5 @@
+rootProject.name = 'service-authorization'
+
 ext.isCloud = System.getenv().containsKey("K8S")
 
 buildCache {

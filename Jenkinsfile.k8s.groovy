@@ -39,18 +39,7 @@ podTemplate(
         def k8sDir = "kubernetes"
         def ciDir = "reportportal-ci"
         def appDir = "app"
-
         def k8sNs = "reportportal"
-
-        stage('Configure') {
-            container('docker') {
-                sh 'echo "Initialize environment"'
-                sh """
-                QUAY_USER=\$(cat "/etc/.dockercreds/username")
-                cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
-                """
-            }
-        }
 
         parallel 'Checkout Infra': {
             stage('Checkout Infra') {
@@ -78,10 +67,11 @@ podTemplate(
         def test = load "${ciDir}/jenkins/scripts/test.groovy"
         def utils = load "${ciDir}/jenkins/scripts/util.groovy"
         def helm = load "${ciDir}/jenkins/scripts/helm.groovy"
+        def docker = load "${ciDir}/jenkins/scripts/docker.groovy"
 
         utils.scheduleRepoPoll()
+        docker.init()
         helm.init()
-
 
         dir(appDir) {
             try {
@@ -114,12 +104,7 @@ podTemplate(
             }
         }
         stage('Deploy to Dev Environment') {
-            container('helm') {
-                dir("$k8sDir/reportportal/v5") {
-                    sh 'helm dependency update'
-                }
-                sh "helm upgrade -n reportportal reportportal ./$k8sDir/reportportal/v5 --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait "
-            }
+            helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], true) // with wait
         }
         stage('Execute DVT Tests') {
             def srvUrl
