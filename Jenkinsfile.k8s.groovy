@@ -25,7 +25,6 @@ podTemplate(
         ],
         imagePullSecrets: ["regcred"],
         volumes: [
-                hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle'),
                 emptyDirVolume(memory: false, mountPath: '/var/lib/docker'),
                 secretVolume(mountPath: '/etc/.dockercreds', secretName: 'docker-creds')
         ]
@@ -40,18 +39,7 @@ podTemplate(
         def k8sDir = "kubernetes"
         def ciDir = "reportportal-ci"
         def appDir = "app"
-
         def k8sNs = "reportportal"
-
-        stage('Configure') {
-            container('docker') {
-                sh 'echo "Initialize environment"'
-                sh """
-                QUAY_USER=\$(cat "/etc/.dockercreds/username")
-                cat "/etc/.dockercreds/password" | docker login -u \$QUAY_USER --password-stdin quay.io
-                """
-            }
-        }
 
         parallel 'Checkout Infra': {
             stage('Checkout Infra') {
@@ -79,23 +67,27 @@ podTemplate(
         def test = load "${ciDir}/jenkins/scripts/test.groovy"
         def utils = load "${ciDir}/jenkins/scripts/util.groovy"
         def helm = load "${ciDir}/jenkins/scripts/helm.groovy"
+        def docker = load "${ciDir}/jenkins/scripts/docker.groovy"
 
         utils.scheduleRepoPoll()
+        docker.init()
         helm.init()
-
 
         dir(appDir) {
             try {
                 container('gradle') {
-                    stage('Build App') {
-                        sh "gradle build --full-stacktrace -P gcp -P buildNumber=$srvVersion"
+                    withEnv(['K8S=true']) {
+                        stage('Build App') {
+                            sh "gradle --build-cache build --full-stacktrace -P gcp -P buildNumber=$srvVersion"
+                        }
+                        stage('Test') {
+                            sh "gradle --build-cache test --full-stacktrace"
+                        }
+                        stage('Security/SAST') {
+                            sh "gradle --build-cache dependencyCheckAnalyze"
+                        }
                     }
-                    stage('Test') {
-                        sh "gradle test --full-stacktrace"
-                    }
-                    stage('Security/SAST') {
-                        sh "gradle dependencyCheckAnalyze"
-                    }
+
                 }
             } finally {
 //                junit 'build/reports/**/*.xml'
@@ -111,27 +103,13 @@ podTemplate(
                 }
             }
         }
-        stage('Deploy to Dev Environment') {
-            container('helm') {
-                dir("$k8sDir/reportportal/v5") {
-                    sh 'helm dependency update'
-                }
-                sh "helm upgrade -n reportportal reportportal ./$k8sDir/reportportal/v5 --reuse-values --set uat.repository=$srvRepo --set uat.tag=$srvVersion --wait "
-            }
+
+        stage('Deploy to Dev') {
+            helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], true) // with wait
         }
-        stage('Execute DVT Tests') {
-            def srvUrl
-            container('kubectl') {
-                def srvName = utils.getServiceName(k8sNs, "reportportal-uat")
-                srvUrl = utils.getServiceEndpoint(k8sNs, srvName)
-            }
-            if (srvUrl == null) {
-                error("Unable to retrieve service URL")
-            }
-            container('httpie') {
-                def snapshotVersion = utils.readProperty("app/gradle.properties", "version")
-                test.checkVersion("http://$srvUrl", "$snapshotVersion-$srvVersion")
-            }
+
+        stage('DVT Test') {
+            helm.testDeployment("reportportal", "reportportal-uat", srvVersion)
         }
     }
 
