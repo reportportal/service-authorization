@@ -103,22 +103,13 @@ podTemplate(
                 }
             }
         }
-        stage('Deploy to Dev Environment') {
+
+        stage('Deploy to Dev') {
             helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], true) // with wait
         }
-        stage('Execute DVT Tests') {
-            def srvUrl
-            container('kubectl') {
-                def srvName = utils.getServiceName(k8sNs, "reportportal-uat")
-                srvUrl = utils.getServiceEndpoint(k8sNs, srvName)
-            }
-            if (srvUrl == null) {
-                error("Unable to retrieve service URL")
-            }
-            container('httpie') {
-                def snapshotVersion = utils.readProperty("app/gradle.properties", "version")
-                test.checkVersion("http://$srvUrl", "$snapshotVersion-$srvVersion")
-            }
+
+        stage('DVT Test') {
+            helm.testDeployment("reportportal", "reportportal-uat", srvVersion)
         }
     }
 
