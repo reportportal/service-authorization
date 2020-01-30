@@ -86,7 +86,6 @@ podTemplate(
                             sh "gradle --build-cache dependencyCheckAnalyze"
                         }
                     }
-
                 }
             } finally {
 //                junit 'build/reports/**/*.xml'
@@ -104,7 +103,7 @@ podTemplate(
         }
 
         stage('Deploy to Dev') {
-            helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], true) // with wait
+            helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], false) // without wait
         }
 
         stage('DVT Test') {
