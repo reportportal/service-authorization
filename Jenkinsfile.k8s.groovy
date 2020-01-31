@@ -107,7 +107,8 @@ podTemplate(
         }
 
         stage('DVT Test') {
-            helm.testDeployment("reportportal", "reportportal-uat", srvVersion)
+            def snapshotVersion = utils.readProperty("app/gradle.properties", "version")
+            helm.testDeployment("reportportal", "reportportal-uat", "$snapshotVersion-$srvVersion")
         }
     }
 
