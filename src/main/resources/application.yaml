@@ -55,7 +55,7 @@ rp:
     user: rpuser
     pass: rppass
   jwt:
-    signing-key: 123
+    signing-key:
     token:
       validity-period: ${rp.session.live}
   session:
