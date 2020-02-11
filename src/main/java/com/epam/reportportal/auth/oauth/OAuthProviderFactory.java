@@ -18,35 +18,30 @@ package com.epam.reportportal.auth.oauth;
 
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
-import java.util.stream.Collectors;
-
-import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.FROM_SPRING;
-import static java.util.Optional.ofNullable;
+import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.FROM_SPRING_MERGE;
 
 public class OAuthProviderFactory {
-	public static OAuthRegistration fillOAuthRegistration(String oauthProviderId, OAuthRegistration registration) {
-		ClientRegistration springRegistration;
+	public static OAuthRegistration fillOAuthRegistration(String oauthProviderId, OAuthRegistrationResource registrationResource) {
+
 		switch (oauthProviderId) {
 			case "github":
-				springRegistration = createGitHubProvider(oauthProviderId, registration);
-				break;
+				ClientRegistration springRegistration = createGitHubProvider(oauthProviderId, registrationResource);
+				return FROM_SPRING_MERGE.apply(registrationResource, springRegistration);
 			default:
-				throw new ReportPortalException("Unsupported OAuth provider.");
+				throw new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, oauthProviderId);
 		}
-		OAuthRegistration filledRegistration = FROM_SPRING.apply(springRegistration);
-		ofNullable(registration.getRestrictions()).ifPresent(restrictions -> filledRegistration.setRestrictions(restrictions.stream()
-				.peek(r -> r.setRegistration(filledRegistration))
-				.collect(Collectors.toSet())));
-		return filledRegistration;
+
 	}
 
-	private static ClientRegistration createGitHubProvider(String oauthProviderId, OAuthRegistration registration) {
+	private static ClientRegistration createGitHubProvider(String oauthProviderId, OAuthRegistrationResource registrationResource) {
 		return CommonOAuth2Provider.GITHUB.getBuilder(oauthProviderId)
-				.clientId(registration.getClientId())
-				.clientSecret(registration.getClientSecret())
+				.clientId(registrationResource.getClientId())
+				.clientSecret(registrationResource.getClientSecret())
 				.scope("read:user", "user:email")
 				.clientName(oauthProviderId)
 				.build();

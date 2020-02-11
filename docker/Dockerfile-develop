@@ -1,6 +1,4 @@
-FROM openjdk:8-jdk-alpine as builder
-
-RUN apk add --no-cache ca-certificates
+FROM adoptopenjdk:11-jdk-hotspot-bionic as builder
 
 WORKDIR /usr/src/reportportal
 
@@ -14,12 +12,11 @@ RUN ./gradlew resolveDependencies --stacktrace
 COPY . ./
 RUN ./gradlew build --stacktrace -P gcp
 
-FROM openjdk:8-alpine
+FROM openjdk:11-jre-slim
 LABEL maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>"
 
 ENV JAVA_OPTS="-Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -Djava.security.egd=file:/dev/./urandom"
 ENV JAVA_APP=/app.jar
-
 
 RUN echo $'#!/bin/sh \n\
 exec java $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh

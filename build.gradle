@@ -6,7 +6,7 @@ plugins {
 }
 
 apply from: 'project-properties.gradle'
-def branch = releaseMode ? '5.0.0' : 'master'
+def branch = releaseMode ? '5.1.0-RC' : 'develop'
 apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-docker.gradle"
 apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-info.gradle"
 apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-commons.gradle"
@@ -21,7 +21,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.0.0' : 'com.github.reportportal:commons-bom:4b7ed8a')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.1.0-RC' : 'com.github.reportportal:commons-bom:7affe20')
     }
 }
 
@@ -31,9 +31,9 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:5.0.0-RC-5'
-        compile 'com.github.reportportal:commons-rules:5.0.0-BETA-6'
-        compile 'com.github.reportportal:commons-model:5.0.0-RC-5'
+        compile 'com.github.reportportal:commons-dao:6671e5f'
+        compile 'com.github.reportportal:commons-rules:0fd2060'
+        compile 'com.github.reportportal:commons-model:3433875'
     }
 
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -49,6 +49,8 @@ dependencies {
     compile 'org.apache.tika:tika-core'
     compile 'org.apache.tika:tika-parsers'
 
+    compile 'javax.inject:javax.inject:1'
+
     compile('io.springfox:springfox-swagger2')
 }
 
@@ -60,7 +62,7 @@ processResources {
 }
 
 bootJar {
-    project.hasProperty('gcp') ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
+    System.getenv().containsKey("K8S") ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
 jar.enabled(true)
 

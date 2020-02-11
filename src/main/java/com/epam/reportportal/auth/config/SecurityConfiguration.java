@@ -21,14 +21,18 @@ import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.oauth.AccessTokenStore;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
+import com.epam.ta.reportportal.dao.ServerSettingsRepository;
+import com.epam.ta.reportportal.entity.ServerSettings;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableList;
@@ -69,15 +73,12 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import javax.servlet.Filter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -173,9 +174,9 @@ public class SecurityConfiguration {
 		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
 			return new DetailsContextMapper(
 					ldapUserReplicator,
-					() -> authConfigRepository.findActiveDirectory(true)
-							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
-							.getSynchronizationAttributes()
+					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
+
 			);
 		}
 
@@ -183,9 +184,10 @@ public class SecurityConfiguration {
 		public DetailsContextMapper ldapDetailsContextMapper() {
 			return new DetailsContextMapper(
 					ldapUserReplicator,
-					() -> authConfigRepository.findLdap(true)
+					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName())
 							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
-							.getSynchronizationAttributes()
+
+					)
 			);
 		}
 
@@ -295,16 +297,21 @@ public class SecurityConfiguration {
 	@EnableAuthorizationServer
 	public static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-		private final AuthenticationManager authenticationManager;
-
-		@Autowired
-		private DatabaseUserDetailsService userDetailsService;
+		private static final String SECRET_KEY = "secret.key";
 
 		@Value("${rp.jwt.signing-key}")
 		private String signingKey;
 
 		@Value("${rp.jwt.token.validity-period}")
 		private Integer tokenValidity;
+
+		private final AuthenticationManager authenticationManager;
+
+		@Autowired
+		private DatabaseUserDetailsService userDetailsService;
+
+		@Autowired
+		private ServerSettingsRepository serverSettingsRepository;
 
 		@Autowired
 		public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
@@ -385,9 +392,17 @@ public class SecurityConfiguration {
 		@Bean
 		public JwtAccessTokenConverter accessTokenConverter(AccessTokenConverter accessTokenConverter) {
 			JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
-			jwtConverter.setSigningKey(signingKey);
+			jwtConverter.setSigningKey(getSecret());
 			jwtConverter.setAccessTokenConverter(accessTokenConverter);
 			return jwtConverter;
+		}
+
+		private String getSecret() {
+			if (!StringUtils.isEmpty(signingKey)) {
+				return signingKey;
+			}
+			Optional<ServerSettings> secretKey = serverSettingsRepository.findByKey(SECRET_KEY);
+			return secretKey.isPresent() ? secretKey.get().getValue() : serverSettingsRepository.generateSecret();
 		}
 
 		@Bean

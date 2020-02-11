@@ -15,7 +15,14 @@
  */
 package com.epam.reportportal.auth.event;
 
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
+import com.epam.ta.reportportal.entity.project.Project;
+import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.epam.ta.reportportal.ws.model.ErrorType;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -33,14 +40,26 @@ import java.time.ZoneOffset;
 @Component
 public class UiAuthenticationSuccessEventHandler {
 
-	@Autowired
 	private UserRepository userRepository;
+
+	private PersonalProjectService personalProjectService;
+
+	@Autowired
+	public UiAuthenticationSuccessEventHandler(UserRepository userRepository, PersonalProjectService personalProjectService) {
+		this.userRepository = userRepository;
+		this.personalProjectService = personalProjectService;
+	}
 
 	@EventListener
 	@Transactional
 	public void onApplicationEvent(UiUserSignedInEvent event) {
-		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
-				event.getAuthentication().getName()
-		);
+		String username = event.getAuthentication().getName();
+		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC), username);
+		if (MapUtils.isEmpty(((ReportPortalUser) event.getAuthentication().getPrincipal()).getProjectDetails())) {
+			User user = userRepository.findByLogin(username)
+					.orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
+			Project project = personalProjectService.generatePersonalProject(user);
+			user.getProjects().addAll(project.getUsers());
+		}
 	}
 }
