@@ -100,7 +100,8 @@ public class OAuthRegistrationConverters {
 		registration.setId(registrationResource.getId());
 		registration.setClientId(registrationResource.getClientId());
 		registration.setClientSecret(registrationResource.getClientSecret());
-		registration.setClientAuthMethod(registrationResource.getClientAuthMethod());
+		registration.setClientAuthMethod(ofNullable(registrationResource.getClientAuthMethod()).orElseGet(() -> clientResource.getClientAuthenticationMethod()
+				.getValue()));
 		registration.setClientName(ofNullable(registrationResource.getClientName()).orElseGet(clientResource::getClientName));
 		registration.setAuthGrantType(ofNullable(registrationResource.getAuthGrantType()).orElseGet(() -> clientResource.getAuthorizationGrantType()
 				.getValue()));
