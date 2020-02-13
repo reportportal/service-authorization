@@ -9,6 +9,8 @@ rp:
     path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
 server:
   port: 9999
+  servlet:
+    context-path: /uat
 logging:
   level:
     org:
