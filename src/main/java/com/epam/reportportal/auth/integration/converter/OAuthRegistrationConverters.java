@@ -97,7 +97,7 @@ public class OAuthRegistrationConverters {
 
 	public static final BiFunction<OAuthRegistrationResource, ClientRegistration, OAuthRegistration> FROM_SPRING_MERGE = (registrationResource, clientResource) -> {
 		OAuthRegistration registration = new OAuthRegistration();
-		registration.setId(registrationResource.getId());
+		registration.setId(clientResource.getRegistrationId());
 		registration.setClientId(registrationResource.getClientId());
 		registration.setClientSecret(registrationResource.getClientSecret());
 		registration.setClientAuthMethod(ofNullable(registrationResource.getClientAuthMethod()).orElseGet(() -> clientResource.getClientAuthenticationMethod()
