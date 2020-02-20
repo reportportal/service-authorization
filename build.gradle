@@ -6,12 +6,11 @@ plugins {
 }
 
 apply from: 'project-properties.gradle'
-def branch = releaseMode ? '5.1.0-RC' : 'develop'
-apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-docker.gradle"
-apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-info.gradle"
-apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-commons.gradle"
-apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/build-quality.gradle"
-apply from: "https://raw.githubusercontent.com/reportportal/gradle-scripts/$branch/release-service.gradle"
+apply from: "$scriptsUrl/build-docker.gradle"
+apply from: "$scriptsUrl/build-info.gradle"
+apply from: "$scriptsUrl/build-commons.gradle"
+apply from: "$scriptsUrl/build-quality.gradle"
+apply from: "$scriptsUrl/release-service.gradle"
 
 repositories {
     mavenCentral()
@@ -31,7 +30,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:6671e5f'
+        compile 'com.github.reportportal:commons-dao:fe35213'
         compile 'com.github.reportportal:commons-rules:0fd2060'
         compile 'com.github.reportportal:commons-model:45427e1c'
     }

@@ -20,12 +20,13 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import org.jasypt.util.text.BasicTextEncryptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -36,10 +37,11 @@ import java.util.Optional;
 @Component
 public class CreateOrUpdateLdapIntegrationStrategy extends CreateOrUpdateIntegrationStrategy {
 
-	private final Encryptor encryptor;
+	private final BasicTextEncryptor encryptor;
 
+	@Autowired
 	public CreateOrUpdateLdapIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
-			IntegrationRepository integrationRepository, Encryptor encryptor) {
+			IntegrationRepository integrationRepository, BasicTextEncryptor encryptor) {
 		super(integrationTypeRepository, integrationRepository);
 		this.encryptor = encryptor;
 		this.type = AuthIntegrationType.LDAP;
