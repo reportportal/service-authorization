@@ -15,8 +15,7 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
-import com.epam.reportportal.auth.util.AuthUtils;
-import com.epam.ta.reportportal.entity.user.User;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -72,16 +71,11 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 			}
 		}
 
-		User user = replicator.replicateUser(gitHubUser, gitHubClient);
-
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getLogin(),
-				"N/A",
-				AuthUtils.AS_AUTHORITIES.apply(user.getRole())
-		);
+		ReportPortalUser user = replicator.replicateUser(gitHubUser, gitHubClient);
+		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user, "N/A", user.getAuthorities());
 
 		Map<String, Serializable> extensionProperties = Collections.singletonMap(UPSTREAM_TOKEN, accessToken);
-		OAuth2Request request = new OAuth2Request(
-				null,
+		OAuth2Request request = new OAuth2Request(null,
 				oAuthRegistrationResource.getClientId(),
 				null,
 				true,
