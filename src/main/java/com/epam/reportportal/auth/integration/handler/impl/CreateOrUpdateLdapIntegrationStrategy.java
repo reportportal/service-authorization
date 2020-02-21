@@ -78,6 +78,7 @@ public class CreateOrUpdateLdapIntegrationStrategy extends CreateOrUpdateIntegra
 	protected void beforeCreate(UpdateAuthRQ request) {
 		ParameterUtils.validateLdapRequest(request);
 		LdapParameter.MANAGER_PASSWORD.getParameter(request)
-				.ifPresent(it -> request.getAuthParams().put(LdapParameter.MANAGER_PASSWORD.getParameterName(), encryptor.encrypt(it)));
+				.ifPresent(it -> request.getIntegrationParams()
+						.put(LdapParameter.MANAGER_PASSWORD.getParameterName(), encryptor.encrypt(it)));
 	}
 }

@@ -42,20 +42,20 @@ public final class ParameterUtils {
 		Arrays.stream(LdapParameter.values())
 				.filter(LdapParameter::isRequired)
 				.map(LdapParameter::getParameterName)
-				.forEach(it -> expect(StringUtils.isNotBlank((String) request.getAuthParams().get(it)), Predicate.isEqual(true)).verify(
-						ErrorType.BAD_REQUEST_ERROR,
-						formattedSupplier("parameter '{}' is required.", it)
-				));
+				.forEach(it -> expect(
+						StringUtils.isNotBlank((String) request.getIntegrationParams().get(it)),
+						Predicate.isEqual(true)
+				).verify(ErrorType.BAD_REQUEST_ERROR, formattedSupplier("parameter '{}' is required.", it)));
 	}
 
 	public static void validateSamlRequest(UpdateAuthRQ request) {
 		Arrays.stream(SamlParameter.values())
 				.filter(SamlParameter::isRequired)
 				.map(SamlParameter::getParameterName)
-				.forEach(it -> expect(StringUtils.isNotBlank((String) request.getAuthParams().get(it)), Predicate.isEqual(true)).verify(
-						ErrorType.BAD_REQUEST_ERROR,
-						formattedSupplier("parameter '{}' is required.", it)
-				));
+				.forEach(it -> expect(
+						StringUtils.isNotBlank((String) request.getIntegrationParams().get(it)),
+						Predicate.isEqual(true)
+				).verify(ErrorType.BAD_REQUEST_ERROR, formattedSupplier("parameter '{}' is required.", it)));
 	}
 
 	public static void setLdapParameters(UpdateAuthRQ request, Integration integration) {
