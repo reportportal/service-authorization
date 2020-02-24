@@ -18,12 +18,11 @@ package com.epam.reportportal.auth.integration.ldap;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
-import com.epam.reportportal.auth.util.Encryptor;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
-import org.apache.commons.lang.StringUtils;
+import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -47,7 +46,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 	private final DetailsContextMapper detailsContextMapper;
 
 	@Autowired
-	private Encryptor encryptor;
+	private BasicTextEncryptor encryptor;
 
 	public LdapAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
 			DetailsContextMapper detailsContextMapper) {
