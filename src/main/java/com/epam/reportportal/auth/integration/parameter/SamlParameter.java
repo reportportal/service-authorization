@@ -99,7 +99,7 @@ public enum SamlParameter {
 	}
 
 	public Optional<String> getParameter(UpdateAuthRQ request) {
-		return ofNullable(request.getAuthParams()).flatMap(this::getParameter);
+		return ofNullable(request.getIntegrationParams()).flatMap(this::getParameter);
 	}
 
 	public String getRequiredParameter(UpdateAuthRQ request) {

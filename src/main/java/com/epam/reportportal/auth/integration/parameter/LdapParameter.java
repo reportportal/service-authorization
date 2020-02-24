@@ -111,7 +111,7 @@ public enum LdapParameter {
 	}
 
 	public Optional<String> getParameter(UpdateAuthRQ request) {
-		return ofNullable(request.getAuthParams()).flatMap(this::getParameter);
+		return ofNullable(request.getIntegrationParams()).flatMap(this::getParameter);
 	}
 
 	public void setParameter(UpdateAuthRQ request, Integration integration) {
