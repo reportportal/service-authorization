@@ -16,7 +16,6 @@
 
 package com.epam.reportportal.auth.config;
 
-import com.drew.lang.Charsets;
 import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
@@ -36,8 +35,6 @@ import com.epam.ta.reportportal.entity.ServerSettings;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableList;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +56,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
@@ -80,8 +78,6 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
 import javax.servlet.Filter;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 @Configuration
 public class SecurityConfiguration {
@@ -282,7 +278,7 @@ public class SecurityConfiguration {
 		}
 
 		public PasswordEncoder passwordEncoder() {
-			return new MD5PasswordEncoder();
+			return new BCryptPasswordEncoder();
 		}
 
 		@Override
@@ -453,24 +449,4 @@ public class SecurityConfiguration {
 		}
 
 	}
-
-	public static class MD5PasswordEncoder implements PasswordEncoder {
-
-		private HashFunction hasher = Hashing.md5();
-
-		@Override
-		public String encode(CharSequence rawPassword) {
-			return hasher.newHasher().putString(rawPassword, Charsets.UTF_8).hash().toString();
-		}
-
-		@Override
-		public boolean matches(CharSequence rawPassword, String encodedPassword) {
-			if (isNullOrEmpty(encodedPassword)) {
-				return false;
-			}
-			return encodedPassword.equals(hasher.newHasher().putString(rawPassword, Charsets.UTF_8).hash().toString());
-		}
-
-	}
-
 }
