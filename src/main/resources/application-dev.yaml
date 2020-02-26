@@ -1,3 +1,11 @@
+server:
+  port: 9999
+  servlet:
+    context-path: /uat
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.springframework.security: debug
 rp:
   db:
     host: localhost
@@ -5,18 +13,9 @@ rp:
     saml:
       base-path: http://localhost:9999
   binarystore:
-    type: minio
+    type: filesystem
     minio:
       endpoint: http://localhost:9000
       accessKey: minio
       secretKey: minio123
     path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
-server:
-  port: 9999
-  servlet:
-    context-path: /uat
-logging:
-  level:
-    org:
-      hibernate:
-        SQL: debug

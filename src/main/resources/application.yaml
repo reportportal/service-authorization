@@ -61,7 +61,6 @@ rp:
   session:
     live: 86400
   auth:
-    server: default
     saml:
       base-path: ${server.servlet.context-path}/${spring.application.name}
       entity-id: report.portal.sp.id
@@ -76,9 +75,6 @@ rp:
       prefix: saml/sp
   binarystore:
     path: /data/storage
-    master:
-      host: seaweed-master
-      port: 9333
     minio:
       endpoint: http://play.min.io
       accessKey: Q3AM3UQ867SPQQA43P2F

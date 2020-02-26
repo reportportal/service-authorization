@@ -17,7 +17,6 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
@@ -46,7 +45,6 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -114,19 +112,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 			return u;
 		}).orElseGet(() -> userRepository.save(createUser(userResource, gitHubClient)));
 
-		return ReportPortalUser.userBuilder()
-				.withUserName(user.getLogin())
-				.withEmail(user.getEmail())
-				.withPassword("")
-				.withAuthorities(AuthUtils.AS_AUTHORITIES.apply(user.getRole()))
-				.withProjectDetails(user.getProjects().stream().collect(Collectors.toMap(it -> it.getProject().getName(),
-						it -> ReportPortalUser.ProjectDetails.builder()
-								.withProjectId(it.getProject().getId())
-								.withProjectRole(it.getProjectRole().name())
-								.withProjectName(it.getProject().getName())
-								.build()
-				)))
-				.build();
+		return ReportPortalUser.userBuilder().fromUser(user);
 	}
 
 	private void updateUser(User user, UserResource userResource, GitHubClient gitHubClient) {
