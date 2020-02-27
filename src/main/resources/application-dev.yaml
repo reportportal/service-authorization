@@ -5,7 +5,7 @@ rp:
     saml:
       base-path: http://localhost:9999
   binarystore:
-    type: minio
+    type: filesystem
     minio:
       endpoint: http://localhost:9000
       accessKey: minio
@@ -17,6 +17,4 @@ server:
     context-path: /uat
 logging:
   level:
-    org:
-      hibernate:
-        SQL: debug
+    org.hibernate.SQL: debug

@@ -76,7 +76,7 @@ public enum LdapParameter {
 	}
 
 	public Optional<String> getParameter(Integration integration) {
-		return ofNullable((String) integration.getParams().getParams().get(parameterName));
+		return ofNullable(integration.getParams()).map(it -> (String) it.getParams().get(parameterName));
 	}
 
 	public void setParameter(Integration integration, String value) {
