@@ -28,6 +28,9 @@ spring:
 logging:
   level:
     org.springframework.security: debug
+    org.hibernate: info
+    org.hibernate.stat: info
+    org.springframework.web.bind: fatal
 
 springfox:
   documentation:
