@@ -79,9 +79,6 @@ podTemplate(
                         stage('Test') {
                             sh "gradle --build-cache test --full-stacktrace"
                         }
-                        stage('Security/SAST') {
-                            sh "gradle --build-cache dependencyCheckAnalyze"
-                        }
                     }
                 }
             } finally {
