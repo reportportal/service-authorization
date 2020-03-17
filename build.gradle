@@ -1,8 +1,8 @@
 plugins {
-    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-    id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'org.springframework.boot' version '2.2.5.RELEASE'
     id 'java'
-    id "org.owasp.dependencycheck" version "5.2.1"
+    id "org.owasp.dependencycheck" version "5.3.1"
 }
 
 apply from: 'project-properties.gradle'
@@ -20,7 +20,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.1.0-RC' : 'com.github.reportportal:commons-bom:7affe20')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:5.1.0-RC' : 'com.github.reportportal:commons-bom:7ea4bf3')
     }
 }
 
@@ -30,9 +30,9 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:9c33028'
-        compile 'com.github.reportportal:commons-rules:0fd2060'
-        compile 'com.github.reportportal:commons-model:61391f1'
+        compile 'com.github.reportportal:commons-dao:d2e25be'
+        compile 'com.github.reportportal:commons-rules:331c402'
+        compile 'com.github.reportportal:commons-model:22ccaac'
     }
 
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -43,10 +43,14 @@ dependencies {
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE'
     compile 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
     compile 'org.springframework.security:spring-security-ldap'
-    compile 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M26'
+    compile 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M31'
+//  Temporary fix of https://nvd.nist.gov/vuln/detail/CVE-2019-12400
+    compile 'org.apache.santuario:xmlsec:2.1.5'
 
     compile 'org.apache.tika:tika-core'
     compile 'org.apache.tika:tika-parsers'
+//  Temporary fix of https://nvd.nist.gov/vuln/detail/CVE-2019-12423
+    compile 'org.apache.cxf:cxf-rt-rs-client:3.3.5'
 
     compile 'javax.inject:javax.inject:1'
 
