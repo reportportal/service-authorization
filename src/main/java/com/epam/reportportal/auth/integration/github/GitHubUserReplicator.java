@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.commons.ContentTypeResolver;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
@@ -59,8 +60,9 @@ import static java.util.Optional.ofNullable;
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
 	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService) {
-		super(userRepository, projectRepository, personalProjectService, userBinaryDataService);
+			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
+			ContentTypeResolver contentTypeResolver) {
+		super(userRepository, projectRepository, personalProjectService, userBinaryDataService, contentTypeResolver);
 	}
 
 	public User synchronizeUser(String accessToken) {
