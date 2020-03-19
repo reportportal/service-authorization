@@ -16,6 +16,7 @@
 package com.epam.reportportal.auth.integration;
 
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.commons.ContentTypeResolver;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -24,16 +25,10 @@ import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.google.common.collect.Maps;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.image.ImageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
@@ -52,13 +47,16 @@ public class AbstractUserReplicator {
 	protected final ProjectRepository projectRepository;
 	protected final PersonalProjectService personalProjectService;
 	protected UserBinaryDataService userBinaryDataService;
+	private final ContentTypeResolver contentTypeResolver;
 
 	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService) {
+			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
+			ContentTypeResolver contentTypeResolver) {
 		this.userRepository = userRepository;
 		this.projectRepository = projectRepository;
 		this.personalProjectService = personalProjectService;
 		this.userBinaryDataService = userBinaryDataService;
+		this.contentTypeResolver = contentTypeResolver;
 	}
 
 	/**
@@ -117,12 +115,7 @@ public class AbstractUserReplicator {
 	}
 
 	private String resolveContentType(byte[] data) {
-		AutoDetectParser parser = new AutoDetectParser(new ImageParser());
-		try {
-			return parser.getDetector().detect(TikaInputStream.get(data), new Metadata()).toString();
-		} catch (IOException e) {
-			return MediaType.OCTET_STREAM.toString();
-		}
+		return contentTypeResolver.detectContentType(data);
 	}
 
 	private Project generatePersonalProjectByUser(User user) {

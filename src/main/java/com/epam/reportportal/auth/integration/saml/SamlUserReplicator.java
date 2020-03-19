@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.integration.saml;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
+import com.epam.reportportal.commons.ContentTypeResolver;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
@@ -32,7 +33,6 @@ import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.epam.ta.reportportal.ws.model.ErrorType;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,8 +60,9 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	@Autowired
 	public SamlUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
 			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-			IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository) {
-		super(userRepository, projectRepository, personalProjectService, userBinaryDataService);
+			IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository,
+			ContentTypeResolver contentTypeResolver) {
+		super(userRepository, projectRepository, personalProjectService, userBinaryDataService, contentTypeResolver);
 		this.integrationTypeRepository = integrationTypeRepository;
 		this.integrationRepository = integrationRepository;
 	}
