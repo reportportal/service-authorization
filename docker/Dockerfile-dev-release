@@ -12,7 +12,7 @@ LABEL description="@description@"
 RUN apt-get update && \
     apt-get install openssl -y
 
-RUN echo $'#!/bin/sh \n\
+RUN echo '#!/bin/sh \n\
 exec java $JAVA_OPTS -jar $JAVA_APP' > /start.sh && chmod +x /start.sh
 
 # Set default JAVA_OPTS and JAVA_APP
