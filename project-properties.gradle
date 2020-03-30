@@ -5,7 +5,7 @@ def commonScriptsUrl = 'https://raw.githubusercontent.com/reportportal/gradle-sc
 
 project.ext {
     releaseMode = project.hasProperty("releaseMode")
-    scriptsUrl = commonScriptsUrl + (releaseMode ? '5.1.0-RC' : 'develop')
+    scriptsUrl = commonScriptsUrl + (releaseMode ? getProperty('scripts.version') : 'develop')
     isDebugMode = System.getProperty("DEBUG", "false") == "true"
 }
 
