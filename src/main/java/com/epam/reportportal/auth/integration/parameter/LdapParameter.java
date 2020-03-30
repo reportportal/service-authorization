@@ -76,7 +76,7 @@ public enum LdapParameter {
 	}
 
 	public Optional<String> getParameter(Integration integration) {
-		return ofNullable((String) integration.getParams().getParams().get(parameterName));
+		return ofNullable(integration.getParams()).map(it -> (String) it.getParams().get(parameterName));
 	}
 
 	public void setParameter(Integration integration, String value) {
@@ -111,7 +111,7 @@ public enum LdapParameter {
 	}
 
 	public Optional<String> getParameter(UpdateAuthRQ request) {
-		return ofNullable(request.getAuthParams()).flatMap(this::getParameter);
+		return ofNullable(request.getIntegrationParams()).flatMap(this::getParameter);
 	}
 
 	public void setParameter(UpdateAuthRQ request, Integration integration) {
