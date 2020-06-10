@@ -42,7 +42,7 @@ public class OAuthProviderFactory {
 		return CommonOAuth2Provider.GITHUB.getBuilder(oauthProviderId)
 				.clientId(registrationResource.getClientId())
 				.clientSecret(registrationResource.getClientSecret())
-				.scope("read:user", "user:email")
+				.scope("read:user", "user:email", "read:org")
 				.clientName(oauthProviderId)
 				.build();
 	}
