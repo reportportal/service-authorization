@@ -61,7 +61,7 @@ public class GitHubTokenServices implements ResourceServerTokenServices {
 		List<String> allowedOrganizations = ofNullable(oAuthRegistrationResource.getRestrictions()).flatMap(restrictions -> ofNullable(
 				restrictions.get("organizations"))).map(it -> Splitter.on(",").omitEmptyStrings().splitToList(it)).orElse(emptyList());
 		if (!allowedOrganizations.isEmpty()) {
-			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser)
+			boolean assignedToOrganization = gitHubClient.getUserOrganizations(gitHubUser.getLogin())
 					.stream()
 					.map(OrganizationResource::getLogin)
 					.anyMatch(allowedOrganizations::contains);
