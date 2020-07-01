@@ -1,7 +1,7 @@
 rp:
   amqp:
-    addresses: amqp://rabbitmq:rabbitmq@localhost:5672
+    addresses:
   db:
-    url: jdbc:postgresql://localhost:5432/reportportal?user=rpuser&password=rppass
+    url:
 server:
   port: 9999
