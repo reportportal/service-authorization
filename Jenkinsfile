@@ -25,6 +25,18 @@ node {
     stage('Deploy container') {
         docker.withServer("$DOCKER_HOST") {
             sh "docker-compose -p reportportal -f $COMPOSE_FILE_RP up -d --force-recreate uat"
+
+            stage('Push to ECR') {
+                withEnv(["AWS_URI=${AWS_URI}", "AWS_REGION=${AWS_REGION}"]) {
+                    sh 'docker tag reportportal-dev/service-authorization ${AWS_URI}/service-authorization'
+                    def image = env.AWS_URI + '/service-authorization'
+                    def url = 'https://' + env.AWS_URI
+                    def credentials = 'ecr:' + env.AWS_REGION + ':aws_credentials'
+                    docker.withRegistry(url, credentials) {
+                        docker.image(image).push('SNAPSHOT-${BUILD_NUMBER}')
+                    }
+                }
+            }
         }
     }
 }

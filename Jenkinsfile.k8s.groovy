@@ -1,4 +1,5 @@
 #!groovy
+@Library('commons') _
 
 def label = "worker-${UUID.randomUUID().toString()}"
 println("label")
@@ -18,7 +19,7 @@ podTemplate(
                         resourceLimitCpu: '1500m',
                         resourceRequestMemory: '2048Mi',
                         resourceLimitMemory: '3072Mi'),
-                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:v3.0.2', command: 'cat', ttyEnabled: true),
+                containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:v3.1.1', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
                 containerTemplate(name: 'httpie', image: 'blacktop/httpie', command: 'cat', ttyEnabled: true)
 
@@ -64,12 +65,8 @@ podTemplate(
             }
         }
 
-        def utils = load "${ciDir}/jenkins/scripts/util.groovy"
-        def helm = load "${ciDir}/jenkins/scripts/helm.groovy"
-        def docker = load "${ciDir}/jenkins/scripts/docker.groovy"
-
-        utils.scheduleRepoPoll()
-        docker.init()
+        util.scheduleRepoPoll()
+        dockerUtil.init()
         helm.init()
 
         dir(appDir) {
@@ -81,9 +78,6 @@ podTemplate(
                         }
                         stage('Test') {
                             sh "gradle --build-cache test --full-stacktrace"
-                        }
-                        stage('Security/SAST') {
-                            sh "gradle --build-cache dependencyCheckAnalyze"
                         }
                     }
                 }
@@ -100,6 +94,8 @@ podTemplate(
 
                 }
             }
+
+            sast('reportportal_services_sast', 'rp/carrier/config.yaml', 'service-authorization', false)
         }
 
         stage('Deploy to Dev') {
@@ -107,7 +103,7 @@ podTemplate(
         }
 
         stage('DVT Test') {
-            def snapshotVersion = utils.readProperty("app/gradle.properties", "version")
+            def snapshotVersion = util.readProperty("app/gradle.properties", "version")
             helm.testDeployment("reportportal", "reportportal-uat", "$snapshotVersion-$srvVersion")
         }
     }

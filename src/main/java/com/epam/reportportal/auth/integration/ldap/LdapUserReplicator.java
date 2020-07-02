@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.integration.ldap;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.commons.ContentTypeResolver;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -50,8 +51,9 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
 	@Autowired
 	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService) {
-		super(userRepository, projectRepository, personalProjectService, userBinaryDataService);
+			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
+			ContentTypeResolver contentTypeResolver) {
+		super(userRepository, projectRepository, personalProjectService, userBinaryDataService, contentTypeResolver);
 	}
 
 	/**
@@ -73,7 +75,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 		email = normalizeId(email);
 		String login = CROP_DOMAIN.apply(name);
 		Optional<User> userOptional = userRepository.findByLogin(login);
-		if (!userOptional.isPresent()) {
+		if (userOptional.isEmpty()) {
 			User newUser = new User();
 			newUser.setLogin(login);
 

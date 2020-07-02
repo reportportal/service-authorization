@@ -17,7 +17,9 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.commons.ContentTypeResolver;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
+import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.ProjectRepository;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -58,8 +60,9 @@ import static java.util.Optional.ofNullable;
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
 	public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService) {
-		super(userRepository, projectRepository, personalProjectService, userBinaryDataService);
+			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
+			ContentTypeResolver contentTypeResolver) {
+		super(userRepository, projectRepository, personalProjectService, userBinaryDataService, contentTypeResolver);
 	}
 
 	public User synchronizeUser(String accessToken) {
@@ -94,27 +97,14 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 	/**
 	 * Replicates GitHub user to internal database (if does NOT exist). Updates if exist. Creates personal project for that user
 	 *
-	 * @param accessToken Access token to access GitHub
-	 * @return Internal User representation
-	 */
-	@Transactional
-	public User replicateUser(String accessToken) {
-		GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
-		UserResource userInfo = gitHubClient.getUser();
-		return replicateUser(userInfo, gitHubClient);
-	}
-
-	/**
-	 * Replicates GitHub user to internal database (if does NOT exist). Updates if exist. Creates personal project for that user
-	 *
 	 * @param userResource GitHub user to be replicated
 	 * @param gitHubClient Configured github client
 	 * @return Internal User representation
 	 */
 	@Transactional
-	public User replicateUser(UserResource userResource, GitHubClient gitHubClient) {
+	public ReportPortalUser replicateUser(UserResource userResource, GitHubClient gitHubClient) {
 		String login = normalizeId(userResource.getLogin());
-		return userRepository.findByLogin(login).map(u -> {
+		User user = userRepository.findByLogin(login).map(u -> {
 			if (UserType.GITHUB.equals(u.getUserType())) {
 				updateUser(u, userResource, gitHubClient);
 			} else {
@@ -123,6 +113,8 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 			}
 			return u;
 		}).orElseGet(() -> userRepository.save(createUser(userResource, gitHubClient)));
+
+		return ReportPortalUser.userBuilder().fromUser(user);
 	}
 
 	private void updateUser(User user, UserResource userResource, GitHubClient gitHubClient) {
