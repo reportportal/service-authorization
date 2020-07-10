@@ -58,8 +58,7 @@ public class UiAuthenticationSuccessEventHandler {
 		String username = event.getAuthentication().getName();
 		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC), username);
 
-		Authentication authentication = event.getAuthentication();
-		if (MapUtils.isEmpty(acquireUser(authentication).getProjectDetails())) {
+		if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
 			User user = userRepository.findByLogin(username)
 					.orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
 			Project project = personalProjectService.generatePersonalProject(user);
