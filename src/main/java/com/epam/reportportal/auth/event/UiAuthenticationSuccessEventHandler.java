@@ -15,6 +15,7 @@
  */
 package com.epam.reportportal.auth.event;
 
+import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
@@ -25,6 +26,7 @@ import com.epam.ta.reportportal.ws.model.ErrorType;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,11 +57,22 @@ public class UiAuthenticationSuccessEventHandler {
 	public void onApplicationEvent(UiUserSignedInEvent event) {
 		String username = event.getAuthentication().getName();
 		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC), username);
-		if (MapUtils.isEmpty(((ReportPortalUser) event.getAuthentication().getPrincipal()).getProjectDetails())) {
+
+		if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
 			User user = userRepository.findByLogin(username)
 					.orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
 			Project project = personalProjectService.generatePersonalProject(user);
 			user.getProjects().addAll(project.getUsers());
+		}
+	}
+
+	private ReportPortalUser acquireUser(Authentication authentication) {
+		if (authentication instanceof ReportPortalSamlAuthentication) {
+			ReportPortalSamlAuthentication rpAuthentication = (ReportPortalSamlAuthentication) authentication;
+			return userRepository.findUserDetails(rpAuthentication.getPrincipal())
+					.orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuthentication.getPrincipal()));
+		} else {
+			return (ReportPortalUser) authentication.getPrincipal();
 		}
 	}
 }
