@@ -6,6 +6,7 @@
 ### Bugfixes
 
 EPMRPP-40474 - Incorrect message appeared after clicking 'Login with GitHub' if user has been registered as internal user with the same username as he has in GitHub
+EPMRPP-52059 - Github login does not work for users with private membership in the organization.
 
 
 ## 3.2.1

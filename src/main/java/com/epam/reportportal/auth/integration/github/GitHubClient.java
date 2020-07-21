@@ -79,7 +79,7 @@ public class GitHubClient {
     }
 
     public List<OrganizationResource> getUserOrganizations(String user) {
-        return getForObject(GITHUB_BASE_URL + "/users/{user}/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
+        return getForObject(GITHUB_BASE_URL + "/user/orgs", new ParameterizedTypeReference<List<OrganizationResource>>() {
         }, user);
     }
 
