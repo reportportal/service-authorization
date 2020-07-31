@@ -29,7 +29,6 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -37,6 +36,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 /**
  * Base SSO controller
@@ -54,7 +56,7 @@ public class SsoEndpoint {
 		this.tokenServicesFacade = tokenServicesFacade;
 	}
 
-	@RequestMapping({ "/sso/me", "/sso/user" })
+	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = { GET, POST })
 	public Map<String, Object> user(Authentication user) {
 
 		ImmutableMap.Builder<String, Object> details = ImmutableMap.<String, Object>builder().put("user", user.getName())
@@ -67,7 +69,7 @@ public class SsoEndpoint {
 		return details.build();
 	}
 
-	@RequestMapping(value = { "/sso/me/apitoken" }, method = RequestMethod.GET)
+	@RequestMapping(value = { "/sso/me/apitoken" }, method = GET)
 	@ApiOperation(value = "Get api token")
 	public OAuth2AccessToken getApiToken(Principal user) {
 		Optional<OAuth2AccessToken> tokens = tokenServicesFacade.getTokens(user.getName(), ReportPortalClient.api).findAny();
@@ -75,11 +77,15 @@ public class SsoEndpoint {
 		return tokens.get();
 	}
 
-	@RequestMapping(value = { "/sso/me/apitoken" }, method = RequestMethod.POST)
+	@RequestMapping(value = { "/sso/me/apitoken" }, method = POST)
 	@ApiOperation(value = "Create api token")
 	public OAuth2AccessToken createApiToken(OAuth2Authentication user) {
 		tokenServicesFacade.revokeUserTokens(user.getName(), ReportPortalClient.api);
-		return tokenServicesFacade.createToken(ReportPortalClient.api, user.getName(), user.getUserAuthentication(), Collections.emptyMap());
+		return tokenServicesFacade.createToken(ReportPortalClient.api,
+				user.getName(),
+				user.getUserAuthentication(),
+				Collections.emptyMap()
+		);
 	}
 
 }
