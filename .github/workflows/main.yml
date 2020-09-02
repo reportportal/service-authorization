@@ -1,8 +1,7 @@
 name: build-and-push
 
 on:
-  push:
-    branches: [ develop ]
+  release:
   workflow_dispatch:
 
 jobs:
