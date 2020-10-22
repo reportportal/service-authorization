@@ -72,7 +72,7 @@ public class CreateOrUpdateSamlIntegrationStrategy extends CreateOrUpdateIntegra
 	@Override
 	protected void beforeCreate(UpdateAuthRQ request) {
 		ParameterUtils.validateSamlRequest(request);
-		if (FULL_NAME_ATTRIBUTE.getParameter(request).isEmpty() || (LAST_NAME_ATTRIBUTE.getParameter(request).isEmpty()
+		if (FULL_NAME_ATTRIBUTE.getParameter(request).isEmpty() && (LAST_NAME_ATTRIBUTE.getParameter(request).isEmpty()
 				&& FIRST_NAME_ATTRIBUTE.getParameter(request).isEmpty())) {
 			throw new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
 					"Fields Full name or combination of Last name and First name are empty"
