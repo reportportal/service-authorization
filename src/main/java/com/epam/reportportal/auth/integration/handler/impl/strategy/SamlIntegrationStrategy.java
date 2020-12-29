@@ -1,16 +1,32 @@
-package com.epam.reportportal.auth.integration.handler.impl;
+/*
+ * Copyright 2019 EPAM Systems
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
 import com.epam.reportportal.auth.event.SamlProvidersReloadEvent;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
+import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,6 +38,7 @@ import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata
 import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,44 +50,23 @@ import static java.util.Optional.ofNullable;
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
 @Component
-public class CreateOrUpdateSamlIntegrationStrategy extends CreateOrUpdateIntegrationStrategy {
+public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
 	private final SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning;
 
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Autowired
-	public CreateOrUpdateSamlIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
+	public SamlIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
 			IntegrationRepository integrationRepository, SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning,
 			ApplicationEventPublisher eventPublisher) {
-		super(integrationTypeRepository, integrationRepository);
+		super(integrationTypeRepository, integrationRepository, AuthIntegrationType.SAML);
 		this.serviceProviderProvisioning = serviceProviderProvisioning;
 		this.eventPublisher = eventPublisher;
-		this.type = AuthIntegrationType.SAML;
 	}
 
 	@Override
-	protected void preProcess(Integration integration) {
-		populateProviderDetails(integration);
-	}
-
-	@Override
-	protected Optional<Integration> find(UpdateAuthRQ request, IntegrationType type) {
-		return integrationRepository.findByNameAndTypeId(IDP_NAME.getRequiredParameter(request), type.getId());
-	}
-
-	@Override
-	protected void postProcess(Integration integration) {
-		eventPublisher.publishEvent(new SamlProvidersReloadEvent(integrationRepository.findAllGlobalByType(integration.getType())));
-	}
-
-	@Override
-	protected void beforeUpdate(UpdateAuthRQ request, Integration integration) {
-		beforeCreate(request);
-	}
-
-	@Override
-	protected void beforeCreate(UpdateAuthRQ request) {
+	protected void validateRequest(UpdateAuthRQ request) {
 		ParameterUtils.validateSamlRequest(request);
 		if (FULL_NAME_ATTRIBUTE.getParameter(request).isEmpty() && (LAST_NAME_ATTRIBUTE.getParameter(request).isEmpty()
 				&& FIRST_NAME_ATTRIBUTE.getParameter(request).isEmpty())) {
@@ -78,6 +74,22 @@ public class CreateOrUpdateSamlIntegrationStrategy extends CreateOrUpdateIntegra
 					"Fields Full name or combination of Last name and First name are empty"
 			);
 		}
+	}
+
+	@Override
+	protected void validateDuplicate(Integration integration, UpdateAuthRQ request) {
+		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(IDP_NAME.getRequiredParameter(request), integration.getType().getId())
+				.ifPresent(it -> BusinessRule.expect(it.getId(), id -> id.equals(integration.getId()))
+						.verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName()));
+	}
+
+	@Override
+	protected AbstractAuthResource saveIntegration(Integration integration) {
+		populateProviderDetails(integration);
+		final AbstractAuthResource resource = super.saveIntegration(integration);
+		final List<Integration> samlIntegrations = getIntegrationRepository().findAllGlobalByType(integration.getType());
+		eventPublisher.publishEvent(new SamlProvidersReloadEvent(samlIntegrations));
+		return resource;
 	}
 
 	private void populateProviderDetails(Integration samlIntegration) {

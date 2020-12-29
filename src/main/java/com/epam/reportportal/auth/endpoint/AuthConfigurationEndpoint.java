@@ -36,9 +36,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.beans.PropertyEditorSupport;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import static org.springframework.web.bind.annotation.RequestMethod.PUT;
-
 @RestController
 @RequestMapping("/settings/auth")
 public class AuthConfigurationEndpoint {
@@ -64,12 +61,27 @@ public class AuthConfigurationEndpoint {
 	 * @return Successful message or an error
 	 */
 	@Transactional
-	@RequestMapping(value = "/{authType}", method = { POST, PUT })
+	@PostMapping(value = "/{authType}")
 	@ResponseStatus(HttpStatus.OK)
-	@ApiOperation(value = "Updates LDAP auth settings")
-	public AbstractAuthResource updateLdapSettings(@RequestBody @Valid UpdateAuthRQ request, @AuthenticationPrincipal ReportPortalUser user,
+	@ApiOperation(value = "Create new auth integration")
+	public AbstractAuthResource createAuthIntegration(@RequestBody @Valid UpdateAuthRQ request, @AuthenticationPrincipal ReportPortalUser user,
 			@PathVariable AuthIntegrationType authType) {
-		return createAuthIntegrationHandler.createOrUpdateAuthSettings(request, authType, user);
+		return createAuthIntegrationHandler.createAuthIntegration(authType, request, user);
+	}
+
+	/**
+	 * Creates or updates auth integration settings
+	 *
+	 * @param request Update request
+	 * @return Successful message or an error
+	 */
+	@Transactional
+	@PutMapping(value = "/{authType}/{integrationId}")
+	@ResponseStatus(HttpStatus.OK)
+	@ApiOperation(value = "Update auth integration")
+	public AbstractAuthResource updateAuthIntegration(@RequestBody @Valid UpdateAuthRQ request, @AuthenticationPrincipal ReportPortalUser user,
+			@PathVariable AuthIntegrationType authType, @PathVariable Long integrationId) {
+		return createAuthIntegrationHandler.updateAuthIntegration(authType, integrationId, request, user);
 	}
 
 	/**

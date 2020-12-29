@@ -16,9 +16,14 @@
 package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
-import com.epam.reportportal.auth.integration.handler.impl.*;
+import com.epam.reportportal.auth.integration.handler.impl.GetActiveDirectoryStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.GetLdapStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.GetSamlIntegrationsStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.strategy.ActiveDirectoryIntegrationStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.strategy.AuthIntegrationStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.strategy.LdapIntegrationStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.strategy.SamlIntegrationStrategy;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,13 +58,13 @@ public class AuthIntegrationConfig {
 				.build();
 	}
 
-	@Bean("createOrUpdateIntegrationStrategyMapping")
-	public Map<AuthIntegrationType, CreateOrUpdateIntegrationStrategy> createOrUpdateIntegrationStrategyMapping() {
-		return new ImmutableMap.Builder<AuthIntegrationType, CreateOrUpdateIntegrationStrategy>().put(LDAP,
-				applicationContext.getBean(CreateOrUpdateLdapIntegrationStrategy.class)
+	@Bean("authIntegrationStrategyMapping")
+	public Map<AuthIntegrationType, AuthIntegrationStrategy> authIntegrationStrategyMapping() {
+		return new ImmutableMap.Builder<AuthIntegrationType, AuthIntegrationStrategy>().put(LDAP,
+				applicationContext.getBean(LdapIntegrationStrategy.class)
 		)
-				.put(ACTIVE_DIRECTORY, applicationContext.getBean(CreateOrUpdateActiveDirectoryIntegrationStrategy.class))
-				.put(SAML, applicationContext.getBean(CreateOrUpdateSamlIntegrationStrategy.class))
+				.put(ACTIVE_DIRECTORY, applicationContext.getBean(ActiveDirectoryIntegrationStrategy.class))
+				.put(SAML, applicationContext.getBean(SamlIntegrationStrategy.class))
 				.build();
 	}
 }

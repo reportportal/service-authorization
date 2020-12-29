@@ -163,7 +163,7 @@ public class SecurityConfiguration {
 		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
 			return new DetailsContextMapper(
 					ldapUserReplicator,
-					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).stream().findFirst()
 							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
 
 			);
@@ -173,7 +173,7 @@ public class SecurityConfiguration {
 		public DetailsContextMapper ldapDetailsContextMapper() {
 			return new DetailsContextMapper(
 					ldapUserReplicator,
-					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName())
+					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream().findFirst()
 							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
 
 					)

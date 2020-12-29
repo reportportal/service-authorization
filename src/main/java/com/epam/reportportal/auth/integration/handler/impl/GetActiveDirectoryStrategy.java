@@ -52,7 +52,8 @@ public class GetActiveDirectoryStrategy implements GetAuthIntegrationStrategy {
 						AuthIntegrationType.ACTIVE_DIRECTORY.getName()
 				));
 		//or else empty integration with default 'enabled = false' flag
-		ActiveDirectoryResource adResource = ActiveDirectoryConverter.TO_RESOURCE.apply(integrationRepository.findByNameAndTypeId(AuthIntegrationType.ACTIVE_DIRECTORY.getName(),
+		ActiveDirectoryResource adResource = ActiveDirectoryConverter.TO_RESOURCE.apply(integrationRepository.findByNameAndTypeIdAndProjectIdIsNull(
+				AuthIntegrationType.ACTIVE_DIRECTORY.getName(),
 				adIntegrationType.getId()
 		).orElseGet(Integration::new));
 		adResource.setType(adIntegrationType.getName());
