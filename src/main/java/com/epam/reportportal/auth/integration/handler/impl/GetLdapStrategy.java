@@ -52,7 +52,7 @@ public class GetLdapStrategy implements GetAuthIntegrationStrategy {
 				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.LDAP.getName()));
 
 		//or else empty integration with default 'enabled = false' flag
-		LdapResource ldapResource = LdapConverter.TO_RESOURCE.apply(integrationRepository.findByNameAndTypeId(AuthIntegrationType.LDAP.getName(),
+		LdapResource ldapResource = LdapConverter.TO_RESOURCE.apply(integrationRepository.findByNameAndTypeIdAndProjectIdIsNull(AuthIntegrationType.LDAP.getName(),
 				ldapIntegrationType.getId()
 		).orElseGet(Integration::new));
 		ldapResource.setType(ldapIntegrationType.getName());
