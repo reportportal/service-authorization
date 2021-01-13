@@ -1,0 +1,19 @@
+name: build-and-push
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v1.1.0
+      with:
+        repository: jlundy2/reportportal-service-authorization
+        username: ${{ secrets.DOCKERHUB_USERNAME}}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        tag_with_ref: true
