@@ -56,19 +56,19 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		return integrationRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName()).isPresent();
+		return integrationRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream().findFirst().isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
 
-		Integration integration = integrationRepository.findExclusiveAuth(AuthIntegrationType.LDAP.getName())
+		Integration integration = integrationRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName())
+				.stream()
+				.findFirst()
 				.orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
-		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(
-				singletonList(LdapParameter.URL.getRequiredParameter(integration)),
-				LdapParameter.BASE_DN.getRequiredParameter(integration)
-		);
+		DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(singletonList(LdapParameter.URL.getRequiredParameter(
+				integration)), LdapParameter.BASE_DN.getRequiredParameter(integration));
 		LdapParameter.MANAGER_PASSWORD.getParameter(integration).ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
 		LdapParameter.MANAGER_DN.getParameter(integration).ifPresent(contextSource::setUserDn);
 		contextSource.afterPropertiesSet();

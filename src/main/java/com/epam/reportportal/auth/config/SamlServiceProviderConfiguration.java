@@ -18,12 +18,14 @@ package com.epam.reportportal.auth.config;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.reportportal.auth.util.CertificationUtil;
+import com.epam.reportportal.auth.util.RequestUtil;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.google.common.collect.Lists;
 import org.opensaml.saml.saml2.core.NameID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +37,8 @@ import org.springframework.security.saml.provider.service.config.ExternalIdentit
 import org.springframework.security.saml.provider.service.config.LocalServiceProviderConfiguration;
 import org.springframework.util.CollectionUtils;
 
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -45,6 +49,7 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.util.Base64.getEncoder;
+import static java.util.Optional.ofNullable;
 
 /**
  * SAML service provider configuration based on application settings
@@ -87,6 +92,9 @@ public class SamlServiceProviderConfiguration {
 	@Value("${rp.auth.saml.prefix}")
 	private String prefix;
 
+	@Autowired
+	private Provider<HttpServletRequest> requestProvider;
+
 	private IntegrationTypeRepository integrationTypeRepository;
 
 	private IntegrationRepository integrationRepository;
@@ -108,7 +116,7 @@ public class SamlServiceProviderConfiguration {
 	}
 
 	private LocalServiceProviderConfiguration serviceProviderConfiguration() {
-		LocalServiceProviderConfiguration serviceProviderConfiguration = new LocalServiceProviderConfiguration();
+		LocalServiceProviderConfiguration serviceProviderConfiguration = new LocalServiceProviderConfigurationDelegate();
 		serviceProviderConfiguration.setSignRequests(signedRequests)
 				.setWantAssertionsSigned(signedRequests)
 				.setEntityId(entityId)
@@ -161,6 +169,14 @@ public class SamlServiceProviderConfiguration {
 			}
 		}
 		return new SimpleKey();
+	}
+
+	public class LocalServiceProviderConfigurationDelegate extends LocalServiceProviderConfiguration {
+
+		@Override
+		public String getBasePath() {
+			return ofNullable(requestProvider.get()).map(RequestUtil::getRequestBasePath).orElse(basePath);
+		}
 	}
 
 }

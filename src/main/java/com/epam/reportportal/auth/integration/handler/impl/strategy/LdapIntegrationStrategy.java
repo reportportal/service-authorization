@@ -14,68 +14,49 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.integration.handler.impl;
+package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
+import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
 @Component
-public class CreateOrUpdateLdapIntegrationStrategy extends CreateOrUpdateIntegrationStrategy {
+public class LdapIntegrationStrategy extends AuthIntegrationStrategy {
 
 	private final BasicTextEncryptor encryptor;
 
 	@Autowired
-	public CreateOrUpdateLdapIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
-			IntegrationRepository integrationRepository, BasicTextEncryptor encryptor) {
-		super(integrationTypeRepository, integrationRepository);
+	public LdapIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository,
+			BasicTextEncryptor encryptor) {
+		super(integrationTypeRepository, integrationRepository, AuthIntegrationType.LDAP);
 		this.encryptor = encryptor;
-		this.type = AuthIntegrationType.LDAP;
 	}
 
 	@Override
-	protected void preProcess(Integration integration) {
-
-	}
-
-	@Override
-	protected Optional<Integration> find(UpdateAuthRQ request, IntegrationType type) {
-		return integrationRepository.findExclusiveAuth(this.type.getName());
-	}
-
-	@Override
-	protected void postProcess(Integration integration) {
-
-	}
-
-	@Override
-	protected void beforeUpdate(UpdateAuthRQ request, Integration integration) {
-		ParameterUtils.validateLdapRequest(request);
-		LdapParameter.MANAGER_PASSWORD.getParameter(request)
-				.ifPresent(fromRq -> request.getIntegrationParams()
-						.put(LdapParameter.MANAGER_PASSWORD.getParameterName(), encryptor.encrypt(fromRq)));
-
-	}
-
-	@Override
-	protected void beforeCreate(UpdateAuthRQ request) {
+	protected void validateRequest(UpdateAuthRQ request) {
 		ParameterUtils.validateLdapRequest(request);
 		LdapParameter.MANAGER_PASSWORD.getParameter(request)
 				.ifPresent(it -> request.getIntegrationParams()
 						.put(LdapParameter.MANAGER_PASSWORD.getParameterName(), encryptor.encrypt(it)));
 	}
+
+	@Override
+	protected void validateDuplicate(Integration integration, UpdateAuthRQ request) {
+		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(AuthIntegrationType.LDAP.getName(), integration.getType().getId())
+				.ifPresent(it -> BusinessRule.expect(it.getId(), id -> id.equals(integration.getId()))
+						.verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName()));
+	}
+
 }

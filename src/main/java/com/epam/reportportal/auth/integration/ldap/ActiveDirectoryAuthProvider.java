@@ -43,17 +43,19 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
 	@Override
 	protected boolean isEnabled() {
-		return integrationRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).isPresent();
+		return integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).stream().findFirst().isPresent();
 	}
 
 	@Override
 	protected AuthenticationProvider getDelegate() {
 
-		Integration integration = integrationRepository.findExclusiveAuth(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+		Integration integration = integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+				.stream()
+				.findFirst()
 				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
-		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(
-				LdapParameter.DOMAIN.getParameter(integration).orElse(null),
+		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(LdapParameter.DOMAIN.getParameter(
+				integration).orElse(null),
 				LdapParameter.URL.getRequiredParameter(integration),
 				LdapParameter.BASE_DN.getRequiredParameter(integration)
 		);
