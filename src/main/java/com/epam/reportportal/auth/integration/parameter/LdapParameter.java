@@ -41,6 +41,7 @@ public enum LdapParameter {
 	EMAIL_ATTRIBUTE("email", true, true),
 	FULL_NAME_ATTRIBUTE("fullName", false, true),
 	PHOTO_ATTRIBUTE("photo", false, true),
+	SEARCH_FILTER("searchFilter", false, false),
 	USER_DN_PATTERN("userDnPattern", false, false),
 	USER_SEARCH_FILTER("userSearchFilter", false, false),
 	GROUP_SEARCH_BASE("groupSearchBase", false, false),

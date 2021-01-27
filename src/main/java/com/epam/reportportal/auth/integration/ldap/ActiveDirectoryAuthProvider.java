@@ -62,6 +62,7 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
 		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
 		adAuth.setUserDetailsContextMapper(detailsContextMapper);
+		LdapParameter.SEARCH_FILTER.getParameter(integration).ifPresent(adAuth::setSearchFilter);
 		return adAuth;
 	}
 }
