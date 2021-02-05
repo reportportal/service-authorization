@@ -3,6 +3,10 @@ dist: trusty
 
 script: ./gradlew buildDocker --full-stacktrace
 
+env:
+  global:
+    - JAVA_TOOL_OPTIONS=-Dhttps.protocols=TLSv1.2
+
 jdk:
   - oraclejdk11
 

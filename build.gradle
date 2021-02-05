@@ -13,7 +13,7 @@ apply from: "$scriptsUrl/build-quality.gradle"
 apply from: "$scriptsUrl/release-service.gradle"
 
 repositories {
-    mavenCentral()
+    mavenCentral { url "https://repo1.maven.org/maven2" }
     maven { url 'https://repo.spring.io/libs-milestone' }
     releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
 }
