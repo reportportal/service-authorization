@@ -41,7 +41,7 @@ public enum LdapParameter {
 	EMAIL_ATTRIBUTE("email", true, true),
 	FULL_NAME_ATTRIBUTE("fullName", false, true),
 	PHOTO_ATTRIBUTE("photo", false, true),
-	SEARCH_FILTER_REMOVE_EMPTY("searchFilter", false, false) {
+	SEARCH_FILTER_REMOVE_NOT_PRESENT("searchFilter", false, false) {
 		@Override
 		public void setParameter(UpdateAuthRQ request, Integration integration) {
 			getParameter(request).ifPresentOrElse(it -> setParameter(integration, it), () -> removeParameter(integration));
