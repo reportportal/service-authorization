@@ -42,8 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
+import static com.epam.ta.reportportal.commons.Predicates.equalTo;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -52,14 +54,17 @@ import static java.util.Optional.ofNullable;
 @Component
 public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
+	private static final Predicate<UpdateAuthRQ> FULL_NAME_IS_EMPTY = request -> FULL_NAME_ATTRIBUTE.getParameter(request).isEmpty();
+	private static final Predicate<UpdateAuthRQ> FIRST_AND_LAST_NAME_IS_EMPTY = request ->
+			LAST_NAME_ATTRIBUTE.getParameter(request).isEmpty() && FIRST_NAME_ATTRIBUTE.getParameter(request).isEmpty();
+
 	private final SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning;
 
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Autowired
-	public SamlIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
-			IntegrationRepository integrationRepository, SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning,
-			ApplicationEventPublisher eventPublisher) {
+	public SamlIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository,
+			SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning, ApplicationEventPublisher eventPublisher) {
 		super(integrationTypeRepository, integrationRepository, AuthIntegrationType.SAML);
 		this.serviceProviderProvisioning = serviceProviderProvisioning;
 		this.eventPublisher = eventPublisher;
@@ -68,17 +73,15 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 	@Override
 	protected void validateRequest(UpdateAuthRQ request) {
 		ParameterUtils.validateSamlRequest(request);
-		if (FULL_NAME_ATTRIBUTE.getParameter(request).isEmpty() && (LAST_NAME_ATTRIBUTE.getParameter(request).isEmpty()
-				&& FIRST_NAME_ATTRIBUTE.getParameter(request).isEmpty())) {
-			throw new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
-					"Fields Full name or combination of Last name and First name are empty"
-			);
-		}
+		BusinessRule.expect(FULL_NAME_IS_EMPTY.test(request) && FIRST_AND_LAST_NAME_IS_EMPTY.test(request), equalTo(Boolean.FALSE))
+				.verify(ErrorType.BAD_REQUEST_ERROR, "Fields Full name or combination of Last name and First name are empty");
 	}
 
 	@Override
 	protected void validateDuplicate(Integration integration, UpdateAuthRQ request) {
-		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(IDP_NAME.getRequiredParameter(request), integration.getType().getId())
+		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(IDP_NAME.getRequiredParameter(request),
+				integration.getType().getId()
+		)
 				.ifPresent(it -> BusinessRule.expect(it.getId(), id -> id.equals(integration.getId()))
 						.verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName()));
 	}
