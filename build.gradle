@@ -18,6 +18,15 @@ repositories {
     releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
 }
 
+//https://nvd.nist.gov/vuln/detail/CVE-2020-10683 (dom4j 2.1.3 version dependency) AND https://nvd.nist.gov/vuln/detail/CVE-2019-14900
+ext['hibernate.version'] = '5.4.18.Final'
+//https://nvd.nist.gov/vuln/detail/CVE-2020-10693
+ext['hibernate-validator.version'] = '6.1.5.Final'
+//https://nvd.nist.gov/vuln/detail/CVE-2020-13692
+ext['postgresql.version'] = '42.2.13'
+//https://nvd.nist.gov/vuln/detail/CVE-2020-9488
+ext['log4j2.version'] = '2.13.2'
+
 dependencyManagement {
     imports {
         mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + getProperty('bom.version') : 'com.github.reportportal:commons-bom:7ea4bf3')
@@ -35,9 +44,24 @@ dependencies {
         compile 'com.github.reportportal:commons-model:67a471c'
     }
 
+    //https://nvd.nist.gov/vuln/detail/CVE-2020-11996 AND https://nvd.nist.gov/vuln/detail/CVE-2020-9484
+    //AND https://nvd.nist.gov/vuln/detail/CVE-2020-13934 AND https://nvd.nist.gov/vuln/detail/CVE-2020-13935
+    //AND https://nvd.nist.gov/vuln/detail/CVE-2020-8022
+    compile 'org.apache.tomcat.embed:tomcat-embed-core:9.0.37'
+    compile 'org.apache.tomcat.embed:tomcat-embed-el:9.0.37'
+    compile 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.37'
+    //
+
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-security'
+
+    ///// Security
+    //https://nvd.nist.gov/vuln/detail/CVE-2020-5407 AND https://nvd.nist.gov/vuln/detail/CVE-2020-5408
+    compile 'org.springframework.security:spring-security-core:5.2.4.RELEASE'
+    compile 'org.springframework.security:spring-security-config:5.2.4.RELEASE'
+    compile 'org.springframework.security:spring-security-web:5.2.4.RELEASE'
+    //
 
     compile 'org.springframework.security:spring-security-oauth2-client'
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE'
