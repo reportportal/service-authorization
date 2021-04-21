@@ -77,6 +77,10 @@ public enum SamlParameter {
 		integration.getParams().getParams().put(parameterName, value);
 	}
 
+	public void removeParameter(Integration integration) {
+		ofNullable(integration.getParams()).map(IntegrationParams::getParams).ifPresent(params -> params.remove(parameterName));
+	}
+
 	public String getRequiredParameter(Integration integration) {
 		Optional<String> parameter = getParameter(integration);
 		if (required) {

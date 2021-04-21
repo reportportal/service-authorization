@@ -19,7 +19,7 @@ package com.epam.reportportal.auth.integration.handler.impl;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
-import com.epam.reportportal.auth.integration.handler.CreateOrUpdateIntegrationStrategy;
+import com.epam.reportportal.auth.integration.handler.impl.strategy.AuthIntegrationStrategy;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
@@ -40,18 +40,23 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
 
 	private final MutableClientRegistrationRepository clientRegistrationRepository;
 
-	private Map<AuthIntegrationType, CreateOrUpdateIntegrationStrategy> strategyMap;
+	private final Map<AuthIntegrationType, AuthIntegrationStrategy> strategyMap;
 
 	public CreateAuthIntegrationHandlerImpl(MutableClientRegistrationRepository clientRegistrationRepository,
-			@Qualifier("createOrUpdateIntegrationStrategyMapping")
-					Map<AuthIntegrationType, CreateOrUpdateIntegrationStrategy> strategyMap) {
+			@Qualifier("authIntegrationStrategyMapping")
+					Map<AuthIntegrationType, AuthIntegrationStrategy> strategyMap) {
 		this.clientRegistrationRepository = clientRegistrationRepository;
 		this.strategyMap = strategyMap;
 	}
 
 	@Override
-	public AbstractAuthResource createOrUpdateAuthSettings(UpdateAuthRQ request, AuthIntegrationType type, ReportPortalUser user) {
-		return strategyMap.get(type).createOrUpdate(request, user.getUsername());
+	public AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request, ReportPortalUser user) {
+		return strategyMap.get(type).createIntegration(request, user.getUsername());
+	}
+
+	@Override
+	public AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId, UpdateAuthRQ request, ReportPortalUser user) {
+		return strategyMap.get(type).updateIntegration(integrationId, request);
 	}
 
 	@Override

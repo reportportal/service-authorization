@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
 import static com.epam.ta.reportportal.commons.validation.BusinessRule.expect;
 import static com.epam.ta.reportportal.commons.validation.Suppliers.formattedSupplier;
 
@@ -42,8 +43,7 @@ public final class ParameterUtils {
 		Arrays.stream(LdapParameter.values())
 				.filter(LdapParameter::isRequired)
 				.map(LdapParameter::getParameterName)
-				.forEach(it -> expect(
-						StringUtils.isNotBlank((String) request.getIntegrationParams().get(it)),
+				.forEach(it -> expect(StringUtils.isNotBlank((String) request.getIntegrationParams().get(it)),
 						Predicate.isEqual(true)
 				).verify(ErrorType.BAD_REQUEST_ERROR, formattedSupplier("parameter '{}' is required.", it)));
 	}
@@ -52,8 +52,7 @@ public final class ParameterUtils {
 		Arrays.stream(SamlParameter.values())
 				.filter(SamlParameter::isRequired)
 				.map(SamlParameter::getParameterName)
-				.forEach(it -> expect(
-						StringUtils.isNotBlank((String) request.getIntegrationParams().get(it)),
+				.forEach(it -> expect(StringUtils.isNotBlank((String) request.getIntegrationParams().get(it)),
 						Predicate.isEqual(true)
 				).verify(ErrorType.BAD_REQUEST_ERROR, formattedSupplier("parameter '{}' is required.", it)));
 	}
@@ -63,7 +62,22 @@ public final class ParameterUtils {
 	}
 
 	public static void setSamlParameters(UpdateAuthRQ request, Integration integration) {
-		Arrays.stream(SamlParameter.values()).forEach(it -> it.setParameter(request, integration));
+		IDP_NAME.setParameter(request, integration);
+		IDP_METADATA_URL.setParameter(request, integration);
+		EMAIL_ATTRIBUTE.setParameter(request, integration);
+		IDP_NAME_ID.setParameter(request, integration);
+		IDP_ALIAS.setParameter(request, integration);
+		IDP_URL.setParameter(request, integration);
+
+		FULL_NAME_ATTRIBUTE.getParameter(request).ifPresentOrElse(fullName -> {
+			FIRST_NAME_ATTRIBUTE.removeParameter(integration);
+			LAST_NAME_ATTRIBUTE.removeParameter(integration);
+			FULL_NAME_ATTRIBUTE.setParameter(integration, fullName);
+		}, () -> {
+			FULL_NAME_ATTRIBUTE.removeParameter(integration);
+			FIRST_NAME_ATTRIBUTE.setParameter(request, integration);
+			LAST_NAME_ATTRIBUTE.setParameter(request, integration);
+		});
 	}
 
 	public static Map<String, String> getLdapSyncAttributes(Integration integration) {

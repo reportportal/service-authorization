@@ -34,6 +34,7 @@ public final class ActiveDirectoryConverter {
 		ActiveDirectoryResource resource = new ActiveDirectoryResource();
 		resource.setId(adIntegration.getId());
 		LdapParameter.DOMAIN.getParameter(adIntegration).ifPresent(resource::setDomain);
+		LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(adIntegration).ifPresent(resource::setSearchFilter);
 		resource.setLdapAttributes(LdapConverter.LDAP_ATTRIBUTES_TO_RESOURCE.apply(adIntegration));
 		return resource;
 	};
