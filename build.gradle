@@ -15,7 +15,17 @@ apply from: "$scriptsUrl/release-service.gradle"
 repositories {
     mavenCentral { url "https://repo1.maven.org/maven2" }
     maven { url 'https://repo.spring.io/libs-milestone' }
-    releaseMode ? maven { url "http://dl.bintray.com/epam/reportportal" } : maven { url 'https://jitpack.io' }
+    releaseMode ? {
+        dependencyRepos.forEach { path ->
+            maven {
+                setUrl("https://maven.pkg.github.com/reportportal/${path}")
+                credentials {
+                    username = findProperty("githubUserName")
+                    password = findProperty("githubToken")
+                }
+            }
+        }
+    } : maven { url 'https://jitpack.io' }
 }
 
 //https://nvd.nist.gov/vuln/detail/CVE-2020-10683 (dom4j 2.1.3 version dependency) AND https://nvd.nist.gov/vuln/detail/CVE-2019-14900
@@ -91,6 +101,6 @@ jar.enabled(true)
 
 addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
-bintrayUpload.mustRunAfter build
-afterReleaseBuild.dependsOn bintrayUpload
+publish.dependsOn build
+publish.mustRunAfter build
 
