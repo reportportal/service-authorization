@@ -5,7 +5,7 @@ def commonScriptsUrl = 'https://raw.githubusercontent.com/reportportal/gradle-sc
 
 project.ext {
     publishRepo = "https://maven.pkg.github.com/reportportal/service-authorization"
-    dependencyRepos = ["commons-dao", "commons-rules", "commons-model"]
+    dependencyRepos = ["commons-dao", "commons-rules", "commons-model", "commons-bom"]
     releaseMode = project.hasProperty("releaseMode")
     scriptsUrl = commonScriptsUrl + (releaseMode ? getProperty('scripts.version') : 'github-release-action')
     isDebugMode = System.getProperty("DEBUG", "false") == "true"
