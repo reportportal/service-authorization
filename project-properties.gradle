@@ -7,7 +7,7 @@ project.ext {
     publishRepo = "https://maven.pkg.github.com/reportportal/service-authorization"
     dependencyRepos = ["commons-dao", "commons-rules", "commons-model", "commons-bom"]
     releaseMode = project.hasProperty("releaseMode")
-    scriptsUrl = commonScriptsUrl + (releaseMode ? getProperty('scripts.version') : 'develop')
+    scriptsUrl = commonScriptsUrl + (releaseMode ? getProperty('scripts.version') : '5.5')
     isDebugMode = System.getProperty("DEBUG", "false") == "true"
 }
 
