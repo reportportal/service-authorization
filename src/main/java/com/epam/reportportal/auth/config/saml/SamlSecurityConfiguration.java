@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.config;
+package com.epam.reportportal.auth.config.saml;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;

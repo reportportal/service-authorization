@@ -17,18 +17,18 @@
 package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
 import com.epam.reportportal.auth.event.SamlProvidersReloadEvent;
-import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
+import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import com.epam.ta.reportportal.entity.integration.IntegrationTypeDetails;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml.provider.provisioning.SamlProviderProvisioning;
 import org.springframework.security.saml.provider.service.ServiceProviderService;
@@ -36,69 +36,80 @@ import org.springframework.security.saml.provider.service.config.ExternalIdentit
 import org.springframework.security.saml.saml2.metadata.IdentityProvider;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.NameId;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 
+import static com.epam.reportportal.auth.integration.converter.SamlConverter.UPDATE_FROM_REQUEST;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
-import static com.epam.ta.reportportal.commons.Predicates.equalTo;
 import static java.util.Optional.ofNullable;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
-@Component
+@Service
 public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
-	private static final Predicate<UpdateAuthRQ> FULL_NAME_IS_EMPTY = request -> FULL_NAME_ATTRIBUTE.getParameter(request).isEmpty();
-	private static final Predicate<UpdateAuthRQ> FIRST_AND_LAST_NAME_IS_EMPTY = request ->
-			LAST_NAME_ATTRIBUTE.getParameter(request).isEmpty() && FIRST_NAME_ATTRIBUTE.getParameter(request).isEmpty();
-
 	private final SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning;
-
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Autowired
-	public SamlIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository,
+	public SamlIntegrationStrategy(IntegrationRepository integrationRepository,
+			@Qualifier("samlUpdateAuthRequestValidator") AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator,
+			IntegrationDuplicateValidator integrationDuplicateValidator,
 			SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning, ApplicationEventPublisher eventPublisher) {
-		super(integrationTypeRepository, integrationRepository, AuthIntegrationType.SAML);
+		super(integrationRepository, updateAuthRequestValidator, integrationDuplicateValidator);
 		this.serviceProviderProvisioning = serviceProviderProvisioning;
 		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
-	protected void validateRequest(UpdateAuthRQ request) {
-		ParameterUtils.validateSamlRequest(request);
-		BusinessRule.expect(FULL_NAME_IS_EMPTY.test(request) && FIRST_AND_LAST_NAME_IS_EMPTY.test(request), equalTo(Boolean.FALSE))
-				.verify(ErrorType.BAD_REQUEST_ERROR, "Fields Full name or combination of Last name and First name are empty");
+	protected void fill(Integration integration, UpdateAuthRQ updateRequest) {
+		UPDATE_FROM_REQUEST.accept(updateRequest, integration);
+		BASE_PATH.getParameter(updateRequest).map(this::validateBasePath).ifPresent(basePath -> updateBasePath(integration, basePath));
+	}
+
+	private String validateBasePath(String basePath) {
+		try {
+			new URI(basePath);
+		} catch (URISyntaxException e) {
+			throw new ReportPortalException(ErrorType.BAD_REQUEST_ERROR, "callbackUrl is invalid");
+		}
+		return basePath;
+	}
+
+	private void updateBasePath(Integration integration, String basePath) {
+		final IntegrationType integrationType = integration.getType();
+		final IntegrationTypeDetails typeDetails = ofNullable(integrationType.getDetails()).orElseGet(() -> {
+			final IntegrationTypeDetails details = new IntegrationTypeDetails();
+			integrationType.setDetails(details);
+			return details;
+		});
+		final Map<String, Object> detailsMapping = ofNullable(typeDetails.getDetails()).orElseGet(() -> {
+			final Map<String, Object> details = new HashMap<>();
+			typeDetails.setDetails(details);
+			return details;
+		});
+		detailsMapping.put(BASE_PATH.getParameterName(), basePath);
 	}
 
 	@Override
-	protected void validateDuplicate(Integration integration, UpdateAuthRQ request) {
-		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(IDP_NAME.getRequiredParameter(request),
-				integration.getType().getId()
-		)
-				.ifPresent(it -> BusinessRule.expect(it.getId(), id -> id.equals(integration.getId()))
-						.verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName()));
-	}
-
-	@Override
-	protected AbstractAuthResource saveIntegration(Integration integration) {
+	protected Integration save(Integration integration) {
 		populateProviderDetails(integration);
-		final AbstractAuthResource resource = super.saveIntegration(integration);
-		final List<Integration> samlIntegrations = getIntegrationRepository().findAllGlobalByType(integration.getType());
-		eventPublisher.publishEvent(new SamlProvidersReloadEvent(samlIntegrations));
-		return resource;
+		final Integration result = super.save(integration);
+		eventPublisher.publishEvent(new SamlProvidersReloadEvent(result.getType()));
+		return result;
 	}
 
 	private void populateProviderDetails(Integration samlIntegration) {
 		Map<String, Object> params = samlIntegration.getParams().getParams();
-		ExternalIdentityProviderConfiguration externalConfiguration = new ExternalIdentityProviderConfiguration().setMetadata(SamlParameter.IDP_METADATA_URL
-				.getRequiredParameter(samlIntegration));
+		ExternalIdentityProviderConfiguration externalConfiguration = new ExternalIdentityProviderConfiguration().setMetadata(SamlParameter.IDP_METADATA_URL.getRequiredParameter(
+				samlIntegration));
 		IdentityProviderMetadata remoteProvider = serviceProviderProvisioning.getHostedProvider().getRemoteProvider(externalConfiguration);
 		params.put(IDP_URL.getParameterName(), remoteProvider.getEntityId());
 		params.put(IDP_ALIAS.getParameterName(), remoteProvider.getEntityAlias());

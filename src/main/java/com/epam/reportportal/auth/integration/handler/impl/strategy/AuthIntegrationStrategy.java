@@ -16,83 +16,62 @@
 
 package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
-import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.reportportal.auth.integration.builder.AuthIntegrationBuilder;
+import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
+import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
 public abstract class AuthIntegrationStrategy {
 
-	private final IntegrationTypeRepository integrationTypeRepository;
 	private final IntegrationRepository integrationRepository;
-	private final AuthIntegrationType type;
+	private final AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator;
+	private final IntegrationDuplicateValidator integrationDuplicateValidator;
 
-	public AuthIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
-			IntegrationRepository integrationRepository, AuthIntegrationType type) {
-		this.integrationTypeRepository = integrationTypeRepository;
+	public AuthIntegrationStrategy(IntegrationRepository integrationRepository,
+			AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator, IntegrationDuplicateValidator integrationDuplicateValidator) {
 		this.integrationRepository = integrationRepository;
-		this.type = type;
+		this.updateAuthRequestValidator = updateAuthRequestValidator;
+		this.integrationDuplicateValidator = integrationDuplicateValidator;
 	}
 
-	protected abstract void validateRequest(UpdateAuthRQ request);
+	protected abstract void fill(Integration integration, UpdateAuthRQ updateRequest);
 
-	protected abstract void validateDuplicate(Integration integration, UpdateAuthRQ request);
+	public Integration createIntegration(IntegrationType integrationType, UpdateAuthRQ request, String username) {
+		updateAuthRequestValidator.validate(request);
 
-	public AbstractAuthResource createIntegration(UpdateAuthRQ request, String username) {
-		validateRequest(request);
-
-		IntegrationType integrationType = integrationTypeRepository.findByName(type.getName())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
-		final Integration integration = type.getBuilder()
+		final Integration integration = new AuthIntegrationBuilder().addCreator(username)
 				.addIntegrationType(integrationType)
-				.addCreator(username)
-				.addUpdateRq(request)
+				.addCreationDate(LocalDateTime.now(ZoneOffset.UTC))
 				.build();
+		fill(integration, request);
 
-		BusinessRule.expect(integrationRepository.findByNameAndTypeIdAndProjectIdIsNull(integration.getName(), integrationType.getId()),
-				Optional::isEmpty
-		).verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName());
-
-		return saveIntegration(integration);
+		return save(integration);
 	}
 
-	public AbstractAuthResource updateIntegration(Long integrationId, UpdateAuthRQ request) {
-		validateRequest(request);
+	public Integration updateIntegration(IntegrationType integrationType, Long integrationId, UpdateAuthRQ request) {
+		updateAuthRequestValidator.validate(request);
 
-		IntegrationType integrationType = integrationTypeRepository.findByName(type.getName())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
 		final Integration integration = integrationRepository.findByIdAndTypeIdAndProjectIdIsNull(integrationId, integrationType.getId())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, integrationType.getName()));
+		fill(integration, request);
 
-		validateDuplicate(integration, request);
-
-		return saveIntegration(type.getFromResourceMapper().apply(request, integration));
+		return save(integration);
 	}
 
-	protected AbstractAuthResource saveIntegration(Integration integration) {
-		return type.getToResourceMapper().apply(integrationRepository.save(integration));
+	protected Integration save(Integration integration) {
+		integrationDuplicateValidator.validate(integration);
+		return integrationRepository.save(integration);
 	}
 
-	protected IntegrationTypeRepository getIntegrationTypeRepository() {
-		return integrationTypeRepository;
-	}
-
-	protected IntegrationRepository getIntegrationRepository() {
-		return integrationRepository;
-	}
-
-	protected AuthIntegrationType getType() {
-		return type;
-	}
 }

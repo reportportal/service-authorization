@@ -23,6 +23,7 @@ import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.SynchronizationAttributesResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -76,9 +77,8 @@ public final class LdapConverter {
 		return integration;
 	};
 
-	public static final BiFunction<UpdateAuthRQ, Integration, Integration> UPDATE_FROM_REQUEST = (request, integration) -> {
+	public static final BiConsumer<UpdateAuthRQ, Integration> UPDATE_FROM_REQUEST = (request, integration) -> {
 		ParameterUtils.setLdapParameters(request, integration);
 		integration.setEnabled(ofNullable(request.getEnabled()).orElse(false));
-		return integration;
 	};
 }

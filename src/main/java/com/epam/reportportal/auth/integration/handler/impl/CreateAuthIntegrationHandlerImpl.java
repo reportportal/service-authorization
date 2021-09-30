@@ -20,17 +20,21 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.impl.strategy.AuthIntegrationStrategy;
+import com.epam.reportportal.auth.integration.provider.AuthIntegrationStrategyProvider;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
+import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
+import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
+import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -39,24 +43,42 @@ import java.util.Map;
 public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHandler {
 
 	private final MutableClientRegistrationRepository clientRegistrationRepository;
+	private final AuthIntegrationStrategyProvider strategyProvider;
+	private final IntegrationTypeRepository integrationTypeRepository;
 
-	private final Map<AuthIntegrationType, AuthIntegrationStrategy> strategyMap;
-
+	@Autowired
 	public CreateAuthIntegrationHandlerImpl(MutableClientRegistrationRepository clientRegistrationRepository,
-			@Qualifier("authIntegrationStrategyMapping")
-					Map<AuthIntegrationType, AuthIntegrationStrategy> strategyMap) {
+			AuthIntegrationStrategyProvider strategyProvider, IntegrationTypeRepository integrationTypeRepository) {
 		this.clientRegistrationRepository = clientRegistrationRepository;
-		this.strategyMap = strategyMap;
+		this.strategyProvider = strategyProvider;
+		this.integrationTypeRepository = integrationTypeRepository;
 	}
 
 	@Override
 	public AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request, ReportPortalUser user) {
-		return strategyMap.get(type).createIntegration(request, user.getUsername());
+		final IntegrationType integrationType = getIntegrationType(type);
+		final AuthIntegrationStrategy authIntegrationStrategy = getAuthStragegy(type);
+		final Integration integration = authIntegrationStrategy.createIntegration(integrationType, request, user.getUsername());
+		return type.getToResourceMapper().apply(integration);
 	}
 
 	@Override
-	public AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId, UpdateAuthRQ request, ReportPortalUser user) {
-		return strategyMap.get(type).updateIntegration(integrationId, request);
+	public AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId, UpdateAuthRQ request,
+			ReportPortalUser user) {
+		final IntegrationType integrationType = getIntegrationType(type);
+		final AuthIntegrationStrategy authIntegrationStrategy = getAuthStragegy(type);
+		final Integration integration = authIntegrationStrategy.updateIntegration(integrationType, integrationId, request);
+		return type.getToResourceMapper().apply(integration);
+	}
+
+	private IntegrationType getIntegrationType(AuthIntegrationType type) {
+		return integrationTypeRepository.findByName(type.getName())
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
+	}
+
+	private AuthIntegrationStrategy getAuthStragegy(AuthIntegrationType type) {
+		return strategyProvider.provide(type)
+				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
 	}
 
 	@Override

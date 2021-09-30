@@ -18,45 +18,41 @@ package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
-import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
+import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import static com.epam.reportportal.auth.integration.converter.LdapConverter.UPDATE_FROM_REQUEST;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
-@Component
+@Service
 public class LdapIntegrationStrategy extends AuthIntegrationStrategy {
 
 	private final BasicTextEncryptor encryptor;
 
 	@Autowired
-	public LdapIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository,
+	public LdapIntegrationStrategy(IntegrationRepository integrationRepository,
+			@Qualifier("ldapUpdateAuthRequestValidator") AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator, IntegrationDuplicateValidator integrationDuplicateValidator,
 			BasicTextEncryptor encryptor) {
-		super(integrationTypeRepository, integrationRepository, AuthIntegrationType.LDAP);
+		super(integrationRepository, updateAuthRequestValidator, integrationDuplicateValidator);
 		this.encryptor = encryptor;
 	}
 
 	@Override
-	protected void validateRequest(UpdateAuthRQ request) {
-		ParameterUtils.validateLdapRequest(request);
-		LdapParameter.MANAGER_PASSWORD.getParameter(request)
-				.ifPresent(it -> request.getIntegrationParams()
+	protected void fill(Integration integration, UpdateAuthRQ updateRequest) {
+		integration.setName(AuthIntegrationType.LDAP.getName());
+		LdapParameter.MANAGER_PASSWORD.getParameter(updateRequest)
+				.ifPresent(it -> updateRequest.getIntegrationParams()
 						.put(LdapParameter.MANAGER_PASSWORD.getParameterName(), encryptor.encrypt(it)));
-	}
-
-	@Override
-	protected void validateDuplicate(Integration integration, UpdateAuthRQ request) {
-		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(AuthIntegrationType.LDAP.getName(), integration.getType().getId())
-				.ifPresent(it -> BusinessRule.expect(it.getId(), id -> id.equals(integration.getId()))
-						.verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName()));
+		UPDATE_FROM_REQUEST.accept(updateRequest, integration);
 	}
 
 }

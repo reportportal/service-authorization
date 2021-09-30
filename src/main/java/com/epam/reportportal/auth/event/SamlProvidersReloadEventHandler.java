@@ -16,7 +16,9 @@
 package com.epam.reportportal.auth.event;
 
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.saml.provider.SamlServerConfiguration;
 import org.springframework.security.saml.provider.service.config.LocalServiceProviderConfiguration;
@@ -32,19 +34,22 @@ import java.util.List;
 @Component
 public class SamlProvidersReloadEventHandler implements ApplicationListener<SamlProvidersReloadEvent> {
 
-	private SamlServerConfiguration samlConfiguration;
+	private final IntegrationRepository integrationRepository;
+	private final SamlServerConfiguration samlConfiguration;
 
-	public SamlProvidersReloadEventHandler(SamlServerConfiguration spConfiguration) {
+	public SamlProvidersReloadEventHandler(IntegrationRepository integrationRepository, SamlServerConfiguration spConfiguration) {
+		this.integrationRepository = integrationRepository;
 		this.samlConfiguration = spConfiguration;
 	}
 
 	@Override
 	public void onApplicationEvent(SamlProvidersReloadEvent event) {
-		List<Integration> details = event.getDetails();
+		final IntegrationType integrationType = event.getIntegrationType();
+		final List<Integration> integrations = integrationRepository.findAllGlobalByType(integrationType);
 
 		LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
 
 		serviceProvider.getProviders().clear();
-		serviceProvider.getProviders().addAll(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(details));
+		serviceProvider.getProviders().addAll(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(integrations));
 	}
 }

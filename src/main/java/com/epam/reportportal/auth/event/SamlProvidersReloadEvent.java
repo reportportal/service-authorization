@@ -15,10 +15,8 @@
  */
 package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import org.springframework.context.ApplicationEvent;
-
-import java.util.List;
 
 /**
  * Event for reloading SAML IDPs settings
@@ -29,11 +27,11 @@ public class SamlProvidersReloadEvent extends ApplicationEvent {
 
 	private static final long serialVersionUID = 2314984509233L;
 
-	public SamlProvidersReloadEvent(List<Integration> externalProviders) {
-		super(externalProviders);
+	public SamlProvidersReloadEvent(IntegrationType type) {
+		super(type);
 	}
 
-	List<Integration> getDetails() {
-		return (List<Integration>) super.getSource();
+	IntegrationType getIntegrationType() {
+		return (IntegrationType) super.getSource();
 	}
 }

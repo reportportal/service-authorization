@@ -24,6 +24,7 @@ import com.epam.reportportal.auth.integration.handler.impl.strategy.ActiveDirect
 import com.epam.reportportal.auth.integration.handler.impl.strategy.AuthIntegrationStrategy;
 import com.epam.reportportal.auth.integration.handler.impl.strategy.LdapIntegrationStrategy;
 import com.epam.reportportal.auth.integration.handler.impl.strategy.SamlIntegrationStrategy;
+import com.epam.reportportal.auth.integration.provider.AuthIntegrationStrategyProvider;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,11 +59,16 @@ public class AuthIntegrationConfig {
 				.build();
 	}
 
-	@Bean("authIntegrationStrategyMapping")
-	public Map<AuthIntegrationType, AuthIntegrationStrategy> authIntegrationStrategyMapping() {
+	@Bean("authIntegrationStrategyProvider")
+	public AuthIntegrationStrategyProvider authIntegrationStrategyProvider() {
+		final ImmutableMap<AuthIntegrationType, AuthIntegrationStrategy> authIntegrationStrategyMapping = buildAuthIntegrationStrategyMapping();
+		return new AuthIntegrationStrategyProvider(authIntegrationStrategyMapping);
+	}
+
+	private ImmutableMap<AuthIntegrationType, AuthIntegrationStrategy> buildAuthIntegrationStrategyMapping() {
 		return new ImmutableMap.Builder<AuthIntegrationType, AuthIntegrationStrategy>().put(LDAP,
-				applicationContext.getBean(LdapIntegrationStrategy.class)
-		)
+						applicationContext.getBean(LdapIntegrationStrategy.class)
+				)
 				.put(ACTIVE_DIRECTORY, applicationContext.getBean(ActiveDirectoryIntegrationStrategy.class))
 				.put(SAML, applicationContext.getBean(SamlIntegrationStrategy.class))
 				.build();

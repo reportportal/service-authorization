@@ -36,6 +36,7 @@ import static java.util.Optional.ofNullable;
  */
 public enum SamlParameter {
 
+	BASE_PATH("callbackUrl", false),
 	IDP_NAME("identityProviderName", true),
 	IDP_METADATA_URL("identityProviderMetadataUrl", true),
 	EMAIL_ATTRIBUTE("emailAttribute", true),
