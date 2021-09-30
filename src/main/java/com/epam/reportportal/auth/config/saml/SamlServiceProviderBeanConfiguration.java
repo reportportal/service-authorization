@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.config;
+package com.epam.reportportal.auth.config.saml;
 
 import com.epam.reportportal.auth.AuthFailureHandler;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthenticationManager;
