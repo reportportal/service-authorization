@@ -27,6 +27,7 @@ import com.epam.ta.reportportal.entity.integration.IntegrationTypeDetails;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
@@ -38,8 +39,6 @@ import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata
 import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -71,16 +70,16 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 	@Override
 	protected void fill(Integration integration, UpdateAuthRQ updateRequest) {
 		UPDATE_FROM_REQUEST.accept(updateRequest, integration);
-		BASE_PATH.getParameter(updateRequest).map(this::validateBasePath).ifPresent(basePath -> updateBasePath(integration, basePath));
+		BASE_PATH.getParameter(updateRequest).ifPresent(basePath -> {
+			validateBasePath(basePath);
+			updateBasePath(integration, basePath);
+		});
 	}
 
-	private String validateBasePath(String basePath) {
-		try {
-			new URI(basePath);
-		} catch (URISyntaxException e) {
+	private void validateBasePath(String basePath) {
+		if (UrlValidator.getInstance().isValid(basePath)) {
 			throw new ReportPortalException(ErrorType.BAD_REQUEST_ERROR, "callbackUrl is invalid");
 		}
-		return basePath;
 	}
 
 	private void updateBasePath(Integration integration, String basePath) {
