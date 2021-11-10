@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.reportportal.auth.config;
+package com.epam.reportportal.auth.config.saml;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.BASE_PATH;
 import static java.util.Base64.getEncoder;
 import static java.util.Optional.ofNullable;
 
@@ -116,7 +117,8 @@ public class SamlServiceProviderConfiguration {
 	}
 
 	private LocalServiceProviderConfiguration serviceProviderConfiguration() {
-		LocalServiceProviderConfiguration serviceProviderConfiguration = new LocalServiceProviderConfigurationDelegate();
+		LocalServiceProviderConfiguration serviceProviderConfiguration = new LocalServiceProviderConfigurationDelegate(
+				integrationTypeRepository);
 		serviceProviderConfiguration.setSignRequests(signedRequests)
 				.setWantAssertionsSigned(signedRequests)
 				.setEntityId(entityId)
@@ -173,9 +175,20 @@ public class SamlServiceProviderConfiguration {
 
 	public class LocalServiceProviderConfigurationDelegate extends LocalServiceProviderConfiguration {
 
+		private final IntegrationTypeRepository integrationTypeRepository;
+
+		public LocalServiceProviderConfigurationDelegate(IntegrationTypeRepository integrationTypeRepository) {
+			this.integrationTypeRepository = integrationTypeRepository;
+		}
+
 		@Override
 		public String getBasePath() {
-			return ofNullable(requestProvider.get()).map(RequestUtil::getRequestBasePath).orElse(basePath);
+			return integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
+					.flatMap(it -> Optional.ofNullable(it.getDetails()))
+					.flatMap(d -> Optional.ofNullable(d.getDetails()))
+					.flatMap(BASE_PATH::getParameter)
+					.orElseGet(() -> ofNullable(basePath).orElseGet(() -> ofNullable(requestProvider.get()).map(RequestUtil::getRequestBasePath)
+							.orElse("/")));
 		}
 	}
 

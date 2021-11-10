@@ -15,19 +15,17 @@
  */
 package com.epam.reportportal.auth.integration;
 
-import com.epam.reportportal.auth.integration.builder.ActiveDirectoryBuilder;
-import com.epam.reportportal.auth.integration.builder.AuthIntegrationBuilder;
-import com.epam.reportportal.auth.integration.builder.LdapBuilder;
-import com.epam.reportportal.auth.integration.builder.SamlBuilder;
 import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
 import com.epam.reportportal.auth.integration.converter.LdapConverter;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.ws.model.integration.auth.*;
+import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
+import com.epam.ta.reportportal.ws.model.integration.auth.SamlResource;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
@@ -44,16 +42,6 @@ public enum AuthIntegrationType {
 		}
 
 		@Override
-		public AuthIntegrationBuilder getBuilder() {
-			return new ActiveDirectoryBuilder();
-		}
-
-		@Override
-		public BiFunction<UpdateAuthRQ, Integration, Integration> getFromResourceMapper() {
-			return LdapConverter.UPDATE_FROM_REQUEST;
-		}
-
-		@Override
 		public Function<Integration, ActiveDirectoryResource> getToResourceMapper() {
 			return ActiveDirectoryConverter.TO_RESOURCE;
 		}
@@ -65,16 +53,6 @@ public enum AuthIntegrationType {
 		}
 
 		@Override
-		public AuthIntegrationBuilder getBuilder() {
-			return new LdapBuilder();
-		}
-
-		@Override
-		public BiFunction<UpdateAuthRQ, Integration, Integration> getFromResourceMapper() {
-			return LdapConverter.UPDATE_FROM_REQUEST;
-		}
-
-		@Override
 		public Function<Integration, LdapResource> getToResourceMapper() {
 			return LdapConverter.TO_RESOURCE;
 		}
@@ -83,16 +61,6 @@ public enum AuthIntegrationType {
 		@Override
 		public Optional<Integration> get(Integration entity) {
 			return ofNullable(entity);
-		}
-
-		@Override
-		public AuthIntegrationBuilder getBuilder() {
-			return new SamlBuilder();
-		}
-
-		@Override
-		public BiFunction<UpdateAuthRQ, Integration, Integration> getFromResourceMapper() {
-			return SamlConverter.UPDATE_FROM_REQUEST;
 		}
 
 		@Override
@@ -108,10 +76,6 @@ public enum AuthIntegrationType {
 	}
 
 	public abstract Optional<Integration> get(Integration entity);
-
-	public abstract AuthIntegrationBuilder getBuilder();
-
-	public abstract BiFunction<UpdateAuthRQ, Integration, Integration> getFromResourceMapper();
 
 	public abstract Function<Integration, ? extends AbstractAuthResource> getToResourceMapper();
 

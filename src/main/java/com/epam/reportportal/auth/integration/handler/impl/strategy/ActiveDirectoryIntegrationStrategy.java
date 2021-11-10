@@ -17,37 +17,33 @@
 package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
+import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import static com.epam.reportportal.auth.integration.converter.LdapConverter.UPDATE_FROM_REQUEST;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
-@Component
+@Service
 public class ActiveDirectoryIntegrationStrategy extends AuthIntegrationStrategy {
 
 	@Autowired
-	public ActiveDirectoryIntegrationStrategy(IntegrationTypeRepository integrationTypeRepository,
-			IntegrationRepository integrationRepository) {
-		super(integrationTypeRepository, integrationRepository, AuthIntegrationType.ACTIVE_DIRECTORY);
+	public ActiveDirectoryIntegrationStrategy(IntegrationRepository integrationRepository,
+			@Qualifier("ldapUpdateAuthRequestValidator") AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator, IntegrationDuplicateValidator integrationDuplicateValidator) {
+		super(integrationRepository, updateAuthRequestValidator, integrationDuplicateValidator);
 	}
 
 	@Override
-	protected void validateRequest(UpdateAuthRQ request) {
-		ParameterUtils.validateLdapRequest(request);
+	protected void fill(Integration integration, UpdateAuthRQ updateRequest) {
+		integration.setName(AuthIntegrationType.ACTIVE_DIRECTORY.getName());
+		UPDATE_FROM_REQUEST.accept(updateRequest, integration);
 	}
 
-	@Override
-	protected void validateDuplicate(Integration integration, UpdateAuthRQ request) {
-		getIntegrationRepository().findByNameAndTypeIdAndProjectIdIsNull(AuthIntegrationType.ACTIVE_DIRECTORY.getName(), integration.getType().getId())
-				.ifPresent(it -> BusinessRule.expect(it.getId(), id -> id.equals(integration.getId()))
-						.verify(ErrorType.INTEGRATION_ALREADY_EXISTS, integration.getName()));
-	}
 }

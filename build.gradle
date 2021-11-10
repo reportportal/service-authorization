@@ -54,7 +54,7 @@ dependencies {
     } else {
         compile 'com.github.reportportal:commons-dao:ee3928c'
         compile 'com.github.reportportal:commons-rules:331c402'
-        compile 'com.github.reportportal:commons-model:67a471c'
+        compile 'com.github.reportportal:commons-model:4667867'
     }
 
     //https://nvd.nist.gov/vuln/detail/CVE-2020-11996 AND https://nvd.nist.gov/vuln/detail/CVE-2020-9484

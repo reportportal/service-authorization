@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.integration.builder;
 
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -26,13 +25,12 @@ import java.time.LocalDateTime;
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
-public abstract class AuthIntegrationBuilder {
+public class AuthIntegrationBuilder {
 
-	protected final Integration integration;
+	private final Integration integration;
 
-	public AuthIntegrationBuilder(){
+	public AuthIntegrationBuilder() {
 		integration = new Integration();
-		integration.setCreationDate(LocalDateTime.now());
 	}
 
 	public AuthIntegrationBuilder(Integration integration) {
@@ -49,7 +47,10 @@ public abstract class AuthIntegrationBuilder {
 		return this;
 	}
 
-	public abstract AuthIntegrationBuilder addUpdateRq(UpdateAuthRQ request);
+	public AuthIntegrationBuilder addCreationDate(LocalDateTime creationDate) {
+		integration.setCreationDate(creationDate);
+		return this;
+	}
 
 	public @NotNull Integration build() {
 		return integration;

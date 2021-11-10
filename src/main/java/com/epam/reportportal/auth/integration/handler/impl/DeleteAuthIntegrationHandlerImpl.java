@@ -66,7 +66,7 @@ public class DeleteAuthIntegrationHandlerImpl implements DeleteAuthIntegrationHa
 		integrationRepository.deleteById(integrationId);
 
 		if (AuthIntegrationType.SAML.getName().equals(integration.getType().getName())) {
-			eventPublisher.publishEvent(new SamlProvidersReloadEvent(integrationRepository.findAllGlobalByType(integration.getType())));
+			eventPublisher.publishEvent(new SamlProvidersReloadEvent(integration.getType()));
 		}
 
 		return new OperationCompletionRS("Auth integration with id= " + integrationId + " has been successfully removed.");

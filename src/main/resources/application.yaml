@@ -65,7 +65,7 @@ rp:
     live: 86400
   auth:
     saml:
-      base-path: ${server.servlet.context-path}/${spring.application.name}
+      base-path:
       entity-id: report.portal.sp.id
       key-password: password
       key-alias: report-portal-sp

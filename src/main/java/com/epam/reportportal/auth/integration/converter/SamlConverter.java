@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.integration.converter;
 
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.ws.model.integration.auth.SamlProvidersResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.SamlResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
@@ -26,12 +27,14 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
+import static java.util.Optional.ofNullable;
 
 /**
  * Used for mapping between SAML resource model and entity
@@ -40,11 +43,10 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
  */
 public class SamlConverter {
 
-	public static final BiFunction<UpdateAuthRQ, Integration, Integration> UPDATE_FROM_REQUEST = (request, integration) -> {
+	public static final BiConsumer<UpdateAuthRQ, Integration> UPDATE_FROM_REQUEST = (request, integration) -> {
 		integration.setEnabled(request.getEnabled());
 		integration.setName(IDP_NAME.getRequiredParameter(request));
 		ParameterUtils.setSamlParameters(request, integration);
-		return integration;
 	};
 
 	public final static Function<Integration, SamlResource> TO_RESOURCE = integration -> {
@@ -61,6 +63,10 @@ public class SamlConverter {
 		IDP_METADATA_URL.getParameter(integration).ifPresent(resource::setIdentityProviderMetadataUrl);
 		IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
 		IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
+		final IntegrationType integrationType = integration.getType();
+		ofNullable(integrationType.getDetails()).flatMap(typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
+				.flatMap(BASE_PATH::getParameter)
+				.ifPresent(resource::setCallbackUrl);
 		return resource;
 	};
 
