@@ -18,6 +18,10 @@ package com.epam.reportportal.auth;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.ldap.LdapHealthContributorAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.elasticsearch.rest.RestClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -27,7 +31,9 @@ import org.springframework.context.annotation.ComponentScan;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
-@SpringBootApplication(exclude = { LdapHealthContributorAutoConfiguration.class, FlywayAutoConfiguration.class })
+@SpringBootApplication(exclude = { LdapHealthContributorAutoConfiguration.class, FlywayAutoConfiguration.class,
+		RestClientAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class, ElasticsearchRepositoriesAutoConfiguration.class,
+		ReactiveElasticsearchRepositoriesAutoConfiguration.class })
 @ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth" })
 public class AuthServerApplication {
 
