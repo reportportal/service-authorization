@@ -42,7 +42,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.epam.reportportal.auth.integration.converter.SamlConverter.UPDATE_FROM_REQUEST;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
@@ -113,18 +112,14 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 		params.put(IDP_URL.getParameterName(), remoteProvider.getEntityId());
 		params.put(IDP_ALIAS.getParameterName(), remoteProvider.getEntityAlias());
 
-		NameId nameId = ofNullable(remoteProvider.getDefaultNameId()).orElseGet(() -> {
-			Optional<NameId> first = remoteProvider.getProviders()
-					.stream()
-					.filter(IdentityProvider.class::isInstance)
-					.map(IdentityProvider.class::cast)
-					.flatMap(v -> v.getNameIds().stream())
-					.filter(Objects::nonNull)
-					.findFirst();
-			return first.orElseThrow(() -> new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
-					"Provider does not contain information about identification mapping"
-			));
-		});
+		NameId nameId = ofNullable(remoteProvider.getDefaultNameId()).orElseGet(() -> remoteProvider.getProviders()
+				.stream()
+				.filter(IdentityProvider.class::isInstance)
+				.map(IdentityProvider.class::cast)
+				.flatMap(v -> v.getNameIds().stream())
+				.filter(Objects::nonNull)
+				.findFirst().orElse(NameId.UNSPECIFIED));
+
 		params.put(IDP_NAME_ID.getParameterName(), nameId.toString());
 	}
 }
