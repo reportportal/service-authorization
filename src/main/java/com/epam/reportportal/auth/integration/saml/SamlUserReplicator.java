@@ -101,6 +101,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 		user.setExpired(false);
 
 		Project project = generatePersonalProject(user);
+		//TODO BUG IF PROJECT HAS NO USERS BECAUSE OF iterator().next() on empty collection
 		user.getProjects().add(project.getUsers().iterator().next());
 
 		user.setMetadata(defaultMetaData());

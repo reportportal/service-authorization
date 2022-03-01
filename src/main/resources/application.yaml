@@ -69,6 +69,7 @@ rp:
       entity-id: report.portal.sp.id
       key-password: password
       key-alias: report-portal-sp
+      session-live: 4320
       key-store: saml/keystore.jks
       key-store-password: password
       network-connection-timeout: 5000
