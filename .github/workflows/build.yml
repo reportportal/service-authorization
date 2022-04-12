@@ -1,22 +1,18 @@
-name: Release
+name: Build
 
 on:
+  pull_request:
   push:
     branches:
       - master
+      - develop
     paths-ignore:
       - '.github/**'
       - README.md
       - gradle.properties
 
-env:
-  GH_USER_NAME: github.actor
-  SCRIPTS_VERSION: 5.7.0
-  BOM_VERSION: 5.7.0
-  RELEASE_VERSION: 5.7.0
-
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -38,10 +34,7 @@ jobs:
           email: 'support@reportportal.io'
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release with Gradle
-        id: release
+      - name: Build with Gradle
+        id: build
         run: |
-          ./gradlew release -PreleaseMode -Pscripts.version=${{env.SCRIPTS_VERSION}} -Pbom.version=${{env.BOM_VERSION}} \
-          -PgithubUserName=${{env.GH_USER_NAME}} -PgithubToken=${{secrets.GITHUB_TOKEN}} \
-          -PgpgPassphrase=${{secrets.GPG_PASSPHRASE}} -PgpgPrivateKey="${{secrets.GPG_PRIVATE_KEY}}" \
-          -Prelease.releaseVersion=${{env.RELEASE_VERSION}}
+          ./gradlew build

@@ -19,12 +19,18 @@ import com.epam.reportportal.auth.AuthFailureHandler;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthenticationManager;
 import com.epam.reportportal.auth.integration.saml.SamlAuthSuccessHandler;
 import com.epam.reportportal.auth.integration.saml.SamlUserReplicator;
+import com.epam.reportportal.auth.integration.saml.sp.HostBasedSamlServiceProviderProvisioningExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.saml.SamlKeyException;
+import org.springframework.security.saml.SamlValidator;
 import org.springframework.security.saml.key.SimpleKey;
 import org.springframework.security.saml.provider.SamlServerConfiguration;
+import org.springframework.security.saml.provider.provisioning.SamlProviderProvisioning;
+import org.springframework.security.saml.provider.service.ServiceProviderService;
 import org.springframework.security.saml.provider.service.authentication.SamlAuthenticationResponseFilter;
 import org.springframework.security.saml.provider.service.config.SamlServiceProviderServerBeanConfiguration;
+import org.springframework.security.saml.spi.DefaultValidator;
 import org.springframework.security.saml.spi.SamlKeyStoreProvider;
 import org.springframework.security.saml.spi.SpringSecuritySaml;
 import org.springframework.security.saml.spi.opensaml.OpenSamlImplementation;
@@ -39,6 +45,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
+import java.time.Duration;
 import java.util.Base64;
 
 import static org.springframework.util.StringUtils.hasText;
@@ -51,13 +58,16 @@ import static org.springframework.util.StringUtils.hasText;
 @Configuration
 public class SamlServiceProviderBeanConfiguration extends SamlServiceProviderServerBeanConfiguration {
 
+	private final Integer maxSessionLive;
+
 	private SamlAuthSuccessHandler samlSuccessHandler;
 	private AuthFailureHandler authFailureHandler;
 	private SamlUserReplicator samlUserReplicator;
 	private SamlServerConfiguration serviceProviderConfiguration;
 
-	public SamlServiceProviderBeanConfiguration(SamlAuthSuccessHandler samlSuccessHandler, AuthFailureHandler authFailureHandler,
+	public SamlServiceProviderBeanConfiguration(@Value("${rp.auth.saml.session-live}") Integer maxSessionLive, SamlAuthSuccessHandler samlSuccessHandler, AuthFailureHandler authFailureHandler,
 			SamlUserReplicator samlUserReplicator, SamlServerConfiguration spConfiguration) {
+		this.maxSessionLive = maxSessionLive;
 		this.samlSuccessHandler = samlSuccessHandler;
 		this.authFailureHandler = authFailureHandler;
 		this.samlUserReplicator = samlUserReplicator;
@@ -67,6 +77,17 @@ public class SamlServiceProviderBeanConfiguration extends SamlServiceProviderSer
 	@Override
 	protected SamlServerConfiguration getDefaultHostSamlServerConfiguration() {
 		return serviceProviderConfiguration;
+	}
+
+	@Override
+	public SamlProviderProvisioning<ServiceProviderService> getSamlProvisioning() {
+		return new HostBasedSamlServiceProviderProvisioningExtension(
+				samlConfigurationRepository(),
+				samlTransformer(),
+				samlValidator(),
+				samlMetadataCache(),
+				authenticationRequestEnhancer()
+		);
 	}
 
 	@Override
@@ -83,6 +104,13 @@ public class SamlServiceProviderBeanConfiguration extends SamlServiceProviderSer
 		OpenSamlImplementation implementation = new OpenSamlImplementation(samlTime()).init();
 		implementation.setSamlKeyStoreProvider(samlKeyStoreProvider());
 		return implementation;
+	}
+
+	@Override
+	public SamlValidator samlValidator() {
+		final DefaultValidator defaultValidator = new DefaultValidator(samlImplementation());
+		defaultValidator.setMaxAuthenticationAgeMillis(Math.toIntExact(Duration.ofMinutes(maxSessionLive).toMillis()));
+		return defaultValidator;
 	}
 
 	private SamlKeyStoreProvider samlKeyStoreProvider() {

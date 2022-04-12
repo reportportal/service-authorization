@@ -22,6 +22,7 @@ import com.epam.ta.reportportal.ws.model.integration.auth.SamlProvidersResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.SamlResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
+import org.springframework.security.saml.saml2.metadata.BindingType;
 import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.util.CollectionUtils;
 
@@ -75,7 +76,8 @@ public class SamlConverter {
 				.map(integration -> new ExternalIdentityProviderConfiguration().setAlias(IDP_ALIAS.getParameter(integration).get())
 						.setMetadata(IDP_METADATA_URL.getRequiredParameter(integration))
 						.setLinktext(integration.getName())
-						.setNameId(NameId.fromUrn(IDP_NAME_ID.getParameter(integration).get())))
+						.setAuthenticationRequestBinding(BindingType.POST.toUri())
+						.setNameId(IDP_NAME_ID.getParameter(integration).map(NameId::fromUrn).orElse(NameId.UNSPECIFIED)))
 				.collect(Collectors.toList());
 		IntStream.range(0, externalProviders.size()).forEach(value -> externalProviders.get(value).setAssertionConsumerServiceIndex(value));
 		return externalProviders;
