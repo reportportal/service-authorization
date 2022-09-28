@@ -79,9 +79,9 @@ rp:
       prefix: saml/sp
   binarystore:
     path: /data/storage
-    minio:
+    s3:
       endpoint: http://play.min.io
       accessKey:
       secretKey:
-    # could be one of [seaweed, filesystem, minio]
+    # could be one of [seaweed, filesystem, s3]
     type: filesystem
