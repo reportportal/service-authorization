@@ -52,7 +52,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:dae15b3f'
+        compile 'com.github.reportportal:commons-dao:efc4947e'
         compile 'com.github.reportportal:commons-rules:331c402'
         compile 'com.github.reportportal:commons-model:a0479c55'
     }
