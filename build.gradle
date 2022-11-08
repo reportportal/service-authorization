@@ -43,7 +43,7 @@ ext['log4j2.version'] = '2.17.1'
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + getProperty('bom.version') : 'com.github.reportportal:commons-bom:efc4947e')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + getProperty('bom.version') : 'com.github.reportportal:commons-bom:1f66ca93')
     }
 }
 
@@ -53,7 +53,7 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:efc4947e'
+        compile 'com.github.reportportal:commons-dao:6f68269e'
         compile 'com.github.reportportal:commons-rules:331c402'
         compile 'com.github.reportportal:commons-model:a0479c55'
     }
