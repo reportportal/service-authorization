@@ -63,13 +63,15 @@ rp:
       validity-period: ${rp.session.live}
   session:
     live: 86400
+  saml:
+    session-live: 4320
   auth:
     saml:
       base-path:
       entity-id: report.portal.sp.id
       key-password: password
       key-alias: report-portal-sp
-      session-live: 4320
+      session-live: ${rp.saml.session-live}
       key-store: saml/keystore.jks
       key-store-password: password
       network-connection-timeout: 5000
