@@ -107,6 +107,7 @@ bootJar {
     System.getenv().containsKey("K8S") ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
 jar.enabled(true)
+jar.archiveClassifier.set('')
 
 addDockerfileToGit.dependsOn createDockerfile
 beforeReleaseBuild.dependsOn addDockerfileToGit
