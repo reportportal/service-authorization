@@ -1,4 +1,19 @@
 #!groovy
+properties([
+        parameters ([
+                string(
+                        name: "VERSION",
+                        defaultValue: "",
+                        description: "Release candidate version tag"
+                ),
+                string(
+                        name: "BRANCH",
+                        defaultValue: "",
+                        description: "Specify the GitHub branch from which the image will be built"
+                )
+        ])
+])
+
 node {
 
     load "$JENKINS_HOME/jobvars.env"
@@ -9,34 +24,36 @@ node {
     stage('Checkout') {
         checkout scm
     }
+
     stage('Assemble') {
         sh "./gradlew clean assemble -P buildNumber=${env.BUILD_NUMBER}"
     }
+
     stage('Test') {
         sh './gradlew test --full-stacktrace'
     }
-    stage('Build') {
+
+    stage('Gradle Build') {
         sh './gradlew build'
     }
-    stage('Push to ECR') {
-        docker.withServer("$DOCKER_HOST") {
-            withEnv(["AWS_URI=${AWS_URI}", "AWS_REGION=${AWS_REGION}", "VERSION=${VERSION}"]) {
-                def image = env.AWS_URI + '/service-authorization'
-                def url = 'https://' + env.AWS_URI
-                def credentials = 'ecr:' + env.AWS_REGION + ':aws_credentials'
-                sh "./gradlew buildDocker -P dockerServerUrl=$DOCKER_HOST -P dockerTag=$AWS_URI/service-authorization"
-                docker.withRegistry(url, credentials) {
-                    docker.image(image).push('${VERSION}-RC-${BUILD_NUMBER}')
-                }
+
+    stage('Buid & Push image to ECR') {
+        withEnv(["AWS_URI=${AWS_URI}", "AWS_REGION=${AWS_REGION}", "TAG=${VERSION}"]) {
+            def image = env.AWS_URI + '/service-authorization:' + env.TAG + '-RC-' + env.BUILD_NUMBER
+            def url = 'https://' + env.AWS_URI
+            def credentials = 'ecr:' + env.AWS_REGION + ':aws_credentials'
+
+            sh './gradlew buildDocker -P dockerTag=$AWS_URI/service-authorization:$VERSION-RC-$BUILD_NUMBER'
+
+            docker.withRegistry(url, credentials) {
+                docker.image(image).push()
             }
         }
     }
+
     stage('Cleanup') {
-        docker.withServer("$DOCKER_HOST") {
-            withEnv(["AWS_URI=${AWS_URI}"]) {
-                sh 'docker rmi ${AWS_URI}/service-authorization:${VERSION}-RC-${BUILD_NUMBER}'
-                sh 'docker rmi ${AWS_URI}/service-authorization:latest'
-            }
+        withEnv(["AWS_URI=${AWS_URI}"]) {
+            sh 'docker rmi ${AWS_URI}/service-authorization:$VERSION-RC-$BUILD_NUMBER'
         }
     }
 }
