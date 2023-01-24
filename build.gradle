@@ -58,13 +58,20 @@ dependencies {
         compile 'com.github.reportportal:commons-model:d61b714'
     }
 
-    //https://nvd.nist.gov/vuln/detail/CVE-2020-11996 AND https://nvd.nist.gov/vuln/detail/CVE-2020-9484
-    //AND https://nvd.nist.gov/vuln/detail/CVE-2020-13934 AND https://nvd.nist.gov/vuln/detail/CVE-2020-13935
-    //AND https://nvd.nist.gov/vuln/detail/CVE-2020-8022
-    compile 'org.apache.tomcat.embed:tomcat-embed-core:9.0.43'
-    compile 'org.apache.tomcat.embed:tomcat-embed-el:9.0.43'
-    compile 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.43'
-    //
+    //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252
+    compile 'org.apache.tomcat.embed:tomcat-embed-core:9.0.68'
+    compile 'org.apache.tomcat.embed:tomcat-embed-el:9.0.68'
+    compile 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.68'
+    //Fix CVE-2020-15522
+    compile 'org.bouncycastle:bcprov-jdk15on:1.69'
+    //Fix CVE-2015-7501, CVE-2015-4852
+    compile 'commons-collections:commons-collections:3.2.2'
+    //Fix CVE-2018-10237
+    compile 'com.google.guava:guava:24.1.1-jre'
+    //Fix CVE-2020-13956
+    compile 'org.apache.httpcomponents:httpclient:4.5.13'
+    //Fix CVE-2022-40152
+    compile 'com.fasterxml.woodstox:woodstox-core:5.4.0'
 
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
@@ -78,7 +85,8 @@ dependencies {
     //
 
     compile 'org.springframework.security:spring-security-oauth2-client'
-    compile 'org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE'
+    //Fix CVE-2022-22969
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
     compile 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
     compile 'org.springframework.security:spring-security-ldap'
     compile 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M31'
