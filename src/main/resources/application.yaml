@@ -85,5 +85,5 @@ rp:
       endpoint: http://play.min.io
       accessKey:
       secretKey:
-    # could be one of [seaweed, filesystem, minio]
+    # could be one of [minio, filesystem, s3]
     type: filesystem
