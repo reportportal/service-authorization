@@ -15,6 +15,10 @@
  */
 package com.epam.reportportal.auth.integration.ldap;
 
+import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Optional.ofNullable;
+
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
@@ -27,19 +31,13 @@ import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.util.PersonalProjectService;
+import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
-import java.util.Optional;
-
-import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.util.Optional.ofNullable;
 
 /**
  * LDAP replicator
@@ -49,62 +47,92 @@ import static java.util.Optional.ofNullable;
 @Component
 public class LdapUserReplicator extends AbstractUserReplicator {
 
-	@Autowired
+	private static final String EMAIL_NOT_PROVIDED_MSG = "Email not provided";
+	private static final String USER_ALREADY_EXISTS_MSG = "User with login '%s' already exists";
+	private static final String EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG = "Email attribute not provided";
+
+  @Autowired
 	public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
 			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
 			ContentTypeResolver contentTypeResolver) {
 		super(userRepository, projectRepository, personalProjectService, userBinaryDataService, contentTypeResolver);
 	}
 
-	/**
-	 * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for that user
-	 *
-	 * @param name           Username
-	 * @param ctx            LDAP context
-	 * @param syncAttributes Synchronization Attributes
-	 * @return Internal User representation
-	 */
+  /**
+   * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for
+   * that user
+   *
+   * @param name      Username
+   * @param ctx       LDAP context
+   * @param syncAttrs Synchronization Attributes
+   * @return Internal User representation
+   */
 	@Transactional
-	public User replicateUser(String name, DirContextOperations ctx, Map<String, String> syncAttributes) {
-		String emailAttribute = ofNullable(syncAttributes.get(LdapParameter.EMAIL_ATTRIBUTE.getParameterName())).orElseThrow(() -> new UserSynchronizationException(
-				"Email attribute not provided"));
-		String email = (String) ctx.getObjectAttribute(emailAttribute);
-		if (isNullOrEmpty(email)) {
-			throw new UserSynchronizationException("Email not provided");
-		}
-		email = normalizeId(email);
+	public User replicateUser(String name, DirContextOperations ctx, Map<String, String> syncAttrs) {
+		String emailAttribute = ofNullable(
+				syncAttrs.get(LdapParameter.EMAIL_ATTRIBUTE.getParameterName()))
+				.orElseThrow(() -> new UserSynchronizationException(EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG));
+
+		String emailFromContext = (String) ctx.getObjectAttribute(emailAttribute);
+		String email = validateEmail(emailFromContext);
 		String login = CROP_DOMAIN.apply(name);
+
 		Optional<User> userOptional = userRepository.findByLogin(login);
+
 		if (userOptional.isEmpty()) {
-			User newUser = new User();
-			newUser.setLogin(login);
-
-			ofNullable(syncAttributes.get(LdapParameter.FULL_NAME_ATTRIBUTE.getParameterName())).filter(StringUtils::isNotBlank)
-					.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
-					.ifPresent(newUser::setFullName);
-
-			ofNullable(syncAttributes.get(LdapParameter.PHOTO_ATTRIBUTE.getParameterName())).filter(StringUtils::isNotBlank)
-					.flatMap(it -> ofNullable(ctx.getObjectAttribute(it)));
-
-			checkEmail(email);
-			newUser.setEmail(email);
-			newUser.setMetadata(defaultMetaData());
-
-			newUser.setUserType(UserType.LDAP);
-			newUser.setRole(UserRole.USER);
-			newUser.setExpired(false);
-
-			final Project project = generatePersonalProject(newUser);
-			newUser.getProjects().add(project.getUsers().iterator().next());
-			userRepository.save(newUser);
-
-			return newUser;
-
-		} else if (!UserType.LDAP.equals(userOptional.get().getUserType())) {
-			//if user with such login exists, but it's not GitHub user than throw an exception
-			throw new UserSynchronizationException("User with login '" + userOptional.get().getLogin() + "' already exists");
+			return createNewUser(ctx, syncAttrs, email, login);
 		}
-		return userOptional.get();
+
+		User user = userOptional.get();
+		checkUserType(user);
+		updateEmailIfNeeded(email, user);
+
+		return user;
+	}
+
+	private String validateEmail(String email) {
+		if (isNullOrEmpty(email)) {
+			throw new UserSynchronizationException(EMAIL_NOT_PROVIDED_MSG);
+		}
+		return email.toLowerCase();
+	}
+
+	private User createNewUser(DirContextOperations ctx, Map<String, String> syncAttributes,
+			String email,	String login) {
+		User newUser = new User();
+		newUser.setLogin(login);
+
+		ofNullable(syncAttributes.get(LdapParameter.FULL_NAME_ATTRIBUTE.getParameterName()))
+				.filter(StringUtils::isNotBlank)
+				.flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
+				.ifPresent(newUser::setFullName);
+
+		checkEmail(email);
+		newUser.setEmail(email);
+		newUser.setMetadata(defaultMetaData());
+		newUser.setUserType(UserType.LDAP);
+		newUser.setRole(UserRole.USER);
+		newUser.setExpired(false);
+
+		final Project project = generatePersonalProject(newUser);
+		newUser.getProjects().add(project.getUsers().iterator().next());
+
+		return userRepository.save(newUser);
+	}
+
+  private void checkUserType(User user) {
+    if (!UserType.LDAP.equals(user.getUserType())) {
+      //if user with such login exists, but it's not GitHub user than throw an exception
+      String login = user.getLogin();
+      throw new UserSynchronizationException(String.format(USER_ALREADY_EXISTS_MSG, login));
+    }
+  }
+
+	private void updateEmailIfNeeded(String email, User user) {
+		if (!StringUtils.equals(user.getEmail(), email)) {
+			user.setEmail(email);
+			userRepository.save(user);
+		}
 	}
 
 }
