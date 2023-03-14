@@ -122,7 +122,6 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
   private void checkUserType(User user) {
     if (!UserType.LDAP.equals(user.getUserType())) {
-      //if user with such login exists, but it's not GitHub user than throw an exception
       String login = user.getLogin();
       throw new UserSynchronizationException(String.format(USER_ALREADY_EXISTS_MSG, login));
     }
