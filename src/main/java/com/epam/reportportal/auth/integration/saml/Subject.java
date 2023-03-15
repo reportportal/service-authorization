@@ -24,16 +24,16 @@ import java.io.Serializable;
  */
 public class Subject implements Serializable {
 
-	private static final long serialVersionUID = 2390092323L;
+  private static final long serialVersionUID = 2390092323L;
 
-	private SamlPrincipal samlPrincipal;
+  private SamlPrincipal samlPrincipal;
 
-	public SamlPrincipal getSamlPrincipal() {
-		return samlPrincipal;
-	}
+  public SamlPrincipal getSamlPrincipal() {
+    return samlPrincipal;
+  }
 
-	public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
-		this.samlPrincipal = samlPrincipal;
-		return this;
-	}
+  public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
+    this.samlPrincipal = samlPrincipal;
+    return this;
+  }
 }

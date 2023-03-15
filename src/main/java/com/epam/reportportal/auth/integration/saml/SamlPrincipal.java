@@ -15,63 +15,64 @@
  */
 package com.epam.reportportal.auth.integration.saml;
 
-import org.springframework.security.saml.saml2.authentication.SubjectPrincipal;
-
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Objects;
+import org.springframework.security.saml.saml2.authentication.SubjectPrincipal;
 
 /**
  * Represents principal extracted from SAML response and used for authentication
  *
  * @author Yevgeniy Svalukhin
  */
-public class SamlPrincipal extends SubjectPrincipal<SamlPrincipal> implements Serializable, Principal {
+public class SamlPrincipal extends SubjectPrincipal<SamlPrincipal> implements Serializable,
+    Principal {
 
-	private static final long serialVersionUID = -341083232L;
+  private static final long serialVersionUID = -341083232L;
 
-	private String format;
-	private String value;
+  private String format;
+  private String value;
 
-	public String getFormat() {
-		return format;
-	}
+  public String getFormat() {
+    return format;
+  }
 
-	public SamlPrincipal setFormat(String format) {
-		this.format = format;
-		return this;
-	}
+  public SamlPrincipal setFormat(String format) {
+    this.format = format;
+    return this;
+  }
 
-	@Override
-	public String getValue() {
-		return value;
-	}
+  @Override
+  public String getValue() {
+    return value;
+  }
 
-	@Override
-	public SamlPrincipal setValue(String value) {
-		this.value = value;
-		return this;
-	}
+  @Override
+  public SamlPrincipal setValue(String value) {
+    this.value = value;
+    return this;
+  }
 
-	@Override
-	public String getName() {
-		return getValue();
-	}
+  @Override
+  public String getName() {
+    return getValue();
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		SamlPrincipal samlPrincipal = (SamlPrincipal) o;
-		return Objects.equals(format, samlPrincipal.format) && Objects.equals(value, samlPrincipal.value);
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SamlPrincipal samlPrincipal = (SamlPrincipal) o;
+    return Objects.equals(format, samlPrincipal.format) && Objects.equals(value,
+        samlPrincipal.value);
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(format, value);
-	}
+  @Override
+  public int hashCode() {
+    return Objects.hash(format, value);
+  }
 }

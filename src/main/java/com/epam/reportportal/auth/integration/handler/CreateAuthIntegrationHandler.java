@@ -27,9 +27,12 @@ import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
  */
 public interface CreateAuthIntegrationHandler {
 
-	AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request, ReportPortalUser user);
+  AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request,
+      ReportPortalUser user);
 
-	AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId, UpdateAuthRQ request, ReportPortalUser user);
+  AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId,
+      UpdateAuthRQ request, ReportPortalUser user);
 
-	OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId, OAuthRegistrationResource clientRegistrationResource);
+  OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId,
+      OAuthRegistrationResource clientRegistrationResource);
 }

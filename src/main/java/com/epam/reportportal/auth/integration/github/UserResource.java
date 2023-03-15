@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.integration.github;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,71 +29,71 @@ import java.util.Map;
  */
 class UserResource implements Serializable {
 
-	@JsonProperty("login")
-	private String login;
+  @JsonProperty("login")
+  private String login;
 
-	@JsonProperty("email")
-	private String email;
+  @JsonProperty("email")
+  private String email;
 
-	@JsonProperty("name")
-	private String name;
+  @JsonProperty("name")
+  private String name;
 
-	@JsonProperty("avatar_url")
-	private String avatarUrl;
+  @JsonProperty("avatar_url")
+  private String avatarUrl;
 
-	@JsonProperty("organizations_url")
-	private String organizationsUrl;
+  @JsonProperty("organizations_url")
+  private String organizationsUrl;
 
-	private Map<String, Object> details = new HashMap<>();
+  private Map<String, Object> details = new HashMap<>();
 
-	public String getLogin() {
-		return login;
-	}
+  public String getLogin() {
+    return login;
+  }
 
-	public void setLogin(String login) {
-		this.login = login;
-	}
+  public void setLogin(String login) {
+    this.login = login;
+  }
 
-	public String getEmail() {
-		return email;
-	}
+  public String getEmail() {
+    return email;
+  }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public String getAvatarUrl() {
-		return avatarUrl;
-	}
+  public String getAvatarUrl() {
+    return avatarUrl;
+  }
 
-	public void setAvatarUrl(String avatarUrl) {
-		this.avatarUrl = avatarUrl;
-	}
+  public void setAvatarUrl(String avatarUrl) {
+    this.avatarUrl = avatarUrl;
+  }
 
-	public String getOrganizationsUrl() {
-		return organizationsUrl;
-	}
+  public String getOrganizationsUrl() {
+    return organizationsUrl;
+  }
 
-	public void setOrganizationsUrl(String organizationsUrl) {
-		this.organizationsUrl = organizationsUrl;
-	}
+  public void setOrganizationsUrl(String organizationsUrl) {
+    this.organizationsUrl = organizationsUrl;
+  }
 
-	@JsonAnyGetter
-	public Map<String, Object> any() {
-		return details;
-	}
+  @JsonAnyGetter
+  public Map<String, Object> any() {
+    return details;
+  }
 
-	@JsonAnySetter
-	public void setUnknown(String name, Object value) {
-		details.put(name, value);
-	}
+  @JsonAnySetter
+  public void setUnknown(String name, Object value) {
+    details.put(name, value);
+  }
 
 }

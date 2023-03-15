@@ -33,36 +33,41 @@ import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAu
  */
 public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
-	private final DetailsContextMapper detailsContextMapper;
+  private final DetailsContextMapper detailsContextMapper;
 
-	public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
-			DetailsContextMapper detailsContextMapper) {
-		super(integrationRepository, eventPublisher);
-		this.detailsContextMapper = detailsContextMapper;
-	}
+  public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository,
+      ApplicationEventPublisher eventPublisher,
+      DetailsContextMapper detailsContextMapper) {
+    super(integrationRepository, eventPublisher);
+    this.detailsContextMapper = detailsContextMapper;
+  }
 
-	@Override
-	protected boolean isEnabled() {
-		return integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).stream().findFirst().isPresent();
-	}
+  @Override
+  protected boolean isEnabled() {
+    return integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+        .stream().findFirst().isPresent();
+  }
 
-	@Override
-	protected AuthenticationProvider getDelegate() {
+  @Override
+  protected AuthenticationProvider getDelegate() {
 
-		Integration integration = integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
-				.stream()
-				.findFirst()
-				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
+    Integration integration = integrationRepository.findAllByTypeIn(
+            AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
-		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(LdapParameter.DOMAIN.getParameter(
-				integration).orElse(null),
-				LdapParameter.URL.getRequiredParameter(integration),
-				LdapParameter.BASE_DN.getRequiredParameter(integration)
-		);
+    ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(
+        LdapParameter.DOMAIN.getParameter(
+            integration).orElse(null),
+        LdapParameter.URL.getRequiredParameter(integration),
+        LdapParameter.BASE_DN.getRequiredParameter(integration)
+    );
 
-		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
-		adAuth.setUserDetailsContextMapper(detailsContextMapper);
-		LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(integration).ifPresent(adAuth::setSearchFilter);
-		return adAuth;
-	}
+    adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
+    adAuth.setUserDetailsContextMapper(detailsContextMapper);
+    LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(integration)
+        .ifPresent(adAuth::setSearchFilter);
+    return adAuth;
+  }
 }

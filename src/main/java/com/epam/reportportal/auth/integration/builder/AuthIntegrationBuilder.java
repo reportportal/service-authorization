@@ -18,41 +18,40 @@ package com.epam.reportportal.auth.integration.builder;
 
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
 public class AuthIntegrationBuilder {
 
-	private final Integration integration;
+  private final Integration integration;
 
-	public AuthIntegrationBuilder() {
-		integration = new Integration();
-	}
+  public AuthIntegrationBuilder() {
+    integration = new Integration();
+  }
 
-	public AuthIntegrationBuilder(Integration integration) {
-		this.integration = integration;
-	}
+  public AuthIntegrationBuilder(Integration integration) {
+    this.integration = integration;
+  }
 
-	public AuthIntegrationBuilder addCreator(String username) {
-		integration.setCreator(username);
-		return this;
-	}
+  public AuthIntegrationBuilder addCreator(String username) {
+    integration.setCreator(username);
+    return this;
+  }
 
-	public AuthIntegrationBuilder addIntegrationType(IntegrationType type) {
-		integration.setType(type);
-		return this;
-	}
+  public AuthIntegrationBuilder addIntegrationType(IntegrationType type) {
+    integration.setType(type);
+    return this;
+  }
 
-	public AuthIntegrationBuilder addCreationDate(LocalDateTime creationDate) {
-		integration.setCreationDate(creationDate);
-		return this;
-	}
+  public AuthIntegrationBuilder addCreationDate(LocalDateTime creationDate) {
+    integration.setCreationDate(creationDate);
+    return this;
+  }
 
-	public @NotNull Integration build() {
-		return integration;
-	}
+  public @NotNull Integration build() {
+    return integration;
+  }
 }

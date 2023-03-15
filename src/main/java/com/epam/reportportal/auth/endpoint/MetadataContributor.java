@@ -17,13 +17,10 @@ package com.epam.reportportal.auth.endpoint;
 
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.google.common.collect.ImmutableMap;
+import java.util.stream.Collectors;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
-
-import static java.util.Arrays.stream;
 
 /**
  * Shows list of supported user roles
@@ -33,16 +30,16 @@ import static java.util.Arrays.stream;
 @Component
 public class MetadataContributor implements InfoContributor {
 
-	@Override
-	public void contribute(Info.Builder builder) {
-		//@formatter:off
-        builder
-                .withDetail("metadata", ImmutableMap
-                        .builder()
-                        .put("project_roles",
-                                stream(ProjectRole.values()).map(Enum::name).collect(Collectors.toList()))
-                        .build());
-        //@formatter:on
-	}
+  @Override
+  public void contribute(Info.Builder builder) {
+    //@formatter:off
+    builder
+        .withDetail("metadata", ImmutableMap
+            .builder()
+            .put("project_roles",
+                stream(ProjectRole.values()).map(Enum::name).collect(Collectors.toList()))
+            .build());
+    //@formatter:on
+  }
 
 }

@@ -15,6 +15,8 @@
  */
 package com.epam.reportportal.auth.integration;
 
+import static java.util.Optional.ofNullable;
+
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.commons.ContentTypeResolver;
 import com.epam.ta.reportportal.binary.UserBinaryDataService;
@@ -25,101 +27,101 @@ import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.Optional.ofNullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Andrei Varabyeu
  */
 public class AbstractUserReplicator {
 
-	protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
 
-	protected final UserRepository userRepository;
-	protected final ProjectRepository projectRepository;
-	protected final PersonalProjectService personalProjectService;
-	protected UserBinaryDataService userBinaryDataService;
-	private final ContentTypeResolver contentTypeResolver;
+  protected final UserRepository userRepository;
+  protected final ProjectRepository projectRepository;
+  protected final PersonalProjectService personalProjectService;
+  private final ContentTypeResolver contentTypeResolver;
+  protected UserBinaryDataService userBinaryDataService;
 
-	public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-			PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-			ContentTypeResolver contentTypeResolver) {
-		this.userRepository = userRepository;
-		this.projectRepository = projectRepository;
-		this.personalProjectService = personalProjectService;
-		this.userBinaryDataService = userBinaryDataService;
-		this.contentTypeResolver = contentTypeResolver;
-	}
+  public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
+      PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
+      ContentTypeResolver contentTypeResolver) {
+    this.userRepository = userRepository;
+    this.projectRepository = projectRepository;
+    this.personalProjectService = personalProjectService;
+    this.userBinaryDataService = userBinaryDataService;
+    this.contentTypeResolver = contentTypeResolver;
+  }
 
-	/**
-	 * Generates personal project if does NOT exists
-	 *
-	 * @param user Owner of personal project
-	 * @return Created project name
-	 */
-	protected Project generatePersonalProject(User user) {
-		return projectRepository.findByName(personalProjectService.getProjectPrefix(user.getLogin()))
-				.orElse(generatePersonalProjectByUser(user));
-	}
+  /**
+   * Generates personal project if does NOT exists
+   *
+   * @param user Owner of personal project
+   * @return Created project name
+   */
+  protected Project generatePersonalProject(User user) {
+    return projectRepository.findByName(personalProjectService.getProjectPrefix(user.getLogin()))
+        .orElse(generatePersonalProjectByUser(user));
+  }
 
-	/**
-	 * Generates default metainfo
-	 *
-	 * @return Default meta info
-	 */
-	protected com.epam.ta.reportportal.entity.Metadata defaultMetaData() {
-		Map<String, Object> metaDataMap = new HashMap<>();
-		long nowInMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
-		metaDataMap.put("last_login", nowInMillis);
-		metaDataMap.put("synchronizationDate", nowInMillis);
-		return new com.epam.ta.reportportal.entity.Metadata(metaDataMap);
-	}
+  /**
+   * Generates default metainfo
+   *
+   * @return Default meta info
+   */
+  protected com.epam.ta.reportportal.entity.Metadata defaultMetaData() {
+    Map<String, Object> metaDataMap = new HashMap<>();
+    long nowInMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
+    metaDataMap.put("last_login", nowInMillis);
+    metaDataMap.put("synchronizationDate", nowInMillis);
+    return new com.epam.ta.reportportal.entity.Metadata(metaDataMap);
+  }
 
-	/**
-	 * Updates last syncronization data for specified user
-	 *
-	 * @param user User to be synchronized
-	 */
-	protected void updateSynchronizationDate(User user) {
-		com.epam.ta.reportportal.entity.Metadata metadata = ofNullable(user.getMetadata()).orElse(new com.epam.ta.reportportal.entity.Metadata(
-				Maps.newHashMap()));
-		metadata.getMetadata().put("synchronizationDate", LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli());
-		user.setMetadata(metadata);
-	}
+  /**
+   * Updates last syncronization data for specified user
+   *
+   * @param user User to be synchronized
+   */
+  protected void updateSynchronizationDate(User user) {
+    com.epam.ta.reportportal.entity.Metadata metadata = ofNullable(user.getMetadata()).orElse(
+        new com.epam.ta.reportportal.entity.Metadata(
+            Maps.newHashMap()));
+    metadata.getMetadata()
+        .put("synchronizationDate", LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli());
+    user.setMetadata(metadata);
+  }
 
-	/**
-	 * Checks email is available
-	 *
-	 * @param email email to check
-	 */
-	protected void checkEmail(String email) {
-		if (userRepository.findByEmail(email).isPresent()) {
-			throw new UserSynchronizationException("User with email '" + email + "' already exists");
-		}
-	}
+  /**
+   * Checks email is available
+   *
+   * @param email email to check
+   */
+  protected void checkEmail(String email) {
+    if (userRepository.findByEmail(email).isPresent()) {
+      throw new UserSynchronizationException("User with email '" + email + "' already exists");
+    }
+  }
 
-	protected void uploadPhoto(User user, BinaryData data) {
-		userBinaryDataService.saveUserPhoto(user, data);
-	}
+  protected void uploadPhoto(User user, BinaryData data) {
+    userBinaryDataService.saveUserPhoto(user, data);
+  }
 
-	protected void uploadPhoto(User user, byte[] data) {
-		uploadPhoto(user, new BinaryData(resolveContentType(data), (long) data.length, new ByteArrayInputStream(data)));
-	}
+  protected void uploadPhoto(User user, byte[] data) {
+    uploadPhoto(user, new BinaryData(resolveContentType(data), (long) data.length,
+        new ByteArrayInputStream(data)));
+  }
 
-	private String resolveContentType(byte[] data) {
-		return contentTypeResolver.detectContentType(data);
-	}
+  private String resolveContentType(byte[] data) {
+    return contentTypeResolver.detectContentType(data);
+  }
 
-	private Project generatePersonalProjectByUser(User user) {
-		Project personalProject = personalProjectService.generatePersonalProject(user);
-		return projectRepository.save(personalProject);
-	}
+  private Project generatePersonalProjectByUser(User user) {
+    Project personalProject = personalProjectService.generatePersonalProject(user);
+    return projectRepository.save(personalProject);
+  }
 }

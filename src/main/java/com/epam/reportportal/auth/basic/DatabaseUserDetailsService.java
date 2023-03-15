@@ -15,6 +15,8 @@
  */
 package com.epam.reportportal.auth.basic;
 
+import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+
 import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
@@ -25,41 +27,39 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
-
 /**
- * Spring's {@link UserDetailsService} implementation. Uses {@link User} entity
- * from ReportPortal database
+ * Spring's {@link UserDetailsService} implementation. Uses {@link User} entity from ReportPortal
+ * database
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public class DatabaseUserDetailsService implements UserDetailsService {
 
-	private UserRepository userRepository;
+  private UserRepository userRepository;
 
-	@Autowired
-	public void setUserRepository(UserRepository userRepository) {
-		this.userRepository = userRepository;
-	}
+  @Autowired
+  public void setUserRepository(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
 
-	@Override
-	@Transactional(readOnly = true)
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		ReportPortalUser user = userRepository.findUserDetails(normalizeId(username))
-				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+  @Override
+  @Transactional(readOnly = true)
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    ReportPortalUser user = userRepository.findUserDetails(normalizeId(username))
+        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-		UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-				.username(user.getUsername())
-				.password(user.getPassword() == null ? "" : user.getPassword())
-				.authorities(AuthUtils.AS_AUTHORITIES.apply(user.getUserRole()))
-				.build();
+    UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+        .username(user.getUsername())
+        .password(user.getPassword() == null ? "" : user.getPassword())
+        .authorities(AuthUtils.AS_AUTHORITIES.apply(user.getUserRole()))
+        .build();
 
-		return ReportPortalUser.userBuilder()
-				.withUserDetails(userDetails)
-				.withProjectDetails(user.getProjectDetails())
-				.withUserId(user.getUserId())
-				.withUserRole(user.getUserRole())
-				.withEmail(user.getEmail())
-				.build();
-	}
+    return ReportPortalUser.userBuilder()
+        .withUserDetails(userDetails)
+        .withProjectDetails(user.getProjectDetails())
+        .withUserId(user.getUserId())
+        .withUserRole(user.getUserRole())
+        .withEmail(user.getEmail())
+        .build();
+  }
 }

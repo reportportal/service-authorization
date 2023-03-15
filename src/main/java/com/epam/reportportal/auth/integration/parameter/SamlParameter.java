@@ -16,112 +16,117 @@
 
 package com.epam.reportportal.auth.integration.parameter;
 
+import static com.epam.ta.reportportal.commons.validation.Suppliers.formattedSupplier;
+import static java.util.Optional.ofNullable;
+
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationParams;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import static com.epam.ta.reportportal.commons.validation.Suppliers.formattedSupplier;
-import static java.util.Optional.ofNullable;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
 public enum SamlParameter {
 
-	BASE_PATH("callbackUrl", false),
-	IDP_NAME("identityProviderName", true),
-	IDP_METADATA_URL("identityProviderMetadataUrl", true),
-	EMAIL_ATTRIBUTE("emailAttribute", true),
-	IDP_NAME_ID("identityProviderNameId", false),
-	IDP_ALIAS("identityProviderAlias", false),
-	IDP_URL("identityProviderUrl", false),
-	FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
-	FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
-	LAST_NAME_ATTRIBUTE("lastNameAttribute", false);
+  BASE_PATH("callbackUrl", false),
+  IDP_NAME("identityProviderName", true),
+  IDP_METADATA_URL("identityProviderMetadataUrl", true),
+  EMAIL_ATTRIBUTE("emailAttribute", true),
+  IDP_NAME_ID("identityProviderNameId", false),
+  IDP_ALIAS("identityProviderAlias", false),
+  IDP_URL("identityProviderUrl", false),
+  FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
+  FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
+  LAST_NAME_ATTRIBUTE("lastNameAttribute", false);
 
-	private String parameterName;
+  private String parameterName;
 
-	private boolean required;
+  private boolean required;
 
-	SamlParameter(String parameterName, boolean required) {
-		this.parameterName = parameterName;
-		this.required = required;
-	}
+  SamlParameter(String parameterName, boolean required) {
+    this.parameterName = parameterName;
+    this.required = required;
+  }
 
-	public String getParameterName() {
-		return parameterName;
-	}
+  public String getParameterName() {
+    return parameterName;
+  }
 
-	public boolean isRequired() {
-		return required;
-	}
+  public boolean isRequired() {
+    return required;
+  }
 
-	public Optional<String> getParameter(Integration integration) {
-		return ofNullable((String) integration.getParams().getParams().get(parameterName));
-	}
+  public Optional<String> getParameter(Integration integration) {
+    return ofNullable((String) integration.getParams().getParams().get(parameterName));
+  }
 
-	public void setParameter(Integration integration, String value) {
-		if (Objects.isNull(integration.getParams())) {
-			integration.setParams(new IntegrationParams(new HashMap<>()));
-		}
-		if (Objects.isNull(integration.getParams().getParams())) {
-			integration.getParams().setParams(new HashMap<>());
-		}
-		integration.getParams().getParams().put(parameterName, value);
-	}
+  public void setParameter(Integration integration, String value) {
+    if (Objects.isNull(integration.getParams())) {
+      integration.setParams(new IntegrationParams(new HashMap<>()));
+    }
+    if (Objects.isNull(integration.getParams().getParams())) {
+      integration.getParams().setParams(new HashMap<>());
+    }
+    integration.getParams().getParams().put(parameterName, value);
+  }
 
-	public void removeParameter(Integration integration) {
-		ofNullable(integration.getParams()).map(IntegrationParams::getParams).ifPresent(params -> params.remove(parameterName));
-	}
+  public void removeParameter(Integration integration) {
+    ofNullable(integration.getParams()).map(IntegrationParams::getParams)
+        .ifPresent(params -> params.remove(parameterName));
+  }
 
-	public String getRequiredParameter(Integration integration) {
-		Optional<String> parameter = getParameter(integration);
-		if (required) {
-			if (parameter.isPresent()) {
-				return parameter.get();
-			} else {
-				throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, formattedSupplier("'{}' should be present.", parameterName));
-			}
-		} else {
-			throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, formattedSupplier("'{}' is not required."));
-		}
-	}
+  public String getRequiredParameter(Integration integration) {
+    Optional<String> parameter = getParameter(integration);
+    if (required) {
+      if (parameter.isPresent()) {
+        return parameter.get();
+      } else {
+        throw new ReportPortalException(ErrorType.INCORRECT_REQUEST,
+            formattedSupplier("'{}' should be present.", parameterName));
+      }
+    } else {
+      throw new ReportPortalException(ErrorType.INCORRECT_REQUEST,
+          formattedSupplier("'{}' is not required."));
+    }
+  }
 
-	public boolean exist(Integration integration) {
-		return getParameter(integration).isPresent();
-	}
+  public boolean exist(Integration integration) {
+    return getParameter(integration).isPresent();
+  }
 
-	public Optional<String> getParameter(Map<String, Object> parameterMap) {
-		return ofNullable(parameterMap.get(parameterName)).map(it -> (String) it).filter(StringUtils::isNotBlank);
-	}
+  public Optional<String> getParameter(Map<String, Object> parameterMap) {
+    return ofNullable(parameterMap.get(parameterName)).map(it -> (String) it)
+        .filter(StringUtils::isNotBlank);
+  }
 
-	public Optional<String> getParameter(UpdateAuthRQ request) {
-		return ofNullable(request.getIntegrationParams()).flatMap(this::getParameter);
-	}
+  public Optional<String> getParameter(UpdateAuthRQ request) {
+    return ofNullable(request.getIntegrationParams()).flatMap(this::getParameter);
+  }
 
-	public String getRequiredParameter(UpdateAuthRQ request) {
-		Optional<String> parameter = getParameter(request);
-		if (required) {
-			if (parameter.isPresent()) {
-				return parameter.get();
-			} else {
-				throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, formattedSupplier("'{}' should be present.", parameterName));
-			}
-		} else {
-			throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, formattedSupplier("'{}' is not required."));
-		}
-	}
+  public String getRequiredParameter(UpdateAuthRQ request) {
+    Optional<String> parameter = getParameter(request);
+    if (required) {
+      if (parameter.isPresent()) {
+        return parameter.get();
+      } else {
+        throw new ReportPortalException(ErrorType.INCORRECT_REQUEST,
+            formattedSupplier("'{}' should be present.", parameterName));
+      }
+    } else {
+      throw new ReportPortalException(ErrorType.INCORRECT_REQUEST,
+          formattedSupplier("'{}' is not required."));
+    }
+  }
 
-	public void setParameter(UpdateAuthRQ request, Integration integration) {
-		getParameter(request).ifPresent(it -> setParameter(integration, it));
-	}
+  public void setParameter(UpdateAuthRQ request, Integration integration) {
+    getParameter(request).ifPresent(it -> setParameter(integration, it));
+  }
 
 }

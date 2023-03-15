@@ -15,7 +15,13 @@
  */
 package com.epam.reportportal.auth.config;
 
+import static com.google.common.base.Predicates.not;
+import static com.google.common.base.Predicates.or;
+import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
+
 import com.epam.ta.reportportal.commons.ReportPortalUser;
+import java.util.Collections;
+import javax.servlet.ServletContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,13 +36,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import javax.servlet.ServletContext;
-import java.util.Collections;
-
-import static com.google.common.base.Predicates.not;
-import static com.google.common.base.Predicates.or;
-import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
-
 /**
  * @author <a href="mailto:pavel_bortnik@epam.com">Pavel Bortnik</a>
  */
@@ -45,58 +44,60 @@ import static springfox.documentation.builders.RequestHandlerSelectors.basePacka
 @ComponentScan(basePackages = "com.epam.reportportal.auth")
 public class Swagger2Configuration {
 
-	@Autowired
-	private ServletContext servletContext;
+  @Autowired
+  private ServletContext servletContext;
 
-	@Value("${info.build.version}")
-	private String buildVersion;
+  @Value("${info.build.version}")
+  private String buildVersion;
 
-	@Value("${spring.application.name}")
-	private String applicationName;
+  @Value("${spring.application.name}")
+  private String applicationName;
 
-	@Bean
-	public Docket docket() {
-		ApiInfo rpInfo = new ApiInfo(
-				"Report Portal",
-				"Report Portal UAT documentation",
-				buildVersion,
-				null,
-				new Contact("Support", null, "Support EPMC-TST Report Portal <SupportEPMC-TSTReportPortal@epam.com>"),
-				"Apache 2.0",
-				"http://www.apache.org/licenses/LICENSE-2.0",
-				Collections.emptyList()
-		);
+  @Bean
+  public Docket docket() {
+    ApiInfo rpInfo = new ApiInfo(
+        "Report Portal",
+        "Report Portal UAT documentation",
+        buildVersion,
+        null,
+        new Contact("Support", null,
+            "Support EPMC-TST Report Portal <SupportEPMC-TSTReportPortal@epam.com>"),
+        "Apache 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0",
+        Collections.emptyList()
+    );
 
-		Docket rpDocket = new Docket(DocumentationType.SWAGGER_2).ignoredParameterTypes(ReportPortalUser.class)
-				.useDefaultResponseMessages(false)
-				.pathProvider(rpPathProvider())
-				/* remove default endpoints from listing */
-				.select()
-				.apis(not(or(
-						basePackage("org.springframework.boot"),
-						basePackage("org.springframework.cloud"),
-						basePackage("org.springframework.security.oauth2.provider.endpoint")
-				)))
-				.build();
-		//@formatter:on
+    Docket rpDocket = new Docket(DocumentationType.SWAGGER_2).ignoredParameterTypes(
+            ReportPortalUser.class)
+        .useDefaultResponseMessages(false)
+        .pathProvider(rpPathProvider())
+        /* remove default endpoints from listing */
+        .select()
+        .apis(not(or(
+            basePackage("org.springframework.boot"),
+            basePackage("org.springframework.cloud"),
+            basePackage("org.springframework.security.oauth2.provider.endpoint")
+        )))
+        .build();
+    //@formatter:on
 
-		rpDocket.apiInfo(rpInfo);
-		return rpDocket;
-	}
+    rpDocket.apiInfo(rpInfo);
+    return rpDocket;
+  }
 
-	@Bean
-	public PathProvider rpPathProvider() {
-		return new RelativePathProvider(servletContext) {
-			@Override
-			public String getApplicationBasePath() {
-				return "/" + applicationName + super.getApplicationBasePath();
-			}
-		};
-	}
+  @Bean
+  public PathProvider rpPathProvider() {
+    return new RelativePathProvider(servletContext) {
+      @Override
+      public String getApplicationBasePath() {
+        return "/" + applicationName + super.getApplicationBasePath();
+      }
+    };
+  }
 
-	@Bean
-	public UiConfiguration uiConfig() {
-		return new UiConfiguration(null);
-	}
+  @Bean
+  public UiConfiguration uiConfig() {
+    return new UiConfiguration(null);
+  }
 
 }

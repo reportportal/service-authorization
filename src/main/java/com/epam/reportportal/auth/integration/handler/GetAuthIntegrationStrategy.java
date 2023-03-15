@@ -23,5 +23,5 @@ import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
  */
 public interface GetAuthIntegrationStrategy {
 
-	AbstractAuthResource getIntegration();
+  AbstractAuthResource getIntegration();
 }

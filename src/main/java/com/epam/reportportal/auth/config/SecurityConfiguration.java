@@ -35,6 +35,13 @@ import com.epam.ta.reportportal.entity.ServerSettings;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.servlet.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +49,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -61,11 +72,19 @@ import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.*;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.token.*;
+import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -74,372 +93,387 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
-import javax.servlet.Filter;
-import java.util.*;
-import java.util.stream.Collectors;
-
 @Configuration
 public class SecurityConfiguration {
 
-	@EnableOAuth2Client
-	@Configuration
-	@Conditional(GlobalWebSecurityConfig.HasExtensionsCondition.class)
-	@Order(5)
-	public static class GlobalWebSecurityConfig extends WebSecurityConfigurerAdapter {
+  @EnableOAuth2Client
+  @Configuration
+  @Conditional(GlobalWebSecurityConfig.HasExtensionsCondition.class)
+  @Order(5)
+  public static class GlobalWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-		public static final String SSO_LOGIN_PATH = "/sso/login";
+    public static final String SSO_LOGIN_PATH = "/sso/login";
+    @Autowired
+    @Qualifier("activeDirectoryDetailsContextMapper")
+    DetailsContextMapper activeDirectoryContextMapper;
+    @Autowired
+    @Qualifier("ldapDetailsContextMapper")
+    DetailsContextMapper ldapContextMapper;
+    private OAuth2ClientContext oauth2ClientContext;
+    private OAuthSuccessHandler successHandler;
+    private AuthenticationFailureHandler authenticationFailureHandler;
+    private IntegrationRepository authConfigRepository;
+    private LdapUserReplicator ldapUserReplicator;
+    private List<OAuthProvider> authProviders;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
-		private OAuth2ClientContext oauth2ClientContext;
-		private OAuthSuccessHandler successHandler;
-		private AuthenticationFailureHandler authenticationFailureHandler;
-		private IntegrationRepository authConfigRepository;
-		private LdapUserReplicator ldapUserReplicator;
-		private List<OAuthProvider> authProviders;
+    @Autowired
+    public GlobalWebSecurityConfig(OAuth2ClientContext oauth2ClientContext,
+        AuthenticationFailureHandler authenticationFailureHandler,
+        IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator,
+        List<OAuthProvider> authProviders) {
+      this.oauth2ClientContext = oauth2ClientContext;
+      this.authenticationFailureHandler = authenticationFailureHandler;
+      this.authConfigRepository = authConfigRepository;
+      this.ldapUserReplicator = ldapUserReplicator;
+      this.authProviders = authProviders;
+    }
 
-		@Autowired
-		public GlobalWebSecurityConfig(OAuth2ClientContext oauth2ClientContext, AuthenticationFailureHandler authenticationFailureHandler,
-				IntegrationRepository authConfigRepository, LdapUserReplicator ldapUserReplicator, List<OAuthProvider> authProviders) {
-			this.oauth2ClientContext = oauth2ClientContext;
-			this.authenticationFailureHandler = authenticationFailureHandler;
-			this.authConfigRepository = authConfigRepository;
-			this.ldapUserReplicator = ldapUserReplicator;
-			this.authProviders = authProviders;
-		}
+    @Autowired
+    public void setSuccessHandler(OAuthSuccessHandler successHandler) {
+      this.successHandler = successHandler;
+    }
 
-		@Autowired
-		public void setSuccessHandler(OAuthSuccessHandler successHandler) {
-			this.successHandler = successHandler;
-		}
+    private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(
+        OAuth2ClientContext oauth2ClientContext) {
+      return authProviders.stream().map(provider -> {
+        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(
+            provider.buildPath(
+                SSO_LOGIN_PATH));
+        filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
+        filter.setTokenServices(provider.getTokenServices());
+        filter.setAuthenticationSuccessHandler(successHandler);
+        return filter;
+      }).collect(Collectors.toList());
+    }
 
-		private List<OAuth2ClientAuthenticationProcessingFilter> getDefaultFilters(OAuth2ClientContext oauth2ClientContext) {
-			return authProviders.stream().map(provider -> {
-				OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(provider.buildPath(
-						SSO_LOGIN_PATH));
-				filter.setRestTemplate(provider.getOAuthRestOperations(oauth2ClientContext));
-				filter.setTokenServices(provider.getTokenServices());
-				filter.setAuthenticationSuccessHandler(successHandler);
-				return filter;
-			}).collect(Collectors.toList());
-		}
+    protected List<OAuth2ClientAuthenticationProcessingFilter> getAdditionalFilters(
+        OAuth2ClientContext oauth2ClientContext) {
+      return Collections.emptyList();
+    }
 
-		protected List<OAuth2ClientAuthenticationProcessingFilter> getAdditionalFilters(OAuth2ClientContext oauth2ClientContext) {
-			return Collections.emptyList();
-		}
+    @Bean
+    public Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
+      return providers.stream().collect(Collectors.toMap(OAuthProvider::getName, p -> p));
+    }
 
-		/**
-		 * Condition. Load this config is there are no subclasses in the application context
-		 */
-		protected static class HasExtensionsCondition extends SpringBootCondition {
+    @Bean
+    public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
+      FilterRegistrationBean registration = new FilterRegistrationBean();
+      registration.setFilter(filter);
+      registration.setOrder(-100);
+      return registration;
+    }
 
-			@Override
-			public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-				String[] enablers = context.getBeanFactory().getBeanNamesForAnnotation(EnableOAuth2Client.class);
-				boolean extensions = Arrays.stream(enablers)
-						.filter(name -> !context.getBeanFactory().getType(name).equals(GlobalWebSecurityConfig.class))
-						.anyMatch(name -> context.getBeanFactory().isTypeMatch(name, GlobalWebSecurityConfig.class));
-				if (extensions) {
-					return ConditionOutcome.noMatch("found @EnableOAuth2Client on a OAuthSecurityConfig subclass");
-				} else {
-					return ConditionOutcome.match("found no @EnableOAuth2Client on a OAuthSecurityConfig subsclass");
-				}
+    @Bean("activeDirectoryDetailsContextMapper")
+    public DetailsContextMapper activeDirectoryDetailsContextMapper() {
+      return new DetailsContextMapper(
+          ldapUserReplicator,
+          () -> ParameterUtils.getLdapSyncAttributes(
+              authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+                  .stream().findFirst()
+                  .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
 
-			}
-		}
+      );
+    }
 
-		@Bean
-		public Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
-			return providers.stream().collect(Collectors.toMap(OAuthProvider::getName, p -> p));
-		}
+    @Bean("ldapDetailsContextMapper")
+    public DetailsContextMapper ldapDetailsContextMapper() {
+      return new DetailsContextMapper(
+          ldapUserReplicator,
+          () -> ParameterUtils.getLdapSyncAttributes(
+              authConfigRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream()
+                  .findFirst()
+                  .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
 
-		@Bean
-		public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
-			FilterRegistrationBean registration = new FilterRegistrationBean();
-			registration.setFilter(filter);
-			registration.setOrder(-100);
-			return registration;
-		}
+          )
+      );
+    }
 
-		@Bean("activeDirectoryDetailsContextMapper")
-		public DetailsContextMapper activeDirectoryDetailsContextMapper() {
-			return new DetailsContextMapper(
-					ldapUserReplicator,
-					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).stream().findFirst()
-							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
+    @Bean
+    public Filter forwardedHeaderFilter() {
+      return new ForwardedHeaderFilter();
+    }
 
-			);
-		}
+    @Bean
+    public FilterRegistrationBean<Filter> forwardedHeaderFilterRegistrationBean() {
+      FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
+      filterRegistrationBean.setFilter(forwardedHeaderFilter());
+      filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+      return filterRegistrationBean;
+    }
 
-		@Bean("ldapDetailsContextMapper")
-		public DetailsContextMapper ldapDetailsContextMapper() {
-			return new DetailsContextMapper(
-					ldapUserReplicator,
-					() -> ParameterUtils.getLdapSyncAttributes(authConfigRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream().findFirst()
-							.orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+    @Override
+    protected final void configure(HttpSecurity http) throws Exception {
+      CompositeFilter authCompositeFilter = new CompositeFilter();
+      List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
+          .addAll(getDefaultFilters(oauth2ClientContext))
+          .addAll(getAdditionalFilters(oauth2ClientContext))
+          .build();
 
-					)
-			);
-		}
+      /* make sure filters have correct exception handler */
+      additionalFilters.forEach(
+          filter -> filter.setAuthenticationFailureHandler(authenticationFailureHandler));
+      authCompositeFilter.setFilters(additionalFilters);
 
-		@Bean
-		public Filter forwardedHeaderFilter() {
-			return new ForwardedHeaderFilter();
-		}
+      //@formatter:off
+      http
+          .antMatcher("/**")
+          .authorizeRequests()
+          .antMatchers(SSO_LOGIN_PATH + "/**", "/epam/**", "/info", "/health", "/api-docs/**",
+              "/saml/**", "/templates/**")
+          .permitAll()
+          .anyRequest()
+          .authenticated()
+          .and()
+          .csrf().disable()
+          .formLogin().disable()
+          .sessionManagement()
+          .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+          .and()
+          .addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
+      //@formatter:on
+    }
 
-		@Bean
-		public FilterRegistrationBean<Filter> forwardedHeaderFilterRegistrationBean() {
-			FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
-			filterRegistrationBean.setFilter(forwardedHeaderFilter());
-			filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-			return filterRegistrationBean;
-		}
+    @Bean
+    public AuthenticationEventPublisher authenticationEventPublisher(
+        ApplicationEventPublisher applicationEventPublisher) {
+      return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+    }
 
-		@Override
-		protected final void configure(HttpSecurity http) throws Exception {
-			CompositeFilter authCompositeFilter = new CompositeFilter();
-			List<OAuth2ClientAuthenticationProcessingFilter> additionalFilters = ImmutableList.<OAuth2ClientAuthenticationProcessingFilter>builder()
-					.addAll(getDefaultFilters(oauth2ClientContext))
-					.addAll(getAdditionalFilters(oauth2ClientContext))
-					.build();
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
+      auth.authenticationProvider(basicPasswordAuthProvider())
+          .authenticationEventPublisher(authenticationEventPublisher(eventPublisher))
+          .authenticationProvider(activeDirectoryAuthProvider())
+          .authenticationProvider(ldapAuthProvider());
+    }
 
-			/* make sure filters have correct exception handler */
-			additionalFilters.forEach(filter -> filter.setAuthenticationFailureHandler(authenticationFailureHandler));
-			authCompositeFilter.setFilters(additionalFilters);
+    @Bean
+    public AuthenticationProvider activeDirectoryAuthProvider() {
+      return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
+          activeDirectoryContextMapper);
+    }
 
-			//@formatter:off
-        	http
-                .antMatcher("/**")
-                .authorizeRequests()
-                .antMatchers(SSO_LOGIN_PATH + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-					.csrf().disable()
-				.formLogin().disable()
-				.sessionManagement()
-                	.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and()
-				.addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
-       		 //@formatter:on
-		}
+    @Bean
+    public AuthenticationProvider ldapAuthProvider() {
+      return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapContextMapper);
+    }
 
-		@Autowired
-		private ApplicationEventPublisher eventPublisher;
+    @Bean
+    protected UserDetailsService userDetailsService() {
+      return new DatabaseUserDetailsService();
+    }
 
-		@Autowired
-		@Qualifier("activeDirectoryDetailsContextMapper")
-		DetailsContextMapper activeDirectoryContextMapper;
+    @Bean
+    public AuthenticationProvider basicPasswordAuthProvider() {
+      BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
+      provider.setUserDetailsService(userDetailsService());
+      provider.setPasswordEncoder(passwordEncoder());
+      return provider;
+    }
 
-		@Autowired
-		@Qualifier("ldapDetailsContextMapper")
-		DetailsContextMapper ldapContextMapper;
+    public PasswordEncoder passwordEncoder() {
+      return new BCryptPasswordEncoder();
+    }
 
-		@Bean
-		public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-			return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
-		}
+    @Override
+    @Primary
+    @Bean
+    public AuthenticationManager authenticationManager() throws Exception {
+      return super.authenticationManager();
+    }
 
-		@Override
-		protected void configure(AuthenticationManagerBuilder auth) {
-			auth.authenticationProvider(basicPasswordAuthProvider())
-					.authenticationEventPublisher(authenticationEventPublisher(eventPublisher))
-					.authenticationProvider(activeDirectoryAuthProvider())
-					.authenticationProvider(ldapAuthProvider());
-		}
+    /**
+     * Condition. Load this config is there are no subclasses in the application context
+     */
+    protected static class HasExtensionsCondition extends SpringBootCondition {
 
-		@Bean
-		public AuthenticationProvider activeDirectoryAuthProvider() {
-			return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher, activeDirectoryContextMapper);
-		}
+      @Override
+      public ConditionOutcome getMatchOutcome(ConditionContext context,
+          AnnotatedTypeMetadata metadata) {
+        String[] enablers = context.getBeanFactory()
+            .getBeanNamesForAnnotation(EnableOAuth2Client.class);
+        boolean extensions = Arrays.stream(enablers)
+            .filter(name -> !context.getBeanFactory().getType(name)
+                .equals(GlobalWebSecurityConfig.class))
+            .anyMatch(
+                name -> context.getBeanFactory().isTypeMatch(name, GlobalWebSecurityConfig.class));
+        if (extensions) {
+          return ConditionOutcome.noMatch(
+              "found @EnableOAuth2Client on a OAuthSecurityConfig subclass");
+        } else {
+          return ConditionOutcome.match(
+              "found no @EnableOAuth2Client on a OAuthSecurityConfig subsclass");
+        }
 
-		@Bean
-		public AuthenticationProvider ldapAuthProvider() {
-			return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapContextMapper);
-		}
+      }
+    }
+  }
 
-		@Bean
-		protected UserDetailsService userDetailsService() {
-			return new DatabaseUserDetailsService();
-		}
+  @Configuration
+  @EnableAuthorizationServer
+  public static class AuthorizationServerConfiguration extends
+      AuthorizationServerConfigurerAdapter {
 
-		@Bean
-		public AuthenticationProvider basicPasswordAuthProvider() {
-			BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
-			provider.setUserDetailsService(userDetailsService());
-			provider.setPasswordEncoder(passwordEncoder());
-			return provider;
-		}
+    private static final String SECRET_KEY = "secret.key";
+    private final AuthenticationManager authenticationManager;
+    @Value("${rp.jwt.signing-key}")
+    private String signingKey;
+    @Value("${rp.jwt.token.validity-period}")
+    private Integer tokenValidity;
+    @Autowired
+    private DatabaseUserDetailsService userDetailsService;
 
-		public PasswordEncoder passwordEncoder() {
-			return new BCryptPasswordEncoder();
-		}
+    @Autowired
+    private ServerSettingsRepository serverSettingsRepository;
 
-		@Override
-		@Primary
-		@Bean
-		public AuthenticationManager authenticationManager() throws Exception {
-			return super.authenticationManager();
-		}
-	}
+    @Autowired
+    public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
+      this.authenticationManager = authenticationManager;
+    }
 
-	@Configuration
-	@EnableAuthorizationServer
-	public static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+      //@formatter:off
 
-		private static final String SECRET_KEY = "secret.key";
-
-		@Value("${rp.jwt.signing-key}")
-		private String signingKey;
-
-		@Value("${rp.jwt.token.validity-period}")
-		private Integer tokenValidity;
-
-		private final AuthenticationManager authenticationManager;
-
-		@Autowired
-		private DatabaseUserDetailsService userDetailsService;
-
-		@Autowired
-		private ServerSettingsRepository serverSettingsRepository;
-
-		@Autowired
-		public AuthorizationServerConfiguration(AuthenticationManager authenticationManager) {
-			this.authenticationManager = authenticationManager;
-		}
-
-		@Override
-		public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-			//@formatter:off
-
-			endpoints
-					.pathMapping("/oauth/token", "/sso/oauth/token")
-					.pathMapping("/oauth/token_key", "/sso/oauth/token_key")
-					.pathMapping("/oauth/check_token", "/sso/oauth/check_token")
-					.pathMapping("/oauth/authorize", "/sso/oauth/authorize")
-					.pathMapping("/oauth/confirm_access", "/sso/oauth/confirm_access")
-					.tokenStore(jwtTokenStore())
+      endpoints
+          .pathMapping("/oauth/token", "/sso/oauth/token")
+          .pathMapping("/oauth/token_key", "/sso/oauth/token_key")
+          .pathMapping("/oauth/check_token", "/sso/oauth/check_token")
+          .pathMapping("/oauth/authorize", "/sso/oauth/authorize")
+          .pathMapping("/oauth/confirm_access", "/sso/oauth/confirm_access")
+          .tokenStore(jwtTokenStore())
 //					.exceptionTranslator(new OAuthErrorHandler(new ReportPortalExceptionResolver(new DefaultErrorResolver(ExceptionMappings.DEFAULT_MAPPING))))
-					.accessTokenConverter(accessTokenConverter(externalOauth2TokenConverter(defaultUserAuthenticationConverter())))
-					.authenticationManager(authenticationManager);
-			//@formatter:on
-		}
+          .accessTokenConverter(accessTokenConverter(
+              externalOauth2TokenConverter(defaultUserAuthenticationConverter())))
+          .authenticationManager(authenticationManager);
+      //@formatter:on
+    }
 
-		@Override
-		public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-			//@formatter:off
-            clients.inMemory()
-                    .withClient(ReportPortalClient.ui.name())
-                    	.secret("{bcrypt}$2a$10$ka8W./nA2Uiqsd2uOzazdu2lMbipaMB6RJNInB1Y0NMKQzj7plsie")
-                    	.authorizedGrantTypes("refresh_token", "password")
-                    	.scopes("ui")
-						.accessTokenValiditySeconds(tokenValidity)
-                    .and()
-                    .withClient(ReportPortalClient.api.name())
-                    	.secret("apiman")
-						.authorizedGrantTypes("password")
-                    	.scopes("api")
-                    	.accessTokenValiditySeconds(-1)
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+      //@formatter:off
+      clients.inMemory()
+          .withClient(ReportPortalClient.ui.name())
+          .secret("{bcrypt}$2a$10$ka8W./nA2Uiqsd2uOzazdu2lMbipaMB6RJNInB1Y0NMKQzj7plsie")
+          .authorizedGrantTypes("refresh_token", "password")
+          .scopes("ui")
+          .accessTokenValiditySeconds(tokenValidity)
+          .and()
+          .withClient(ReportPortalClient.api.name())
+          .secret("apiman")
+          .authorizedGrantTypes("password")
+          .scopes("api")
+          .accessTokenValiditySeconds(-1)
 
-                    .and()
-                    .withClient(ReportPortalClient.internal.name())
-                    	.secret("internal_man")
-                    	.authorizedGrantTypes("client_credentials").authorities("ROLE_INTERNAL")
-                    	.scopes("internal");
+          .and()
+          .withClient(ReportPortalClient.internal.name())
+          .secret("internal_man")
+          .authorizedGrantTypes("client_credentials").authorities("ROLE_INTERNAL")
+          .scopes("internal");
 
-            //@formatter:on
-		}
+      //@formatter:on
+    }
 
-		@Override
-		public void configure(AuthorizationServerSecurityConfigurer security) {
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer security) {
 
-			security.tokenKeyAccess("hasAuthority('ROLE_INTERNAL')").checkTokenAccess("hasAuthority('ROLE_INTERNAL')");
+      security.tokenKeyAccess("hasAuthority('ROLE_INTERNAL')")
+          .checkTokenAccess("hasAuthority('ROLE_INTERNAL')");
 
-		}
+    }
 
-		@Bean(value = "jwtTokenStore")
-		@Primary
-		public TokenStore jwtTokenStore() {
-			AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(defaultUserAuthenticationConverter());
-			JwtAccessTokenConverter jwtTokenEnhancer = accessTokenConverter(accessTokenConverter);
-			return new JwtTokenStore(jwtTokenEnhancer);
-		}
+    @Bean(value = "jwtTokenStore")
+    @Primary
+    public TokenStore jwtTokenStore() {
+      AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(
+          defaultUserAuthenticationConverter());
+      JwtAccessTokenConverter jwtTokenEnhancer = accessTokenConverter(accessTokenConverter);
+      return new JwtTokenStore(jwtTokenEnhancer);
+    }
 
-		@Bean
-		public UserAuthenticationConverter defaultUserAuthenticationConverter() {
-			DefaultUserAuthenticationConverter defaultUserAuthenticationConverter = new DefaultUserAuthenticationConverter();
-			defaultUserAuthenticationConverter.setUserDetailsService(userDetailsService);
-			return defaultUserAuthenticationConverter;
-		}
+    @Bean
+    public UserAuthenticationConverter defaultUserAuthenticationConverter() {
+      DefaultUserAuthenticationConverter defaultUserAuthenticationConverter = new DefaultUserAuthenticationConverter();
+      defaultUserAuthenticationConverter.setUserDetailsService(userDetailsService);
+      return defaultUserAuthenticationConverter;
+    }
 
-		@Bean
-		public AccessTokenConverter externalOauth2TokenConverter(UserAuthenticationConverter userAuthenticationConverter) {
-			ExternalOauth2TokenConverter accessTokenConverter = new ExternalOauth2TokenConverter();
-			accessTokenConverter.setUserTokenConverter(userAuthenticationConverter);
-			return accessTokenConverter;
-		}
+    @Bean
+    public AccessTokenConverter externalOauth2TokenConverter(
+        UserAuthenticationConverter userAuthenticationConverter) {
+      ExternalOauth2TokenConverter accessTokenConverter = new ExternalOauth2TokenConverter();
+      accessTokenConverter.setUserTokenConverter(userAuthenticationConverter);
+      return accessTokenConverter;
+    }
 
-		@Bean
-		public JwtAccessTokenConverter accessTokenConverter(AccessTokenConverter accessTokenConverter) {
-			JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
-			jwtConverter.setSigningKey(getSecret());
-			jwtConverter.setAccessTokenConverter(accessTokenConverter);
-			return jwtConverter;
-		}
+    @Bean
+    public JwtAccessTokenConverter accessTokenConverter(AccessTokenConverter accessTokenConverter) {
+      JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
+      jwtConverter.setSigningKey(getSecret());
+      jwtConverter.setAccessTokenConverter(accessTokenConverter);
+      return jwtConverter;
+    }
 
-		private String getSecret() {
-			if (!StringUtils.isEmpty(signingKey)) {
-				return signingKey;
-			}
-			Optional<ServerSettings> secretKey = serverSettingsRepository.findByKey(SECRET_KEY);
-			return secretKey.isPresent() ? secretKey.get().getValue() : serverSettingsRepository.generateSecret();
-		}
+    private String getSecret() {
+      if (!StringUtils.isEmpty(signingKey)) {
+        return signingKey;
+      }
+      Optional<ServerSettings> secretKey = serverSettingsRepository.findByKey(SECRET_KEY);
+      return secretKey.isPresent() ? secretKey.get().getValue()
+          : serverSettingsRepository.generateSecret();
+    }
 
-		@Bean
-		@Primary
-		public DefaultTokenServices tokenServices() {
-			DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-			defaultTokenServices.setTokenStore(jwtTokenStore());
-			defaultTokenServices.setSupportRefreshToken(true);
-			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(defaultUserAuthenticationConverter());
-			JwtAccessTokenConverter accessTokenEnhancer = accessTokenConverter(accessTokenConverter);
-			defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
-			return defaultTokenServices;
-		}
+    @Bean
+    @Primary
+    public DefaultTokenServices tokenServices() {
+      DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+      defaultTokenServices.setTokenStore(jwtTokenStore());
+      defaultTokenServices.setSupportRefreshToken(true);
+      defaultTokenServices.setAuthenticationManager(authenticationManager);
+      AccessTokenConverter accessTokenConverter = externalOauth2TokenConverter(
+          defaultUserAuthenticationConverter());
+      JwtAccessTokenConverter accessTokenEnhancer = accessTokenConverter(accessTokenConverter);
+      defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
+      return defaultTokenServices;
+    }
 
-		@Bean(value = "databaseTokenServices")
-		public DefaultTokenServices databaseTokenServices(@Autowired AccessTokenStore accessTokenStore,
-				@Autowired ClientDetailsService clientDetailsService) {
-			DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-			defaultTokenServices.setTokenStore(accessTokenStore);
-			defaultTokenServices.setClientDetailsService(clientDetailsService);
-			defaultTokenServices.setSupportRefreshToken(false);
-			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			return defaultTokenServices;
-		}
+    @Bean(value = "databaseTokenServices")
+    public DefaultTokenServices databaseTokenServices(@Autowired AccessTokenStore accessTokenStore,
+        @Autowired ClientDetailsService clientDetailsService) {
+      DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+      defaultTokenServices.setTokenStore(accessTokenStore);
+      defaultTokenServices.setClientDetailsService(clientDetailsService);
+      defaultTokenServices.setSupportRefreshToken(false);
+      defaultTokenServices.setAuthenticationManager(authenticationManager);
+      return defaultTokenServices;
+    }
 
-	}
+  }
 
-	@Configuration
-	@EnableResourceServer
-	public static class ResourceServerAuthConfiguration extends ResourceServerConfigurerAdapter {
-		@Override
-		public void configure(HttpSecurity http) throws Exception {
-			http.requestMatchers()
-					.antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**")
-					.and()
-					.authorizeRequests()
-					.antMatchers("/settings/**")
-					.hasRole("ADMINISTRATOR")
-					.antMatchers("/sso/internal/**")
-					.hasRole("INTERNAL")
-					.anyRequest()
-					.authenticated()
-					.and()
-					.sessionManagement()
-					.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+  @Configuration
+  @EnableResourceServer
+  public static class ResourceServerAuthConfiguration extends ResourceServerConfigurerAdapter {
 
-		}
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+      http.requestMatchers()
+          .antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**")
+          .and()
+          .authorizeRequests()
+          .antMatchers("/settings/**")
+          .hasRole("ADMINISTRATOR")
+          .antMatchers("/sso/internal/**")
+          .hasRole("INTERNAL")
+          .anyRequest()
+          .authenticated()
+          .and()
+          .sessionManagement()
+          .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-	}
+    }
+
+  }
 }
