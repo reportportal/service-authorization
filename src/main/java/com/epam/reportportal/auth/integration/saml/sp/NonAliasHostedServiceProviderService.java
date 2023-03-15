@@ -35,7 +35,7 @@ public class NonAliasHostedServiceProviderService extends HostedServiceProviderS
 
   @Override
   public AuthenticationRequest authenticationRequest(IdentityProviderMetadata idp) {
-    ExternalIdentityProviderConfiguration configuration = getIdentityProviderConfigurationForMetadata(
+    ExternalIdentityProviderConfiguration configuration = getIdentityProviderConfiguration(
         idp);
     final URI authnBinding = configuration.getAuthenticationRequestBinding();
     Binding preferredBinding =
@@ -61,7 +61,7 @@ public class NonAliasHostedServiceProviderService extends HostedServiceProviderS
     return authenticationRequestEnhancer.enhance(request);
   }
 
-  private ExternalIdentityProviderConfiguration getIdentityProviderConfigurationForMetadata(
+  private ExternalIdentityProviderConfiguration getIdentityProviderConfiguration(
       IdentityProviderMetadata idp) {
     return getConfiguration().getProviders()
         .stream()

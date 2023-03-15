@@ -41,7 +41,7 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
   private ApplicationEventPublisher eventPublisher;
 
-  public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade,
+  protected AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade,
       ApplicationEventPublisher eventPublisher) {
     super("/");
     this.tokenServicesFacade = tokenServicesFacade;
