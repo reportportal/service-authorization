@@ -15,28 +15,31 @@
  */
 package com.epam.reportportal.auth;
 
+import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author Yevgeniy Svalukhin
  */
 
 @Component
-public class AuthFailureHandler implements org.springframework.security.web.authentication.AuthenticationFailureHandler {
-	@Override
-	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
-			throws IOException {
-		response.sendRedirect(UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-				.replacePath("ui/#login")
-				.replaceQuery("errorAuth=" + exception.getMessage())
-				.build()
-				.toUriString());
-	}
+public class AuthFailureHandler implements
+    org.springframework.security.web.authentication.AuthenticationFailureHandler {
+
+  @Override
+  public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+      AuthenticationException exception)
+      throws IOException {
+    response.sendRedirect(
+        UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+            .replacePath("ui/#login")
+            .replaceQuery("errorAuth=" + exception.getMessage())
+            .build()
+            .toUriString());
+  }
 }

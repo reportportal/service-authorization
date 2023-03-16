@@ -25,13 +25,13 @@ import org.springframework.context.ApplicationEvent;
  */
 public class SamlProvidersReloadEvent extends ApplicationEvent {
 
-	private static final long serialVersionUID = 2314984509233L;
+  private static final long serialVersionUID = 2314984509233L;
 
-	public SamlProvidersReloadEvent(IntegrationType type) {
-		super(type);
-	}
+  public SamlProvidersReloadEvent(IntegrationType type) {
+    super(type);
+  }
 
-	IntegrationType getIntegrationType() {
-		return (IntegrationType) super.getSource();
-	}
+  IntegrationType getIntegrationType() {
+    return (IntegrationType) super.getSource();
+  }
 }

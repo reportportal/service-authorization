@@ -99,7 +99,8 @@ podTemplate(
         }
 
         stage('Deploy to Dev') {
-            helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], false) // without wait
+            helm.deploy("$k8sDir/reportportal/v5", ["uat.repository": srvRepo, "uat.tag": srvVersion], false)
+            // without wait
         }
 
         stage('DVT Test') {

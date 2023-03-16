@@ -30,14 +30,15 @@ import org.springframework.context.annotation.ComponentScan;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
-@SpringBootApplication(exclude = { LdapHealthContributorAutoConfiguration.class, FlywayAutoConfiguration.class,
-		ElasticsearchDataAutoConfiguration.class, ElasticsearchRepositoriesAutoConfiguration.class,
-		ReactiveElasticsearchRepositoriesAutoConfiguration.class })
-@ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth" })
+@SpringBootApplication(exclude = {LdapHealthContributorAutoConfiguration.class,
+    FlywayAutoConfiguration.class,
+    ElasticsearchDataAutoConfiguration.class, ElasticsearchRepositoriesAutoConfiguration.class,
+    ReactiveElasticsearchRepositoriesAutoConfiguration.class})
+@ComponentScan(basePackages = {"com.epam.ta.reportportal", "com.epam.reportportal.auth"})
 public class AuthServerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AuthServerApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(AuthServerApplication.class, args);
+  }
 
 }

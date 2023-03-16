@@ -36,26 +36,31 @@ import org.springframework.stereotype.Service;
 @Service
 public class GetLdapStrategy implements GetAuthIntegrationStrategy {
 
-	private final IntegrationTypeRepository integrationTypeRepository;
+  private final IntegrationTypeRepository integrationTypeRepository;
 
-	private final IntegrationRepository integrationRepository;
+  private final IntegrationRepository integrationRepository;
 
-	@Autowired
-	public GetLdapStrategy(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository) {
-		this.integrationTypeRepository = integrationTypeRepository;
-		this.integrationRepository = integrationRepository;
-	}
+  @Autowired
+  public GetLdapStrategy(IntegrationTypeRepository integrationTypeRepository,
+      IntegrationRepository integrationRepository) {
+    this.integrationTypeRepository = integrationTypeRepository;
+    this.integrationRepository = integrationRepository;
+  }
 
-	@Override
-	public AbstractLdapResource getIntegration() {
-		IntegrationType ldapIntegrationType = integrationTypeRepository.findByName(AuthIntegrationType.LDAP.getName())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.LDAP.getName()));
+  @Override
+  public AbstractLdapResource getIntegration() {
+    IntegrationType ldapIntegrationType = integrationTypeRepository.findByName(
+            AuthIntegrationType.LDAP.getName())
+        .orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
+            AuthIntegrationType.LDAP.getName()));
 
-		//or else empty integration with default 'enabled = false' flag
-		LdapResource ldapResource = LdapConverter.TO_RESOURCE.apply(integrationRepository.findByNameAndTypeIdAndProjectIdIsNull(AuthIntegrationType.LDAP.getName(),
-				ldapIntegrationType.getId()
-		).orElseGet(Integration::new));
-		ldapResource.setType(ldapIntegrationType.getName());
-		return ldapResource;
-	}
+    //or else empty integration with default 'enabled = false' flag
+    LdapResource ldapResource = LdapConverter.TO_RESOURCE.apply(
+        integrationRepository.findByNameAndTypeIdAndProjectIdIsNull(
+            AuthIntegrationType.LDAP.getName(),
+            ldapIntegrationType.getId()
+        ).orElseGet(Integration::new));
+    ldapResource.setType(ldapIntegrationType.getName());
+    return ldapResource;
+  }
 }

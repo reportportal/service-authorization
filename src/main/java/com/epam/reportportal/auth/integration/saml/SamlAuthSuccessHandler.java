@@ -18,17 +18,16 @@ package com.epam.reportportal.auth.integration.saml;
 import com.epam.reportportal.auth.AuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.TokenServicesFacade;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.stereotype.Component;
-
+import java.io.IOException;
+import java.util.Collections;
 import javax.inject.Provider;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.stereotype.Component;
 
 /**
  * Used for handling successful authentication in SAML process
@@ -38,21 +37,24 @@ import java.util.Collections;
 @Component
 public class SamlAuthSuccessHandler extends AuthSuccessHandler {
 
-	public SamlAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher) {
-		super(tokenServicesFacade, eventPublisher);
-	}
+  public SamlAuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade,
+      ApplicationEventPublisher eventPublisher) {
+    super(tokenServicesFacade, eventPublisher);
+  }
 
 
-	@Override
-	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-			throws IOException, ServletException {
-		super.onAuthenticationSuccess(request, response, authentication);
-	}
+  @Override
+  public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+      Authentication authentication)
+      throws IOException, ServletException {
+    super.onAuthenticationSuccess(request, response, authentication);
+  }
 
-	@Override
-	protected OAuth2AccessToken getToken(Authentication authentication) {
-		ReportPortalSamlAuthentication samlAuthentication = (ReportPortalSamlAuthentication) authentication;
-		return tokenServicesFacade.get()
-				.createToken(ReportPortalClient.ui, samlAuthentication.getName(), samlAuthentication, Collections.emptyMap());
-	}
+  @Override
+  protected OAuth2AccessToken getToken(Authentication authentication) {
+    ReportPortalSamlAuthentication samlAuthentication = (ReportPortalSamlAuthentication) authentication;
+    return tokenServicesFacade.get()
+        .createToken(ReportPortalClient.ui, samlAuthentication.getName(), samlAuthentication,
+            Collections.emptyMap());
+  }
 }

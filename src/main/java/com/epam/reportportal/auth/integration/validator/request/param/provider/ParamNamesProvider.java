@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface ParamNamesProvider {
 
-	List<String> provide();
+  List<String> provide();
 }

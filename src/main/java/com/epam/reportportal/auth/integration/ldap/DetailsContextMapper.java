@@ -17,34 +17,35 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.entity.user.User;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Supplier;
-
 /**
  * @author Details Context mapper
  */
 public class DetailsContextMapper extends LdapUserDetailsMapper {
 
-	private final LdapUserReplicator ldapUserReplicator;
-	private final Supplier<Map<String, String>> attributes;
+  private final LdapUserReplicator ldapUserReplicator;
+  private final Supplier<Map<String, String>> attributes;
 
-	public DetailsContextMapper(LdapUserReplicator ldapUserReplicator, Supplier<Map<String, String>> attributes) {
-		this.ldapUserReplicator = ldapUserReplicator;
-		this.attributes = attributes;
-	}
+  public DetailsContextMapper(LdapUserReplicator ldapUserReplicator,
+      Supplier<Map<String, String>> attributes) {
+    this.ldapUserReplicator = ldapUserReplicator;
+    this.attributes = attributes;
+  }
 
-	@Override
-	@Transactional
-	public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
-		UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
-		User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes.get());
-		return ReportPortalUser.userBuilder().fromUser(user);
-	}
+  @Override
+  @Transactional
+  public UserDetails mapUserFromContext(DirContextOperations ctx, String username,
+      Collection<? extends GrantedAuthority> authorities) {
+    UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
+    User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes.get());
+    return ReportPortalUser.userBuilder().fromUser(user);
+  }
 }

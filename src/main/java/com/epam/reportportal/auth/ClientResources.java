@@ -26,14 +26,14 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
  */
 public class ClientResources {
 
-	private OAuth2ProtectedResourceDetails client = new AuthorizationCodeResourceDetails();
-	private OAuth2ResourceServerProperties resource = new OAuth2ResourceServerProperties();
+  private OAuth2ProtectedResourceDetails client = new AuthorizationCodeResourceDetails();
+  private OAuth2ResourceServerProperties resource = new OAuth2ResourceServerProperties();
 
-	public OAuth2ProtectedResourceDetails getClient() {
-		return client;
-	}
+  public OAuth2ProtectedResourceDetails getClient() {
+    return client;
+  }
 
-	public OAuth2ResourceServerProperties getResource() {
-		return resource;
-	}
+  public OAuth2ResourceServerProperties getResource() {
+    return resource;
+  }
 }
