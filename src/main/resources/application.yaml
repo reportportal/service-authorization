@@ -87,3 +87,5 @@ rp:
       secretKey:
     # could be one of [minio, filesystem, s3]
     type: filesystem
+  feature:
+    flags:
