@@ -28,7 +28,7 @@ public class AdminPasswordInitializer implements CommandLineRunner {
 
   private final UserRepository userRepository;
 
-  @Value("${rp.initial.admin.password:}")
+  @Value("${rp.initial.admin.password}")
   private String adminPassword;
 
   public AdminPasswordInitializer(UserRepository userRepository) {
