@@ -1,7 +1,7 @@
 # service-authorization
 
-[![Build Status](https://travis-ci.org/reportportal/service-authorization.svg?branch=master)](https://travis-ci.org/reportportal/service-authorization)
-[![Join Slack chat!](https://reportportal-slack-auto.herokuapp.com/badge.svg)](https://reportportal-slack-auto.herokuapp.com)
+[![Build](https://github.com/reportportal/service-authorization/actions/workflows/build.yml/badge.svg)](https://github.com/reportportal/service-authorization/actions/workflows/build.yml)
+[![Join Slack chat!](https://slack.epmrpp.reportportal.io/badge.svg)](https://slack.epmrpp.reportportal.io/)
 [![stackoverflow](https://img.shields.io/badge/reportportal-stackoverflow-orange.svg?style=flat)](http://stackoverflow.com/questions/tagged/reportportal)
 [![UserVoice](https://img.shields.io/badge/uservoice-vote%20ideas-orange.svg?style=flat)](https://rpp.uservoice.com/forums/247117-report-portal)
 [![GitHub contributors](https://img.shields.io/github/contributors/reportportal/service-authorization.svg?maxAge=259200)](https://github.com/reportportal/reportportal)
