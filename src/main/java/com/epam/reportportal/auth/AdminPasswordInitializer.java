@@ -28,7 +28,7 @@ public class AdminPasswordInitializer implements CommandLineRunner {
 
   private final UserRepository userRepository;
 
-  @Value("${rp.initial.admin.password}")
+  @Value("${rp.initial.admin.password:}")
   private String adminPassword;
 
   public AdminPasswordInitializer(UserRepository userRepository) {
@@ -38,17 +38,16 @@ public class AdminPasswordInitializer implements CommandLineRunner {
   @Override
   @Transactional
   public void run(String... args) {
-    checkPasswordEnvVariable();
-
     User user = userRepository.findByLogin(SUPER_ADMIN_LOGIN)
         .orElseThrow(() -> new EntityNotFoundException(SUPER_ADMIN_LOGIN + " not found"));
-    Optional<Object> lastLogin = ofNullable(user.getMetadata())
-      .flatMap(metadata -> ofNullable(metadata.getMetadata()))
-      .map(meta -> meta.get(USER_LAST_LOGIN))
-      .or(() -> Optional.of(INITIAL_LAST_LOGIN));
+    Object lastLogin = ofNullable(user.getMetadata())
+        .flatMap(metadata -> ofNullable(metadata.getMetadata()))
+        .map(meta -> meta.get(USER_LAST_LOGIN))
+        .orElseGet(() -> Optional.of(INITIAL_LAST_LOGIN));
+    checkPasswordEnvVariable(lastLogin);
 
     boolean isMatches = passwordEncoder().matches(adminPassword, user.getPassword());
-    if (!isMatches && lastLogin.get().equals(INITIAL_LAST_LOGIN)) {
+    if (!isMatches && lastLogin.equals(INITIAL_LAST_LOGIN) && StringUtils.isNotEmpty(adminPassword)) {
       updatePasswordForDefaultAdmin(user);
     }
   }
@@ -58,8 +57,8 @@ public class AdminPasswordInitializer implements CommandLineRunner {
     userRepository.save(defaultAdmin);
   }
 
-  private void checkPasswordEnvVariable() {
-    if (StringUtils.isBlank(adminPassword)) {
+  private void checkPasswordEnvVariable(Object lastLogin) {
+    if (StringUtils.isBlank(adminPassword) && lastLogin.equals(INITIAL_LAST_LOGIN)) {
       LOGGER.error(ERROR_MSG);
       throw new EnvironmentVariablesNotProvidedException(ERROR_MSG);
     }
