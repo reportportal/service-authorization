@@ -1,8 +1,11 @@
 package com.epam.reportportal.auth;
 
+import static java.util.Optional.ofNullable;
+
 import com.epam.reportportal.auth.exception.EnvironmentVariablesNotProvidedException;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.user.User;
+import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -20,10 +23,12 @@ public class AdminPasswordInitializer implements CommandLineRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(AdminPasswordInitializer.class);
   private static final String SUPER_ADMIN_LOGIN = "superadmin";
   private static final String ERROR_MSG = "Password not set in environment variable";
+  public static final String USER_LAST_LOGIN = "last_login";
+  public static final Integer INITIAL_LAST_LOGIN = 0;
 
   private final UserRepository userRepository;
 
-  @Value("${rp.admin.password:}")
+  @Value("${rp.initial.admin.password:}")
   private String adminPassword;
 
   public AdminPasswordInitializer(UserRepository userRepository) {
@@ -33,13 +38,16 @@ public class AdminPasswordInitializer implements CommandLineRunner {
   @Override
   @Transactional
   public void run(String... args) {
-    checkPasswordEnvVariable();
-
     User user = userRepository.findByLogin(SUPER_ADMIN_LOGIN)
         .orElseThrow(() -> new EntityNotFoundException(SUPER_ADMIN_LOGIN + " not found"));
+    Object lastLogin = ofNullable(user.getMetadata())
+        .flatMap(metadata -> ofNullable(metadata.getMetadata()))
+        .map(meta -> meta.get(USER_LAST_LOGIN))
+        .orElseGet(() -> Optional.of(INITIAL_LAST_LOGIN));
+    checkPasswordEnvVariable(lastLogin);
 
     boolean isMatches = passwordEncoder().matches(adminPassword, user.getPassword());
-    if (!isMatches) {
+    if (!isMatches && lastLogin.equals(INITIAL_LAST_LOGIN) && StringUtils.isNotEmpty(adminPassword)) {
       updatePasswordForDefaultAdmin(user);
     }
   }
@@ -49,8 +57,8 @@ public class AdminPasswordInitializer implements CommandLineRunner {
     userRepository.save(defaultAdmin);
   }
 
-  private void checkPasswordEnvVariable() {
-    if (StringUtils.isBlank(adminPassword)) {
+  private void checkPasswordEnvVariable(Object lastLogin) {
+    if (StringUtils.isBlank(adminPassword) && lastLogin.equals(INITIAL_LAST_LOGIN)) {
       LOGGER.error(ERROR_MSG);
       throw new EnvironmentVariablesNotProvidedException(ERROR_MSG);
     }
