@@ -12,10 +12,10 @@ rp:
   auth:
     saml:
       base-path: http://localhost:9999
-  binarystore:
-    type: filesystem
-    s3:
-      endpoint: http://localhost:9000
-      accessKey:
-      secretKey:
-    path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
+
+datastore:
+  type: filesystem
+  path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
+  endpoint: http://localhost:9000
+  accessKey:
+  secretKey:
