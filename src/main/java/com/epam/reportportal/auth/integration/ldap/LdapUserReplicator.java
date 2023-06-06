@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
+import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;

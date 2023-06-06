@@ -55,9 +55,9 @@ dependencies {
         compile 'com.epam.reportportal:commons-rules'
         compile 'com.epam.reportportal:commons-model'
     } else {
-        compile 'com.github.reportportal:commons-dao:d6966878ef'
+        compile 'com.github.reportportal:commons-dao:513abc7'
         compile 'com.github.reportportal:commons-rules:331c402'
-        compile 'com.github.reportportal:commons-model:d61b714'
+        compile 'com.github.reportportal:commons-model:a215b88'
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252
