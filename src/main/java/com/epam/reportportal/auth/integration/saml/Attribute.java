@@ -15,12 +15,11 @@
  */
 package com.epam.reportportal.auth.integration.saml;
 
-import org.springframework.security.saml.saml2.attribute.AttributeNameFormat;
-
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.security.saml.saml2.attribute.AttributeNameFormat;
 
 /**
  * Represents attributes extracted from SAML response message
@@ -28,73 +27,75 @@ import java.util.Objects;
  * @author Yevgeniy Svalukhin
  */
 public class Attribute implements Serializable {
-	private static final long serialVersionUID = -182983902349882L;
 
-	private String name;
-	private String friendlyName;
-	private List<Object> values = new LinkedList<>();
-	private String nameFormat = AttributeNameFormat.UNSPECIFIED.toString();
-	private boolean required;
+  private static final long serialVersionUID = -182983902349882L;
 
-	public String getName() {
-		return name;
-	}
+  private String name;
+  private String friendlyName;
+  private List<Object> values = new LinkedList<>();
+  private String nameFormat = AttributeNameFormat.UNSPECIFIED.toString();
+  private boolean required;
 
-	public Attribute setName(String name) {
-		this.name = name;
-		return this;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public String getFriendlyName() {
-		return friendlyName;
-	}
+  public Attribute setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-	public Attribute setFriendlyName(String friendlyName) {
-		this.friendlyName = friendlyName;
-		return this;
-	}
+  public String getFriendlyName() {
+    return friendlyName;
+  }
 
-	public List<Object> getValues() {
-		return values;
-	}
+  public Attribute setFriendlyName(String friendlyName) {
+    this.friendlyName = friendlyName;
+    return this;
+  }
 
-	public Attribute setValues(List<Object> values) {
-		this.values.addAll(values);
-		return this;
-	}
+  public List<Object> getValues() {
+    return values;
+  }
 
-	public String getNameFormat() {
-		return nameFormat;
-	}
+  public Attribute setValues(List<Object> values) {
+    this.values.addAll(values);
+    return this;
+  }
 
-	public Attribute setNameFormat(String nameFormat) {
-		this.nameFormat = nameFormat;
-		return this;
-	}
+  public String getNameFormat() {
+    return nameFormat;
+  }
 
-	public boolean isRequired() {
-		return required;
-	}
+  public Attribute setNameFormat(String nameFormat) {
+    this.nameFormat = nameFormat;
+    return this;
+  }
 
-	public Attribute setRequired(boolean required) {
-		this.required = required;
-		return this;
-	}
+  public boolean isRequired() {
+    return required;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		Attribute attribute = (Attribute) o;
-		return required == attribute.required && Objects.equals(name, attribute.name) && Objects.equals(nameFormat, attribute.nameFormat);
-	}
+  public Attribute setRequired(boolean required) {
+    this.required = required;
+    return this;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(name, nameFormat, required);
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Attribute attribute = (Attribute) o;
+    return required == attribute.required && Objects.equals(name, attribute.name) && Objects.equals(
+        nameFormat, attribute.nameFormat);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, nameFormat, required);
+  }
 }

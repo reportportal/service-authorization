@@ -32,25 +32,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReportPortalSamlAuthenticationManager implements AuthenticationManager {
 
-	private SamlUserReplicator samlUserReplicator;
+  private SamlUserReplicator samlUserReplicator;
 
-	public ReportPortalSamlAuthenticationManager(SamlUserReplicator samlUserReplicator) {
-		this.samlUserReplicator = samlUserReplicator;
-	}
+  public ReportPortalSamlAuthenticationManager(SamlUserReplicator samlUserReplicator) {
+    this.samlUserReplicator = samlUserReplicator;
+  }
 
-	@Override
-	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		if (authentication instanceof DefaultSamlAuthentication) {
-			ReportPortalSamlAuthentication reportPortalSamlAuthentication = new ReportPortalSamlAuthentication((DefaultSamlAuthentication) authentication);
-			if (reportPortalSamlAuthentication.isAuthenticated()) {
-				User user = samlUserReplicator.replicateUser(reportPortalSamlAuthentication);
+  @Override
+  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    if (authentication instanceof DefaultSamlAuthentication) {
+      ReportPortalSamlAuthentication reportPortalSamlAuthentication = new ReportPortalSamlAuthentication(
+          (DefaultSamlAuthentication) authentication);
+      if (reportPortalSamlAuthentication.isAuthenticated()) {
+        User user = samlUserReplicator.replicateUser(reportPortalSamlAuthentication);
 
-				reportPortalSamlAuthentication.setAuthorities(AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
+        reportPortalSamlAuthentication.setAuthorities(
+            AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
 
-				SecurityContextHolder.getContext().setAuthentication(reportPortalSamlAuthentication);
-			}
-			return reportPortalSamlAuthentication;
-		}
-		return authentication;
-	}
+        SecurityContextHolder.getContext().setAuthentication(reportPortalSamlAuthentication);
+      }
+      return reportPortalSamlAuthentication;
+    }
+    return authentication;
+  }
 }

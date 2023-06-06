@@ -25,11 +25,11 @@ import org.springframework.security.core.AuthenticationException;
  */
 public class UserSynchronizationException extends AuthenticationException {
 
-	public UserSynchronizationException(String msg) {
-		super(msg);
-	}
+  public UserSynchronizationException(String msg) {
+    super(msg);
+  }
 
-	public UserSynchronizationException(String msg, Throwable e) {
-		super(msg, e);
-	}
+  public UserSynchronizationException(String msg, Throwable e) {
+    super(msg, e);
+  }
 }

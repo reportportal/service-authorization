@@ -23,7 +23,7 @@ import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
  */
 public interface DeleteAuthIntegrationHandler {
 
-	OperationCompletionRS deleteAuthIntegrationById(Long integrationId);
+  OperationCompletionRS deleteAuthIntegrationById(Long integrationId);
 
-	OperationCompletionRS deleteOauthSettingsById(String oauthProviderId);
+  OperationCompletionRS deleteOauthSettingsById(String oauthProviderId);
 }

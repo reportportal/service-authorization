@@ -4,5 +4,5 @@ import com.epam.ta.reportportal.entity.integration.Integration;
 
 public interface IntegrationDuplicateValidator {
 
-	void validate(Integration integration);
+  void validate(Integration integration);
 }

@@ -19,37 +19,41 @@ import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import java.util.List;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.saml.provider.SamlServerConfiguration;
 import org.springframework.security.saml.provider.service.config.LocalServiceProviderConfiguration;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 /**
- * Handles SAML settings changes event and reload configuration of IDP in service provider configuration
+ * Handles SAML settings changes event and reload configuration of IDP in service provider
+ * configuration
  *
  * @author Yevgeniy Svalukhin
  */
 @Component
-public class SamlProvidersReloadEventHandler implements ApplicationListener<SamlProvidersReloadEvent> {
+public class SamlProvidersReloadEventHandler implements
+    ApplicationListener<SamlProvidersReloadEvent> {
 
-	private final IntegrationRepository integrationRepository;
-	private final SamlServerConfiguration samlConfiguration;
+  private final IntegrationRepository integrationRepository;
+  private final SamlServerConfiguration samlConfiguration;
 
-	public SamlProvidersReloadEventHandler(IntegrationRepository integrationRepository, SamlServerConfiguration spConfiguration) {
-		this.integrationRepository = integrationRepository;
-		this.samlConfiguration = spConfiguration;
-	}
+  public SamlProvidersReloadEventHandler(IntegrationRepository integrationRepository,
+      SamlServerConfiguration spConfiguration) {
+    this.integrationRepository = integrationRepository;
+    this.samlConfiguration = spConfiguration;
+  }
 
-	@Override
-	public void onApplicationEvent(SamlProvidersReloadEvent event) {
-		final IntegrationType integrationType = event.getIntegrationType();
-		final List<Integration> integrations = integrationRepository.findAllGlobalByType(integrationType);
+  @Override
+  public void onApplicationEvent(SamlProvidersReloadEvent event) {
+    final IntegrationType integrationType = event.getIntegrationType();
+    final List<Integration> integrations = integrationRepository.findAllGlobalByType(
+        integrationType);
 
-		LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
+    LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
 
-		serviceProvider.getProviders().clear();
-		serviceProvider.getProviders().addAll(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(integrations));
-	}
+    serviceProvider.getProviders().clear();
+    serviceProvider.getProviders()
+        .addAll(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(integrations));
+  }
 }
