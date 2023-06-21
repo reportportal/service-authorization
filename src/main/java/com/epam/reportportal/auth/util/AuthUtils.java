@@ -15,17 +15,16 @@
  */
 package com.epam.reportportal.auth.util;
 
-import com.epam.ta.reportportal.entity.user.UserRole;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 
+import com.epam.ta.reportportal.entity.user.UserRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * Authentication utils
@@ -34,14 +33,14 @@ import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
  */
 public final class AuthUtils {
 
-	private AuthUtils() {
-		//statics only
-	}
+  public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole ->
+    Collections.singletonList(new SimpleGrantedAuthority(userRole.getAuthority()));
+  public static final Function<String, String> CROP_DOMAIN = it -> normalizeId(
+    StringUtils.substringBefore(it, "@"));
+  public static final UnaryOperator<String> NORMALIZE_STRING = original -> normalizeId(
+    original.trim());
 
-	public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole -> Collections.singletonList(new SimpleGrantedAuthority(
-			userRole.getAuthority()));
-
-	public static final Function<String, String> CROP_DOMAIN = it -> normalizeId(StringUtils.substringBefore(it, "@"));
-
-	public static final UnaryOperator<String> NORMALIZE_STRING = original -> normalizeId(original.trim());
+  private AuthUtils() {
+    //statics only
+  }
 }
