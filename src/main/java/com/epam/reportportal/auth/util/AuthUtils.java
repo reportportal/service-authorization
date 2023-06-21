@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.util;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
@@ -33,12 +34,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  */
 public final class AuthUtils {
 
-  public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES = userRole ->
-    Collections.singletonList(new SimpleGrantedAuthority(userRole.getAuthority()));
-  public static final Function<String, String> CROP_DOMAIN = it -> normalizeId(
-    StringUtils.substringBefore(it, "@"));
-  public static final UnaryOperator<String> NORMALIZE_STRING = original -> normalizeId(
-    original.trim());
+  public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES =
+      userRole -> Collections.singletonList(new SimpleGrantedAuthority(userRole.getAuthority()));
+  public static final Function<String, String> CROP_DOMAIN =
+      it -> normalizeId(StringUtils.substringBefore(it, "@"));
+  public static final UnaryOperator<String> NORMALIZE_STRING =
+      original -> normalizeId(original.trim());
 
   private AuthUtils() {
     //statics only
