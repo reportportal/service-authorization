@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
+import static com.epam.reportportal.auth.util.AuthUtils.NORMALIZE_STRING;
 
 /**
  * Replicates user from SAML response into database if it is not exist
@@ -112,7 +113,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	}
 
 	private void populateUserDetails(User user, List<Attribute> details) {
-		String email = findAttributeValue(details, UserAttribute.EMAIL.toString(), String.class);
+		String email = NORMALIZE_STRING.apply(findAttributeValue(details, UserAttribute.EMAIL.toString(), String.class));
 		checkEmail(email);
 		user.setEmail(email);
 
@@ -122,7 +123,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 	}
 
 	private void populateUserDetailsIfSettingsArePresent(User user, Integration integration, List<Attribute> details) {
-		String email = findAttributeValue(details, SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null), String.class);
+		String email = NORMALIZE_STRING.apply(findAttributeValue(details, SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null), String.class));
 		checkEmail(email);
 		user.setEmail(email);
 
