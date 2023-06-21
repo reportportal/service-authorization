@@ -23,6 +23,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 
@@ -42,5 +43,5 @@ public final class AuthUtils {
 
 	public static final Function<String, String> CROP_DOMAIN = it -> normalizeId(StringUtils.substringBefore(it, "@"));
 
-	public static final Function<String, String> NORMALIZE_STRING = original -> normalizeId(original.trim());
+	public static final UnaryOperator<String> NORMALIZE_STRING = original -> normalizeId(original.trim());
 }
