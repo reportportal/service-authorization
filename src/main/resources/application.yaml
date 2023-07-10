@@ -79,11 +79,16 @@ rp:
       signed-requests: false
       active-key-name: sp-signing-key
       prefix: saml/sp
-  binarystore:
+  feature:
+    flags:
+
+datastore:
+  default:
     path: /data/storage
-    minio:
-      endpoint: http://play.min.io
-      accessKey:
-      secretKey:
-    # could be one of [minio, filesystem, s3]
-    type: filesystem
+  type: minio
+  endpoint: http://play.min.io
+  accessKey:
+  secretKey:
+  bucketPrefix: prj-
+  defaultBucketName: rp-bucket
+  region: us-west-1
