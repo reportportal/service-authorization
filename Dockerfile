@@ -1,4 +1,4 @@
-FROM amazoncorretto:11.0.17
+FROM alpine:latest
 LABEL version=5.8.1 description="Unified Authorization Trap for all ReportPortal's Services" maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>, Hleb Kanonik <hleb_kanonik@epam.com>"
 ARG GH_TOKEN
 RUN echo 'exec java ${JAVA_OPTS} -jar service-authorization-5.8.1-exec.jar' > /start.sh && chmod +x /start.sh && \
