@@ -1,25 +1,9 @@
-FROM gradle:6.8.3-jdk11 AS build
-ARG BOM_VERSION MIGRATION_VERSION GITHUB_USER GITHUB_TOKEN RELEASE_MODE SCRIPTS_VERSION APP_VERSION
-WORKDIR /usr/app
-COPY . /usr/app
-RUN if [ ${RELEASE_MODE} = true ]; then \
-    gradle build --exclude-task test \
-        -PreleaseMode=true \
-        -PgithubUserName=${GITHUB_USER} \
-        -PgithubToken=${GITHUB_TOKEN} \
-        -Pscripts.version=${SCRIPTS_VERSION} \
-        -Pmigrations.version=${MIGRATION_VERSION} \
-        -Pbom.version=${BOM_VERSION} \
-        -Dorg.gradle.project.version=${APP_VERSION}; \
-    else gradle build --exclude-task test -Dorg.gradle.project.version=${APP_VERSION}; fi
-
-# For ARM build use flag: `--platform linux/arm64`
-FROM --platform=$BUILDPLATFORM amazoncorretto:11.0.19
-LABEL version=${APP_VERSION} description="EPAM Report portal. Main API Service" maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>, Hleb Kanonik <hleb_kanonik@epam.com>"
-ARG APP_VERSION=${APP_VERSION}
-ENV APP_DIR=/usr/app JAVA_OPTS="-Xmx1g -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom"
-WORKDIR $APP_DIR
-COPY --from=build $APP_DIR/build/libs/service-authorization-*exec.jar .
+FROM alpine:latest
+LABEL version=5.8.2 description="Unified Authorization Trap for all ReportPortal's Services" maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>, Hleb Kanonik <hleb_kanonik@epam.com>"
+ARG GH_TOKEN
+RUN echo 'exec java ${JAVA_OPTS} -jar service-authorization-5.8.2-exec.jar' > /start.sh && chmod +x /start.sh && \
+	wget --header="Authorization: Bearer ${GH_TOKEN}"  -q https://maven.pkg.github.com/reportportal/service-authorization/com/epam/reportportal/service-authorization/5.8.2/service-authorization-5.8.2-exec.jar
+ENV JAVA_OPTS="-Xmx512m -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom"
 VOLUME ["/tmp"]
 EXPOSE 8080
-ENTRYPOINT exec java ${JAVA_OPTS} -jar ${APP_DIR}/service-authorization-*exec.jar
+ENTRYPOINT ./start.sh
