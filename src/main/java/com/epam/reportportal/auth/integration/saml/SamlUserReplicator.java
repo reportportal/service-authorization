@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.integration.saml;
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.reportportal.auth.util.AuthUtils.NORMALIZE_STRING;
 
+import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
@@ -42,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -52,24 +54,28 @@ import org.springframework.util.CollectionUtils;
  * @author Yevgeniy Svalukhin
  */
 @Component
-@Transactional
 public class SamlUserReplicator extends AbstractUserReplicator {
 
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
 
+  private final ApplicationEventPublisher eventPublisher;
+
   @Autowired
   public SamlUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
       IntegrationTypeRepository integrationTypeRepository,
-      IntegrationRepository integrationRepository, ContentTypeResolver contentTypeResolver) {
+      IntegrationRepository integrationRepository, ContentTypeResolver contentTypeResolver,
+      ApplicationEventPublisher eventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver
     );
     this.integrationTypeRepository = integrationTypeRepository;
     this.integrationRepository = integrationRepository;
+    this.eventPublisher = eventPublisher;
   }
 
+  @Transactional
   public User replicateUser(ReportPortalSamlAuthentication samlAuthentication) {
     String userName = CROP_DOMAIN.apply(samlAuthentication.getPrincipal());
     Optional<User> userOptional = userRepository.findByLogin(userName);
@@ -115,7 +121,14 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     userRepository.save(user);
 
+    publishUserCreatedEvent(user);
+
     return user;
+  }
+
+  private void publishUserCreatedEvent(User user) {
+    UserCreatedEvent userCreatedEvent = new UserCreatedEvent(user.getId(), user.getLogin());
+    eventPublisher.publishEvent(userCreatedEvent);
   }
 
   private void populateUserDetails(User user, List<Attribute> details) {
