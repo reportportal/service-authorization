@@ -19,6 +19,8 @@ package com.epam.reportportal.auth.integration.saml;
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.reportportal.auth.util.AuthUtils.NORMALIZE_STRING;
 
+import com.epam.reportportal.auth.event.activity.AssignUserEvent;
+import com.epam.reportportal.auth.event.activity.ProjectCreatedEvent;
 import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
@@ -121,14 +123,31 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     userRepository.save(user);
 
-    publishUserCreatedEvent(user);
+    publishActivityEvents(user, project);
 
     return user;
+  }
+
+  private void publishActivityEvents(User user, Project project) {
+    publishUserCreatedEvent(user);
+
+    publishProjectCreatedEvent(project);
+
+    publishUserAssignToProjectEvent(user, project);
   }
 
   private void publishUserCreatedEvent(User user) {
     UserCreatedEvent userCreatedEvent = new UserCreatedEvent(user.getId(), user.getLogin());
     eventPublisher.publishEvent(userCreatedEvent);
+  }
+
+  private void publishProjectCreatedEvent(Project project) {
+    eventPublisher.publishEvent(new ProjectCreatedEvent(project.getId(), project.getName()));
+  }
+
+  private void publishUserAssignToProjectEvent(User user, Project project) {
+    eventPublisher.publishEvent(
+        new AssignUserEvent(user.getId(), user.getLogin(), project.getId()));
   }
 
   private void populateUserDetails(User user, List<Attribute> details) {
