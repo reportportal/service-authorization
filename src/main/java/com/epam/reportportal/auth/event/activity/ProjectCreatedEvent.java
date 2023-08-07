@@ -9,18 +9,18 @@ import com.epam.ta.reportportal.entity.activity.EventPriority;
 import com.epam.ta.reportportal.entity.activity.EventSubject;
 
 /**
- * Publish an event when user is created.
+ * Publish an event when project is created.
  *
  * @author Ryhor_Kukharenka
  */
-public class UserCreatedEvent implements ActivityEvent {
+public class ProjectCreatedEvent implements ActivityEvent {
 
-  private final Long userId;
-  private final String userLogin;
+  private final Long projectId;
+  private final String projectName;
 
-  public UserCreatedEvent(Long userId, String userLogin) {
-    this.userId = userId;
-    this.userLogin = userLogin;
+  public ProjectCreatedEvent(Long projectId, String projectName) {
+    this.projectId = projectId;
+    this.projectName = projectName;
   }
 
   @Override
@@ -28,11 +28,12 @@ public class UserCreatedEvent implements ActivityEvent {
     return new ActivityBuilder()
         .addCreatedNow()
         .addAction(EventAction.CREATE)
-        .addEventName(ActivityAction.CREATE_USER.getValue())
-        .addPriority(EventPriority.HIGH)
-        .addObjectId(userId)
-        .addObjectName(userLogin)
-        .addObjectType(EventObject.USER)
+        .addEventName(ActivityAction.CREATE_PROJECT.getValue())
+        .addPriority(EventPriority.MEDIUM)
+        .addObjectId(projectId)
+        .addObjectName(projectName)
+        .addObjectType(EventObject.PROJECT)
+        .addProjectId(projectId)
         .addSubjectName("Auth Service")
         .addSubjectType(EventSubject.APPLICATION)
         .get();
