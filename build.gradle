@@ -119,8 +119,7 @@ bootJar {
 jar.enabled(true)
 jar.archiveClassifier.set('')
 
-addDockerfileToGit.dependsOn createDockerfile
-beforeReleaseBuild.dependsOn addDockerfileToGit
+
 publish.dependsOn build
 publish.mustRunAfter build
 
