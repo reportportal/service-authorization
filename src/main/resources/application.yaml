@@ -82,6 +82,14 @@ rp:
   feature:
     flags:
 
+  amqp:
+    addresses: amqp://${rp.amqp.user}:${rp.amqp.pass}@${rp.amqp.host}:${rp.amqp.port}
+    base-vhost: /
+    host: rabbitmq
+    port: 5672
+    user:
+    pass:
+
 datastore:
   default:
     path: /data/storage
