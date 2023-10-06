@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth;
 
+import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author Yevgeniy Svalukhin
@@ -35,7 +36,7 @@ public class AuthFailureHandler implements org.springframework.security.web.auth
 			throws IOException {
 		response.sendRedirect(UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
 				.replacePath("ui/#login")
-				.replaceQuery("errorAuth=" + exception.getMessage())
+				.replaceQuery("errorAuth=" + StringUtils.normalizeSpace(exception.getMessage()))
 				.build()
 				.toUriString());
 	}

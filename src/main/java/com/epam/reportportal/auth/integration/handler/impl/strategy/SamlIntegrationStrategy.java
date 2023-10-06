@@ -76,7 +76,8 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 	}
 
 	private void validateBasePath(String basePath) {
-		if (!UrlValidator.getInstance().isValid(basePath)) {
+    UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
+		if (!urlValidator.isValid(basePath)) {
 			throw new ReportPortalException(ErrorType.BAD_REQUEST_ERROR, "callbackUrl is invalid");
 		}
 	}
