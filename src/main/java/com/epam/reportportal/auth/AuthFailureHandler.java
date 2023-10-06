@@ -32,12 +32,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class AuthFailureHandler implements org.springframework.security.web.authentication.AuthenticationFailureHandler {
 	@Override
-	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
-			throws IOException {
-		response.sendRedirect(UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-        .replacePath("ui/#login")
-        .replaceQuery("errorAuth=" + StringUtils.normalizeSpace(exception.getMessage()))
-        .build()
-        .toUriString());
-	}
+  public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+      AuthenticationException exception)
+      throws IOException {
+    response.sendRedirect(
+        UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+            .replacePath("ui/#login")
+            .replaceQuery("errorAuth=" + StringUtils.normalizeSpace(exception.getMessage()))
+            .build()
+            .toUriString());
+  }
 }
