@@ -91,8 +91,7 @@ rp:
     pass:
 
 datastore:
-  default:
-    path: /data/storage
+  path: /data/storage
   type: minio
   endpoint: http://play.min.io
   accessKey:
