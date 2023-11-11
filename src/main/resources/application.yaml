@@ -24,6 +24,8 @@ spring:
   mvc:
     locale: en_US
     locale-resolver: fixed
+  main:
+    allow-circular-references: true
 
 logging:
   level:

@@ -18,7 +18,7 @@ FROM amazoncorretto:21.0.1
 LABEL version=${APP_VERSION} description="EPAM ReportPortal. Auth Service" maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>, Hleb Kanonik <hleb_kanonik@epam.com>"
 ARG APP_VERSION=${APP_VERSION}
 ENV APP_DIR=/usr/app
-ENV JAVA_OPTS="-Xmx1g -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom"
+ENV JAVA_OPTS="-Xmx1g -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
 WORKDIR $APP_DIR
 COPY --from=build $APP_DIR/build/libs/service-authorization-*exec.jar .
 VOLUME ["/tmp"]

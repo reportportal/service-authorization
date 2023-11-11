@@ -1,6 +1,6 @@
 plugins {
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
-    id 'org.springframework.boot' version '2.7.16'
+    id 'org.springframework.boot' version '2.7.17'
     id 'java'
     id "org.owasp.dependencycheck" version "5.3.1"
 }
@@ -43,7 +43,27 @@ ext['log4j2.version'] = '2.17.1'
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + '5.10.0' : 'com.github.reportportal:commons-bom:f0b6bb6b')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + '5.10.0' : 'com.github.reportportal:commons-bom:f1d61db')
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.ow2.asm') {
+            details.useVersion "9.6"
+        }
+        if (details.requested.group == 'org.springframework' && details.requested.name == 'spring-core') {
+            details.useVersion "5.3.30"
+        }
+        if (details.requested.group == 'org.aspectj' && details.requested.name == 'aspectjweaver') {
+            details.useVersion "1.9.20.1"
+        }
+        if (details.requested.group == 'net.bytebuddy' && details.requested.name == 'byte-buddy') {
+            details.useVersion "1.14.9"
+        }
+        if (details.requested.group == 'com.google.code.gson' && details.requested.name == 'gson') {
+            details.useVersion "2.8.9"
+        }
     }
 }
 
@@ -78,12 +98,12 @@ dependencies {
 
     ///// Security
     //https://nvd.nist.gov/vuln/detail/CVE-2020-5407 AND https://nvd.nist.gov/vuln/detail/CVE-2020-5408
-    implementation 'org.springframework.security:spring-security-core:5.5.8'
-    implementation 'org.springframework.security:spring-security-config:5.5.8'
-    implementation 'org.springframework.security:spring-security-web:5.5.8'
+    implementation 'org.springframework.security:spring-security-core:5.8.8'
+    implementation 'org.springframework.security:spring-security-config:5.8.8'
+    implementation 'org.springframework.security:spring-security-web:5.8.8'
     //
 
-    implementation 'org.springframework.security:spring-security-oauth2-client'
+    implementation 'org.springframework.security:spring-security-oauth2-client:5.8.8'
     //Fix CVE-2022-22969
     implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
     implementation 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
@@ -95,7 +115,6 @@ dependencies {
     implementation 'org.apache.tika:tika-core'
 
     implementation 'javax.inject:javax.inject:1'
-    implementation 'io.springfox:springfox-swagger2'
     implementation 'org.apache.commons:commons-compress:1.21'
     implementation 'org.cryptacular:cryptacular:1.1.4'
     implementation 'org.yaml:snakeyaml:1.32'
