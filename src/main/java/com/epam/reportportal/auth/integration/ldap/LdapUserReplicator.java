@@ -33,7 +33,7 @@ import com.epam.ta.reportportal.entity.user.UserType;
 import com.epam.ta.reportportal.util.PersonalProjectService;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
