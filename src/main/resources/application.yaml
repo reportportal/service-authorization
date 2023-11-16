@@ -53,10 +53,10 @@ rp:
   db:
     url: jdbc:postgresql://${rp.db.host}:${rp.db.port}/${rp.db.name}
     name: reportportal
-    host: localhost
+    host: postgres
     port: 5432
-    user: rpuser
-    pass: rppass
+    user:
+    pass:
   jwt:
     signing-key:
     token:
@@ -85,14 +85,18 @@ rp:
   amqp:
     addresses: amqp://${rp.amqp.user}:${rp.amqp.pass}@${rp.amqp.host}:${rp.amqp.port}
     base-vhost: /
-    host: localhost
+    host: rabbitmq
     port: 5672
-    user: rabbitmq
-    pass: rabbitmq
+    user:
+    pass:
 
 datastore:
-  type: filesystem
-  path: ${java.io.tmpdir}${file.separator}reportportal${file.separator}datastore
-  endpoint: http://localhost:9000
-  accessKey: minio
-  secretKey: minio123
+  path: /data/storage
+  type: minio
+  endpoint: http://play.min.io
+  accessKey:
+  secretKey:
+  bucketPrefix: prj-
+  bucketPostfix:
+  defaultBucketName: rp-bucket
+  region: us-west-1
