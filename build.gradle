@@ -15,18 +15,8 @@ apply from: "$scriptsUrl/signing.gradle"
 
 repositories {
     mavenCentral { url "https://repo1.maven.org/maven2" }
-    maven { url 'https://repo.spring.io/libs-milestone' }
-    if (releaseMode) {
-        dependencyRepos.forEach { path ->
-            maven {
-                setUrl("https://maven.pkg.github.com/reportportal/${path}")
-                credentials {
-                    username = findProperty("githubUserName")
-                    password = findProperty("githubToken")
-                }
-            }
-        }
-    } else {
+
+    if (!releaseMode) {
         maven { url 'https://jitpack.io' }
     }
 }
