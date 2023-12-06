@@ -15,20 +15,20 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
+import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter.UPSTREAM_TOKEN;
+
 import com.epam.ta.reportportal.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.Serializable;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.Serializable;
-import java.util.Objects;
-
-import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter.UPSTREAM_TOKEN;
 
 /**
  * GitHUB synchronization endpoint
@@ -36,6 +36,7 @@ import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenC
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @RestController
+@Tag(name = "github-endpoint", description = "Github Endpoint")
 public class GithubEndpoint {
 
 	private final GitHubUserReplicator replicator;
@@ -45,7 +46,7 @@ public class GithubEndpoint {
 		this.replicator = replicator;
 	}
 
-	@ApiOperation(value = "Synchronizes logged-in GitHub user")
+	@Operation(summary = "Synchronizes logged-in GitHub user")
 	@RequestMapping(value = { "/sso/me/github/synchronize" }, method = RequestMethod.POST)
 	public OperationCompletionRS synchronize(OAuth2Authentication user) {
 		Serializable upstreamToken = user.getOAuth2Request().getExtensions().get(UPSTREAM_TOKEN);
