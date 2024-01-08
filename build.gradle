@@ -43,9 +43,9 @@ dependencies {
         implementation 'com.epam.reportportal:commons-rules'
         implementation 'com.epam.reportportal:commons-model'
     } else {
-        implementation 'com.github.reportportal:commons-dao:3d0fd7a8'
-        implementation 'com.github.reportportal:commons-rules:01ec4d17'
-        implementation 'com.github.reportportal:commons-model:232e69a5'
+        implementation 'com.github.reportportal:commons-dao:9941604'
+        implementation 'com.github.reportportal:commons-rules:837ccf2'
+        implementation 'com.github.reportportal:commons-model:94c46aa'
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252
@@ -88,7 +88,7 @@ dependencies {
     implementation 'org.apache.tika:tika-core'
 
     implementation 'javax.inject:javax.inject:1'
-    implementation 'io.springfox:springfox-swagger2'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
     implementation 'org.apache.commons:commons-compress:1.21'
     implementation 'org.cryptacular:cryptacular:1.1.4'
     // TODO: snakeyaml 2.0 supported by Spring Boot 3 only

@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.endpoint;
 
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
  */
 @RestController
 @Transactional
+@Tag(name = "sso-endpoint", description = "Sso Endpoint")
 public class SsoEndpoint {
 
 	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = { GET, POST })
