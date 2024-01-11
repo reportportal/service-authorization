@@ -15,6 +15,12 @@
  */
 package com.epam.reportportal.auth.config;
 
+import com.epam.ta.reportportal.commons.ReportPortalUser;
+import com.epam.ta.reportportal.commons.querygen.Filter;
+import com.epam.ta.reportportal.commons.querygen.Queryable;
+import com.epam.ta.reportportal.entity.user.UserRole;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -23,17 +29,20 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
+import org.springdoc.core.SpringDocUtils;
 import org.springdoc.core.customizers.OpenApiCustomiser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
@@ -41,6 +50,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackages = "com.epam.reportportal.auth")
 public class SpringDocConfiguration {
+
+  static {
+    SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthenticationPrincipal.class);
+    SpringDocUtils.getConfig().addRequestWrapperToIgnore(Filter.class, Queryable.class,
+        ReportPortalUser.class, UserRole.class);
+    SpringDocUtils.getConfig().replaceWithClass(org.springframework.data.domain.Pageable.class,
+        org.springdoc.core.converters.models.Pageable.class);
+  }
 
   @Autowired
   private ServletContext servletContext;
