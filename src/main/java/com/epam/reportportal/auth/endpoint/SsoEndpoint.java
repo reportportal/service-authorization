@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.endpoint;
 
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,6 +42,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class SsoEndpoint {
 
 	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = { GET, POST })
+	@Operation(summary = "Get user details")
 	public Map<String, Object> user(Authentication user) {
 
 		ImmutableMap.Builder<String, Object> details = ImmutableMap.<String, Object>builder().put("user", user.getName())
