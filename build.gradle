@@ -33,7 +33,7 @@ ext['log4j2.version'] = '2.21.1'
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + '5.10.0' : 'com.github.reportportal:commons-bom:f0b6bb6b')
+        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + '5.10.0' : 'com.github.reportportal:commons-bom:04b1a7d')
     }
 }
 
