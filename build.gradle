@@ -75,9 +75,9 @@ dependencies {
     implementation 'org.springframework.security:spring-security-web:5.8.5'
     //
 
-    implementation 'org.springframework.security:spring-security-oauth2-client'
+    api 'org.springframework.security:spring-security-oauth2-client'
     //Fix CVE-2022-22969
-    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
+    api 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
     implementation 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
     implementation 'org.springframework.security:spring-security-ldap'
     // TODO: consider migration to spring-security-saml2-service-provider
