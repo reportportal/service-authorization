@@ -39,9 +39,9 @@ dependencyManagement {
 
 dependencies {
     if (releaseMode) {
-        implementation 'com.epam.reportportal:commons-dao'
-        implementation 'com.epam.reportportal:commons-rules'
-        implementation 'com.epam.reportportal:commons-model'
+        api 'com.epam.reportportal:commons-dao'
+        api 'com.epam.reportportal:commons-rules'
+        api 'com.epam.reportportal:commons-model'
     } else {
         api 'com.github.reportportal:commons-dao:9941604'
         api 'com.github.reportportal:commons-rules:837ccf2'
@@ -59,13 +59,13 @@ dependencies {
     //Fix CVE-2018-10237
     implementation 'com.google.guava:guava:31.1-jre'
     //Fix CVE-2020-13956
-    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    api 'org.apache.httpcomponents:httpclient:4.5.14'
     //Fix CVE-2022-40152
-    implementation 'com.fasterxml.woodstox:woodstox-core:6.5.1'
+    api 'com.fasterxml.woodstox:woodstox-core:6.5.1'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
     ///// Security
@@ -87,9 +87,9 @@ dependencies {
 
     implementation 'org.apache.tika:tika-core'
 
-    implementation 'javax.inject:javax.inject:1'
+    api 'javax.inject:javax.inject:1'
     implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
-    implementation 'org.apache.commons:commons-compress:1.21'
+    api 'org.apache.commons:commons-compress:1.21'
     implementation 'org.cryptacular:cryptacular:1.1.4'
     // TODO: snakeyaml 2.0 supported by Spring Boot 3 only
     implementation 'org.yaml:snakeyaml:1.33'
