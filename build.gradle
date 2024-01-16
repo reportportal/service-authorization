@@ -49,53 +49,53 @@ dependencies {
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252
-    api 'org.apache.tomcat.embed:tomcat-embed-core:9.0.82'
-    api 'org.apache.tomcat.embed:tomcat-embed-el:9.0.82'
-    api 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.82'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:9.0.82'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-el:9.0.82'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.82'
     //Fix CVE-2020-15522
-    api 'org.bouncycastle:bcprov-jdk15on:1.69'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
     //Fix CVE-2015-7501, CVE-2015-4852
-    api 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-collections4:4.4'
     //Fix CVE-2018-10237
-    api 'com.google.guava:guava:31.1-jre'
+    implementation 'com.google.guava:guava:31.1-jre'
     //Fix CVE-2020-13956
     api 'org.apache.httpcomponents:httpclient:4.5.14'
     //Fix CVE-2022-40152
     api 'com.fasterxml.woodstox:woodstox-core:6.5.1'
 
     api 'org.springframework.boot:spring-boot-starter-web'
-    api 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     api 'org.springframework.boot:spring-boot-starter-security'
-    api 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
     ///// Security
     //https://nvd.nist.gov/vuln/detail/CVE-2020-5407 AND https://nvd.nist.gov/vuln/detail/CVE-2020-5408
-    api 'org.springframework.security:spring-security-core:5.8.5'
-    api 'org.springframework.security:spring-security-config:5.8.5'
-    api 'org.springframework.security:spring-security-web:5.8.5'
+    implementation 'org.springframework.security:spring-security-core:5.8.5'
+    implementation 'org.springframework.security:spring-security-config:5.8.5'
+    implementation 'org.springframework.security:spring-security-web:5.8.5'
     //
 
-    api 'org.springframework.security:spring-security-oauth2-client'
+    implementation 'org.springframework.security:spring-security-oauth2-client'
     //Fix CVE-2022-22969
-    api 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
-    api 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
-    api 'org.springframework.security:spring-security-ldap'
+    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
+    implementation 'org.springframework.security:spring-security-jwt:1.0.11.RELEASE'
+    implementation 'org.springframework.security:spring-security-ldap'
     // TODO: consider migration to spring-security-saml2-service-provider
-    api 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M31'
+    implementation 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M31'
 //  Temporary fix of https://nvd.nist.gov/vuln/detail/CVE-2019-12400
-    api 'org.apache.santuario:xmlsec:3.0.3'
+    implementation 'org.apache.santuario:xmlsec:3.0.3'
 
-    api 'org.apache.tika:tika-core'
+    implementation 'org.apache.tika:tika-core'
 
     api 'javax.inject:javax.inject:1'
-    api 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
     api 'org.apache.commons:commons-compress:1.21'
-    api 'org.cryptacular:cryptacular:1.1.4'
+    implementation 'org.cryptacular:cryptacular:1.1.4'
     // TODO: snakeyaml 2.0 supported by Spring Boot 3 only
-    api 'org.yaml:snakeyaml:1.33'
-    api 'org.hibernate:hibernate-core:5.4.24.Final'
-    api 'org.springframework:spring-core:5.3.30'
-    api "com.rabbitmq:http-client:5.2.0"
+    implementation 'org.yaml:snakeyaml:1.33'
+    implementation 'org.hibernate:hibernate-core:5.4.24.Final'
+    implementation 'org.springframework:spring-core:5.3.30'
+    implementation "com.rabbitmq:http-client:5.2.0"
 }
 
 processResources {
