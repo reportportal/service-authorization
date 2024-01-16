@@ -114,18 +114,6 @@ tasks.withType(JavaCompile).configureEach {
     options.debugOptions.debugLevel = "source,lines,vars"
 }
 
-
-jar {
-    manifest {
-        attributes "Main-Class": "com.epam.reportportal.auth.AuthServerApplication"
-    }
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
 bootJar {
     System.getenv().containsKey("K8S") ? getArchiveFileName().set('app.jar') : archiveClassifier.set('exec')
 }
