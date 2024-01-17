@@ -12,6 +12,7 @@ apply from: "$scriptsUrl/build-info.gradle"
 apply from: "$scriptsUrl/build-commons.gradle"
 //apply from: "$scriptsUrl/build-quality.gradle"
 apply from: "$scriptsUrl/release-service.gradle"
+apply from: "$scriptsUrl/signing.gradle"
 
 repositories {
     mavenCentral { url "https://repo1.maven.org/maven2" }
@@ -43,8 +44,8 @@ dependencies {
         api 'com.epam.reportportal:commons-rules'
         api 'com.epam.reportportal:commons-model'
     } else {
-        api 'com.github.reportportal:commons-dao:9941604'
-        api 'com.github.reportportal:commons-rules:837ccf2'
+        api 'com.github.reportportal:commons-dao:83903f0'
+        api 'com.github.reportportal:commons-rules:83eda6051be4'
         api 'com.github.reportportal:commons-model:af61954'
     }
 
