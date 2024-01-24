@@ -45,8 +45,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Builds proxy instance of {@link RestTemplate} which load OAuth resouce details from DB on each.
- * operation
+ * Builds proxy instance of {@link RestTemplate} which load OAuth resource details from DB on each
+ * operation.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
@@ -57,8 +57,8 @@ public class AuthConfigService {
   private MutableClientRegistrationRepository clientRegistrationRepository;
 
   /**
-   * Builds proxy instance of {@link RestTemplate} which load OAuth resouce details from DB on each.
-   * operation
+   * Builds proxy instance of {@link RestTemplate} which load OAuth resource details from DB on each
+   * operation.
    *
    * @param name                Name/ID of resource of {@link RestTemplate}
    * @param oauth2ClientContext OAuth Client context
