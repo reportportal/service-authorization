@@ -28,7 +28,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
- * Authentication utils
+ * Authentication utils.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
@@ -36,7 +36,7 @@ public final class AuthUtils {
 
   public static final Function<UserRole, List<GrantedAuthority>> AS_AUTHORITIES =
       userRole -> Collections.singletonList(new SimpleGrantedAuthority(userRole.getAuthority()));
-  public static final Function<String, String> CROP_DOMAIN =
+  public static final UnaryOperator<String> CROP_DOMAIN =
       it -> normalizeId(StringUtils.substringBefore(it, "@"));
   public static final UnaryOperator<String> NORMALIZE_STRING =
       original -> normalizeId(original.trim());

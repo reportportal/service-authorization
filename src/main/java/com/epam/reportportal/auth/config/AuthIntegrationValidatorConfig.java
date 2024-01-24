@@ -11,24 +11,24 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AuthIntegrationValidatorConfig {
 
-	@Bean
-	public ParamNamesProvider ldapParamNamesProvider() {
-		return new LdapRequiredParamNamesProvider();
-	}
+  @Bean
+  public ParamNamesProvider ldapParamNamesProvider() {
+    return new LdapRequiredParamNamesProvider();
+  }
 
-	@Bean
-	public ParamNamesProvider samlParamNamesProvider() {
-		return new SamlRequiredParamNamesProvider();
-	}
+  @Bean
+  public ParamNamesProvider samlParamNamesProvider() {
+    return new SamlRequiredParamNamesProvider();
+  }
 
-	@Bean
-	public UpdateAuthRequestValidator ldapUpdateAuthRequestValidator() {
-		return new UpdateAuthRequestValidator(ldapParamNamesProvider());
-	}
+  @Bean
+  public UpdateAuthRequestValidator ldapUpdateAuthRequestValidator() {
+    return new UpdateAuthRequestValidator(ldapParamNamesProvider());
+  }
 
-	@Bean
-	public SamlUpdateAuthRequestValidator samlUpdateAuthRequestValidator() {
-		return new SamlUpdateAuthRequestValidator(samlParamNamesProvider());
-	}
+  @Bean
+  public SamlUpdateAuthRequestValidator samlUpdateAuthRequestValidator() {
+    return new SamlUpdateAuthRequestValidator(samlParamNamesProvider());
+  }
 
 }

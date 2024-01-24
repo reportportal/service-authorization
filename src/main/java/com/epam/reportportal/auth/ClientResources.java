@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth;
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
@@ -20,20 +21,20 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 
 /**
- * Added to avoid having several resource details beans in the application context
+ * Added to avoid having several resource details beans in the application context.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public class ClientResources {
 
-	private OAuth2ProtectedResourceDetails client = new AuthorizationCodeResourceDetails();
-	private OAuth2ResourceServerProperties resource = new OAuth2ResourceServerProperties();
+  private OAuth2ProtectedResourceDetails client = new AuthorizationCodeResourceDetails();
+  private OAuth2ResourceServerProperties resource = new OAuth2ResourceServerProperties();
 
-	public OAuth2ProtectedResourceDetails getClient() {
-		return client;
-	}
+  public OAuth2ProtectedResourceDetails getClient() {
+    return client;
+  }
 
-	public OAuth2ResourceServerProperties getResource() {
-		return resource;
-	}
+  public OAuth2ResourceServerProperties getResource() {
+    return resource;
+  }
 }

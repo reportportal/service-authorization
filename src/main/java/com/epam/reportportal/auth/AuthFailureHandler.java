@@ -30,8 +30,10 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 
 @Component
-public class AuthFailureHandler implements org.springframework.security.web.authentication.AuthenticationFailureHandler {
-	@Override
+public class AuthFailureHandler implements
+    org.springframework.security.web.authentication.AuthenticationFailureHandler {
+
+  @Override
   public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException exception)
       throws IOException {
