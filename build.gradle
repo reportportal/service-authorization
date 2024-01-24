@@ -97,6 +97,12 @@ dependencies {
     implementation 'org.hibernate:hibernate-core:5.4.24.Final'
     implementation 'org.springframework:spring-core:5.3.30'
     implementation "com.rabbitmq:http-client:5.2.0"
+
+    // add lombok support
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
 
 processResources {

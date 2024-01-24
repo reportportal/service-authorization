@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth;
 
 import org.springframework.boot.SpringApplication;
@@ -25,19 +26,20 @@ import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * Application entry point
+ * Application entry point.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 //@Import({ DatabaseConfiguration.class, DatastoreConfiguration.class })
-@SpringBootApplication(exclude = { LdapHealthContributorAutoConfiguration.class, FlywayAutoConfiguration.class,
-		ElasticsearchDataAutoConfiguration.class, ElasticsearchRepositoriesAutoConfiguration.class,
-		ReactiveElasticsearchRepositoriesAutoConfiguration.class })
-@ComponentScan(basePackages = { "com.epam.ta.reportportal", "com.epam.reportportal.auth" })
+@SpringBootApplication(exclude = {LdapHealthContributorAutoConfiguration.class,
+    FlywayAutoConfiguration.class,
+    ElasticsearchDataAutoConfiguration.class, ElasticsearchRepositoriesAutoConfiguration.class,
+    ReactiveElasticsearchRepositoriesAutoConfiguration.class})
+@ComponentScan(basePackages = {"com.epam.ta.reportportal", "com.epam.reportportal.auth"})
 public class AuthServerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AuthServerApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(AuthServerApplication.class, args);
+  }
 
 }

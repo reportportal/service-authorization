@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth;
 
 /**
- * Client types
+ * Client types.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public enum ReportPortalClient {
-	ui,
-	api,
-	internal
+  ui,
+  api,
+  internal
 }
