@@ -20,11 +20,14 @@ import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.commons.querygen.Filter;
 import com.epam.ta.reportportal.commons.querygen.Queryable;
 import com.epam.ta.reportportal.entity.user.UserRole;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.Comparator;
@@ -67,17 +70,29 @@ public class SpringDocConfiguration {
   private String buildVersion;
 
   @Bean
-  public OpenAPI springShopOpenAPI() {
+  public OpenAPI openAPI() {
+    final String securitySchemeName = "bearerAuth";
     return new OpenAPI()
         .info(new Info().title("Report Portal")
             .description("Report Portal UAT documentation")
             .version(buildVersion)
             .contact(new Contact()
                 .name("Support")
-                .email("Support Report Portal <support@reportportal.io>")
+                .email("support@reportportal.io")
             )
             .license(new License().name("Apache 2.0")
                 .url("http://www.apache.org/licenses/LICENSE-2.0")))
+        .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+        .components(
+            new Components()
+                .addSecuritySchemes(securitySchemeName,
+                    new SecurityScheme()
+                        .name(securitySchemeName)
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")
+                )
+        )
         .addServersItem(new Server().url("/" + applicationName));
   }
 
