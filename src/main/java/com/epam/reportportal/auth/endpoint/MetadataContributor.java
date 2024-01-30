@@ -13,36 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.endpoint;
+
 
 import com.epam.ta.reportportal.entity.project.ProjectRole;
 import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Collectors;
-
-import static java.util.Arrays.stream;
-
 /**
- * Shows list of supported user roles
+ * Shows list of supported user roles.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @Component
 public class MetadataContributor implements InfoContributor {
 
-	@Override
-	public void contribute(Info.Builder builder) {
-		//@formatter:off
-        builder
-                .withDetail("metadata", ImmutableMap
-                        .builder()
-                        .put("project_roles",
-                                stream(ProjectRole.values()).map(Enum::name).collect(Collectors.toList()))
-                        .build());
-        //@formatter:on
-	}
+  @Override
+  public void contribute(Info.Builder builder) {
+    builder
+        .withDetail("metadata", ImmutableMap.builder()
+            .put("project_roles", Arrays.stream(ProjectRole.values())
+                .map(Enum::name)
+                .toList())
+            .build());
+  }
 
 }
