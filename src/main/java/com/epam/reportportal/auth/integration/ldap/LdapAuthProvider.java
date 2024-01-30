@@ -25,6 +25,7 @@ import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.exception.ReportPortalException;
+import java.util.Map;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,12 +34,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
 
 /**
- * Plain LDAP auth provider.
+ * Plain LDAP auth provider
  *
  * @author Andrei Varabyeu
  */
@@ -50,8 +53,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
   private BasicTextEncryptor encryptor;
 
   public LdapAuthProvider(IntegrationRepository integrationRepository,
-      ApplicationEventPublisher eventPublisher,
-      DetailsContextMapper detailsContextMapper) {
+      ApplicationEventPublisher eventPublisher, DetailsContextMapper detailsContextMapper) {
     super(integrationRepository, eventPublisher);
     this.detailsContextMapper = detailsContextMapper;
   }
@@ -65,24 +67,22 @@ public class LdapAuthProvider extends EnableableAuthProvider {
   @Override
   protected AuthenticationProvider getDelegate() {
 
-    Integration integration = integrationRepository.findAllByTypeIn(
-            AuthIntegrationType.LDAP.getName())
-        .stream()
-        .findFirst()
-        .orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
+    Integration integration =
+        integrationRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream()
+            .findFirst().orElseThrow(() -> new BadCredentialsException("LDAP is not configured"));
 
     DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(
-        singletonList(LdapParameter.URL.getRequiredParameter(
-            integration)), LdapParameter.BASE_DN.getRequiredParameter(integration));
+        singletonList(LdapParameter.URL.getRequiredParameter(integration)),
+        LdapParameter.BASE_DN.getRequiredParameter(integration)
+    );
     LdapParameter.MANAGER_PASSWORD.getParameter(integration)
         .ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
     LdapParameter.MANAGER_DN.getParameter(integration).ifPresent(contextSource::setUserDn);
     contextSource.afterPropertiesSet();
 
     LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder =
-        new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>()
-            .contextSource(contextSource)
-            .ldapAuthoritiesPopulator(new NullLdapAuthoritiesPopulator())
+        new LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>().contextSource(
+                contextSource).ldapAuthoritiesPopulator(new NullLdapAuthoritiesPopulator())
             .userDetailsContextMapper(detailsContextMapper);
 
     /*
@@ -94,20 +94,27 @@ public class LdapAuthProvider extends EnableableAuthProvider {
     LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(builder::userSearchFilter);
 
     LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(it -> {
-      LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>
-          .PasswordCompareConfigurer passwordCompareConfigurer = builder.passwordCompare();
+      LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>.PasswordCompareConfigurer
+          passwordCompareConfigurer = builder.passwordCompare();
       LdapParameter.PASSWORD_ATTRIBUTE.getParameter(integration)
           .ifPresent(passwordCompareConfigurer::passwordAttribute);
 
       /*
-       * DIRTY HACK. If LDAP password has salt, ldaptemplate.compare operation does not work
+       * DIRTY HACK. If LDAP's password has solt, ldaptemplate.compare operation does not work
        * since we don't know server's salt.
-       * To enable local password comparison, we need to provide password encoder from crypto's
-       * package
+       * To enable local password comparison, we need to provide password encoder from crypto's package
        * This is why we just wrap old encoder with new one interface
        * New encoder cannot be used everywhere since it does not have implementation for LDAP
        */
-      final PasswordEncoder delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+      final PasswordEncoder delegate;
+      if (it.equalsIgnoreCase("PBKDF2-HMAC-SHA512")) {
+        Pbkdf2PasswordEncoder pbkdf2HmacSha512Encoder = new Pbkdf2PasswordEncoder();
+        pbkdf2HmacSha512Encoder.setAlgorithm(
+            Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA512);
+        delegate = new DelegatingPasswordEncoder(it, Map.of(it, pbkdf2HmacSha512Encoder));
+      } else {
+        delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+      }
       builder.passwordEncoder(new org.springframework.security.crypto.password.PasswordEncoder() {
 
         @Override
@@ -126,8 +133,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
     try {
       return (AuthenticationProvider) Accessible.on(builder)
-          .method(LdapAuthenticationProviderConfigurer.class.getDeclaredMethod("build"))
-          .invoke();
+          .method(LdapAuthenticationProviderConfigurer.class.getDeclaredMethod("build")).invoke();
     } catch (Throwable e) {
       throw new ReportPortalException("Cannot build LDAP auth provider", e);
     }
