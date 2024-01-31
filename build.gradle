@@ -44,9 +44,9 @@ dependencies {
         api 'com.epam.reportportal:commons-rules'
         api 'com.epam.reportportal:commons-model'
     } else {
-        api 'com.github.reportportal:commons-dao:57e2fb4023'
+        api 'com.github.reportportal:commons-dao:458b67ab61'
         api 'com.github.reportportal:commons-rules:83eda6051be4'
-        api 'com.github.reportportal:commons-model:5739c3c347'
+        api 'com.github.reportportal:commons-model:30722863'
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252
