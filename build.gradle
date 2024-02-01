@@ -33,7 +33,7 @@ ext['log4j2.version'] = '2.21.1'
 
 dependencyManagement {
     imports {
-        mavenBom(releaseMode ? 'com.epam.reportportal:commons-bom:' + '5.11.2' : 'com.github.reportportal:commons-bom:5.11.2')
+        mavenBom('com.epam.reportportal:commons-bom:5.11.2')
     }
 }
 
@@ -43,9 +43,9 @@ dependencies {
         implementation 'com.epam.reportportal:commons-rules'
         implementation 'com.epam.reportportal:commons-model'
     } else {
-        implementation 'com.github.reportportal:commons-dao:3d0fd7a8'
-        implementation 'com.github.reportportal:commons-rules:01ec4d17'
-        implementation 'com.github.reportportal:commons-model:232e69a5'
+        implementation 'com.epam.reportportal:commons-dao'
+        implementation 'com.epam.reportportal:commons-rules'
+        implementation 'com.epam.reportportal:commons-model'
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252
