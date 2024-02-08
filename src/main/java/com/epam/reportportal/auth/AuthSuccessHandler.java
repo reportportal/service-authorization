@@ -16,6 +16,9 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
+import com.epam.reportportal.auth.integration.github.GitHubClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
@@ -42,6 +45,8 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
 	private ApplicationEventPublisher eventPublisher;
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(GitHubClient.class);
+
 	public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher) {
 		super("/");
 		this.tokenServicesFacade = tokenServicesFacade;
@@ -60,6 +65,10 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 				.replaceQueryParams(query)
 				.build()
 				.toUri();
+
+		LOGGER.info("Request URL from req: " + request.getRequestURL().toString());
+		LOGGER.info("Request URI from req: " + request.getRequestURI());
+		LOGGER.info("Built rqUrl: " + rqUrl);
 
 		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
