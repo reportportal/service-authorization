@@ -27,7 +27,6 @@ import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.reportportal.auth.oauth.AccessTokenStore;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.ServerSettingsRepository;
@@ -64,7 +63,6 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.*;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
@@ -406,18 +404,6 @@ public class SecurityConfiguration {
 			defaultTokenServices.setTokenEnhancer(accessTokenEnhancer);
 			return defaultTokenServices;
 		}
-
-		@Bean(value = "databaseTokenServices")
-		public DefaultTokenServices databaseTokenServices(@Autowired AccessTokenStore accessTokenStore,
-				@Autowired ClientDetailsService clientDetailsService) {
-			DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-			defaultTokenServices.setTokenStore(accessTokenStore);
-			defaultTokenServices.setClientDetailsService(clientDetailsService);
-			defaultTokenServices.setSupportRefreshToken(false);
-			defaultTokenServices.setAuthenticationManager(authenticationManager);
-			return defaultTokenServices;
-		}
-
 	}
 
 	@Configuration

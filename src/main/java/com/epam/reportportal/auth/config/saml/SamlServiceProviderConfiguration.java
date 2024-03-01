@@ -25,6 +25,8 @@ import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.google.common.collect.Lists;
 import org.opensaml.saml.saml2.core.NameID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -60,7 +62,9 @@ import static java.util.Optional.ofNullable;
 @Configuration
 public class SamlServiceProviderConfiguration {
 
-	@Value("${rp.auth.saml.base-path}")
+  private static final Logger LOGGER = LoggerFactory.getLogger(SamlServiceProviderConfiguration.class);
+
+  @Value("${rp.auth.saml.base-path}")
 	private String basePath;
 
 	@Value("${rp.auth.saml.entity-id}")
@@ -148,14 +152,14 @@ public class SamlServiceProviderConfiguration {
 	}
 
 	private RotatingKeys rotatingKeys() {
-		return new RotatingKeys().setActive(activeKey()).setStandBy(standbyKeys());
+		return new RotatingKeys().setActive(getActiveKey()).setStandBy(standbyKeys());
 	}
 
 	private List<SimpleKey> standbyKeys() {
 		return Collections.emptyList();
 	}
 
-	private SimpleKey activeKey() {
+	private SimpleKey getActiveKey() {
 
 		if (signedRequests) {
 			X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore, keyStorePassword);
@@ -167,7 +171,7 @@ public class SamlServiceProviderConfiguration {
 						.setPrivateKey(getEncoder().encodeToString(privateKey.getEncoded()))
 						.setName(activeKeyName);
 			} catch (CertificateEncodingException e) {
-				e.printStackTrace();
+        LOGGER.error("Failed to retrieve active key", e);
 			}
 		}
 		return new SimpleKey();

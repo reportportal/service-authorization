@@ -18,10 +18,17 @@ package com.epam.reportportal.auth.util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for loading certificates from trusted stores
@@ -30,7 +37,9 @@ import java.security.cert.X509Certificate;
  */
 public class CertificationUtil {
 
-	public static X509Certificate getCertificateByName(String certificateAlias, String trustStoreName, String password) {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CertificationUtil.class);
+
+  public static X509Certificate getCertificateByName(String certificateAlias, String trustStoreName, String password) {
 		try {
 			KeyStore keyStore = KeyStore.getInstance("JKS");
 			loadKeyStore(keyStore, trustStoreName, password);
@@ -67,7 +76,13 @@ public class CertificationUtil {
 		if (jksPath.startsWith("file://")) {
 			keyStore.load(Files.newInputStream(Paths.get(jksPath.replaceFirst("file://", ""))), password);
 		} else {
-			keyStore.load(ClassLoader.getSystemResourceAsStream(jksPath), password);
+      try (var is = ClassLoader.getSystemResourceAsStream(jksPath)) {
+        keyStore.load(is, password);
+      } catch (Exception e) {
+        LOGGER.error("Failed to load key store", e);
+        throw e;
+      }
+
 		}
 	}
 }
