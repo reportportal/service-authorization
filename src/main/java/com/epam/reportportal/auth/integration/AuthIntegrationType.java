@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration;
+
+import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
 import com.epam.reportportal.auth.integration.converter.LdapConverter;
@@ -23,72 +26,69 @@ import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.SamlResource;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static java.util.Optional.ofNullable;
 
 /**
  * @author Andrei Varabyeu
  */
 public enum AuthIntegrationType {
 
-	ACTIVE_DIRECTORY("ad") {
-		@Override
-		public Optional<Integration> get(Integration entity) {
-			return ofNullable(entity);
-		}
+  ACTIVE_DIRECTORY("ad") {
+    @Override
+    public Optional<Integration> get(Integration entity) {
+      return ofNullable(entity);
+    }
 
-		@Override
-		public Function<Integration, ActiveDirectoryResource> getToResourceMapper() {
-			return ActiveDirectoryConverter.TO_RESOURCE;
-		}
-	},
-	LDAP("ldap") {
-		@Override
-		public Optional<Integration> get(Integration entity) {
-			return ofNullable(entity);
-		}
+    @Override
+    public Function<Integration, ActiveDirectoryResource> getToResourceMapper() {
+      return ActiveDirectoryConverter.TO_RESOURCE;
+    }
+  },
+  LDAP("ldap") {
+    @Override
+    public Optional<Integration> get(Integration entity) {
+      return ofNullable(entity);
+    }
 
-		@Override
-		public Function<Integration, LdapResource> getToResourceMapper() {
-			return LdapConverter.TO_RESOURCE;
-		}
-	},
-	SAML("saml") {
-		@Override
-		public Optional<Integration> get(Integration entity) {
-			return ofNullable(entity);
-		}
+    @Override
+    public Function<Integration, LdapResource> getToResourceMapper() {
+      return LdapConverter.TO_RESOURCE;
+    }
+  },
+  SAML("saml") {
+    @Override
+    public Optional<Integration> get(Integration entity) {
+      return ofNullable(entity);
+    }
 
-		@Override
-		public Function<Integration, SamlResource> getToResourceMapper() {
-			return SamlConverter.TO_RESOURCE;
-		}
-	};
+    @Override
+    public Function<Integration, SamlResource> getToResourceMapper() {
+      return SamlConverter.TO_RESOURCE;
+    }
+  };
 
-	private String name;
+  private String name;
 
-	AuthIntegrationType(String name) {
-		this.name = name;
-	}
+  AuthIntegrationType(String name) {
+    this.name = name;
+  }
 
-	public abstract Optional<Integration> get(Integration entity);
+  public abstract Optional<Integration> get(Integration entity);
 
-	public abstract Function<Integration, ? extends AbstractAuthResource> getToResourceMapper();
+  public abstract Function<Integration, ? extends AbstractAuthResource> getToResourceMapper();
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public static Optional<AuthIntegrationType> fromId(String id) {
-		return Arrays.stream(values()).filter(it -> it.name.equalsIgnoreCase(id)).findAny();
-	}
+  public static Optional<AuthIntegrationType> fromId(String id) {
+    return Arrays.stream(values()).filter(it -> it.name.equalsIgnoreCase(id)).findAny();
+  }
 
-	@Override
-	public String toString() {
-		return this.name;
-	}
+  @Override
+  public String toString() {
+    return this.name;
+  }
 }

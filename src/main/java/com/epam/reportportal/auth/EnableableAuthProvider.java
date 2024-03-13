@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
@@ -24,39 +25,40 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 /**
- * Dynamic (enableable) auth provider
+ * Dynamic (enableable) auth provider.
  *
  * @author Andrei Varabyeu
  */
 @Component
 public abstract class EnableableAuthProvider implements AuthenticationProvider {
 
-	protected final IntegrationRepository integrationRepository;
-	protected final ApplicationEventPublisher eventPublisher;
+  protected final IntegrationRepository integrationRepository;
+  protected final ApplicationEventPublisher eventPublisher;
 
-	public EnableableAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher) {
-		this.integrationRepository = integrationRepository;
-		this.eventPublisher = eventPublisher;
-	}
+  public EnableableAuthProvider(IntegrationRepository integrationRepository,
+      ApplicationEventPublisher eventPublisher) {
+    this.integrationRepository = integrationRepository;
+    this.eventPublisher = eventPublisher;
+  }
 
-	protected abstract boolean isEnabled();
+  protected abstract boolean isEnabled();
 
-	protected abstract AuthenticationProvider getDelegate();
+  protected abstract AuthenticationProvider getDelegate();
 
-	@Override
-	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		if (isEnabled()) {
-			Authentication auth = getDelegate().authenticate(authentication);
-			eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
-			return auth;
-		} else {
-			return null;
-		}
-	}
+  @Override
+  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    if (isEnabled()) {
+      Authentication auth = getDelegate().authenticate(authentication);
+      eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
+      return auth;
+    } else {
+      return null;
+    }
+  }
 
-	@Override
-	public final boolean supports(Class<?> authentication) {
-		return isEnabled() && getDelegate().supports(authentication);
-	}
+  @Override
+  public final boolean supports(Class<?> authentication) {
+    return isEnabled() && getDelegate().supports(authentication);
+  }
 
 }

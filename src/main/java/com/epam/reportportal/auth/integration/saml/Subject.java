@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.saml;
 
 import java.io.Serializable;
 
 /**
- * Represents information about subject of authentication stored in SAML response
+ * Represents information about subject of authentication stored in SAML response.
  *
  * @author Yevgeniy Svalukhin
  */
 public class Subject implements Serializable {
 
-	private static final long serialVersionUID = 2390092323L;
+  private static final long serialVersionUID = 2390092323L;
 
-	private SamlPrincipal samlPrincipal;
+  private SamlPrincipal samlPrincipal;
 
-	public SamlPrincipal getSamlPrincipal() {
-		return samlPrincipal;
-	}
+  public SamlPrincipal getSamlPrincipal() {
+    return samlPrincipal;
+  }
 
-	public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
-		this.samlPrincipal = samlPrincipal;
-		return this;
-	}
+  public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
+    this.samlPrincipal = samlPrincipal;
+    return this;
+  }
 }

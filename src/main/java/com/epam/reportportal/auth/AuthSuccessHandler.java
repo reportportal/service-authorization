@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import com.epam.reportportal.auth.integration.github.GitHubClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.net.URI;
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
@@ -28,12 +31,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URI;
-
 /**
  * Base class for handling of success authentication and redirection to UI page.
  *
@@ -41,39 +38,36 @@ import java.net.URI;
  */
 public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-	protected Provider<TokenServicesFacade> tokenServicesFacade;
+  protected Provider<TokenServicesFacade> tokenServicesFacade;
 
-	private ApplicationEventPublisher eventPublisher;
+  private ApplicationEventPublisher eventPublisher;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(GitHubClient.class);
+  public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade,
+      ApplicationEventPublisher eventPublisher) {
+    super("/");
+    this.tokenServicesFacade = tokenServicesFacade;
+    this.eventPublisher = eventPublisher;
+  }
 
-	public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade, ApplicationEventPublisher eventPublisher) {
-		super("/");
-		this.tokenServicesFacade = tokenServicesFacade;
-		this.eventPublisher = eventPublisher;
-	}
+  @Override
+  protected void handle(HttpServletRequest request, HttpServletResponse response,
+      Authentication authentication) throws IOException {
+    OAuth2AccessToken token = getToken(authentication);
 
-	@Override
-	protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-		OAuth2AccessToken token = getToken(authentication);
+    MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
+    query.add("token", token.getValue());
+    query.add("token_type", token.getTokenType());
+    URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+        .replacePath("/ui/authSuccess")
+        .replaceQueryParams(query)
+        .build()
+        .toUri();
 
-		MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
-		query.add("token", token.getValue());
-		query.add("token_type", token.getTokenType());
-		URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-				.replacePath("/ui/authSuccess")
-				.replaceQueryParams(query)
-				.build()
-				.toUri();
+    eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-		LOGGER.info("Request URL from req: " + request.getRequestURL().toString());
-		LOGGER.info("Request URI from req: " + request.getRequestURI());
-		LOGGER.info("Built rqUrl: " + rqUrl);
+    getRedirectStrategy().sendRedirect(request, response,
+        rqUrl.toString().replaceFirst("authSuccess", "#authSuccess"));
+  }
 
-		eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
-
-		getRedirectStrategy().sendRedirect(request, response, rqUrl.toString().replaceFirst("authSuccess", "#authSuccess"));
-	}
-
-	protected abstract OAuth2AccessToken getToken(Authentication authentication);
+  protected abstract OAuth2AccessToken getToken(Authentication authentication);
 }
