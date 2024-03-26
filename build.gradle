@@ -96,6 +96,7 @@ dependencies {
 
     //Fix CVE-2023-6378, CVE-2023-6481, CVE-2023-6378, CVE-2023-6481
     implementation 'ch.qos.logback:logback-classic:1.2.13'
+    implementation 'ch.qos.logback:logback-core:1.2.13'
 
     implementation 'org.apache.tika:tika-core'
 
