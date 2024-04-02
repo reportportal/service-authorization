@@ -28,11 +28,11 @@ import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
-import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -21,11 +21,11 @@ import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandl
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.ta.reportportal.ws.reporting.OperationCompletionRS;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.beans.PropertyEditorSupport;

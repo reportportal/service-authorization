@@ -20,7 +20,7 @@ import static java.util.Optional.ofNullable;
 
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;
-import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import java.util.HashMap;

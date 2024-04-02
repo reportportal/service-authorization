@@ -22,9 +22,9 @@ import com.epam.reportportal.auth.integration.validator.request.AuthRequestValid
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 

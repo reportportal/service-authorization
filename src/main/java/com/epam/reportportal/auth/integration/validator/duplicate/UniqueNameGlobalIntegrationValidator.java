@@ -16,10 +16,10 @@
 
 package com.epam.reportportal.auth.integration.validator.duplicate;
 
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
+import com.epam.reportportal.rules.commons.validation.BusinessRule;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.reporting.ErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

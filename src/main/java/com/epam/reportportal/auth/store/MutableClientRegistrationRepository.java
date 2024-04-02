@@ -18,11 +18,11 @@ package com.epam.reportportal.auth.store;
 
 import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.TO_SPRING;
 
-import com.epam.ta.reportportal.commons.validation.Suppliers;
+import com.epam.reportportal.rules.commons.validation.Suppliers;
+import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.ta.reportportal.ws.reporting.ErrorType;
 import java.util.Collection;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
