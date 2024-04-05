@@ -22,9 +22,9 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAS
 import static com.epam.ta.reportportal.commons.Predicates.equalTo;
 
 import com.epam.reportportal.auth.integration.validator.request.param.provider.ParamNamesProvider;
-import com.epam.ta.reportportal.commons.validation.BusinessRule;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.rules.commons.validation.BusinessRule;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.function.Predicate;
 
 public class SamlUpdateAuthRequestValidator extends UpdateAuthRequestValidator {

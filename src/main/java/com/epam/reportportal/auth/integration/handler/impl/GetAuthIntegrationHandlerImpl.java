@@ -25,11 +25,11 @@ import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConvert
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
-import com.epam.ta.reportportal.commons.validation.Suppliers;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
-import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.rules.commons.validation.Suppliers;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

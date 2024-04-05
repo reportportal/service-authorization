@@ -24,7 +24,7 @@ import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDup
 import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

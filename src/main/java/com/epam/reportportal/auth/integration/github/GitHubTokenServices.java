@@ -21,7 +21,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
 import java.io.Serializable;
 import java.util.Collections;

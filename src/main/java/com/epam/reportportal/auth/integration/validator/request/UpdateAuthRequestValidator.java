@@ -16,13 +16,13 @@
 
 package com.epam.reportportal.auth.integration.validator.request;
 
-import static com.epam.ta.reportportal.commons.validation.BusinessRule.expect;
-import static com.epam.ta.reportportal.commons.validation.Suppliers.formattedSupplier;
+import static com.epam.reportportal.rules.commons.validation.BusinessRule.expect;
+import static com.epam.reportportal.rules.commons.validation.Suppliers.formattedSupplier;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.integration.validator.request.param.provider.ParamNamesProvider;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;

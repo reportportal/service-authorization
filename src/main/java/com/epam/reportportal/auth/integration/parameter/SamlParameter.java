@@ -16,14 +16,14 @@
 
 package com.epam.reportportal.auth.integration.parameter;
 
-import static com.epam.ta.reportportal.commons.validation.Suppliers.formattedSupplier;
+import static com.epam.reportportal.rules.commons.validation.Suppliers.formattedSupplier;
 import static java.util.Optional.ofNullable;
 
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationParams;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
