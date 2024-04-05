@@ -27,7 +27,7 @@ import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.reportportal.rules.commons.validation.Suppliers;
 import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
 import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import java.util.Map;

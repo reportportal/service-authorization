@@ -20,7 +20,7 @@ import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
 import java.util.Collections;
 import javax.inject.Provider;
 import org.springframework.beans.factory.annotation.Autowired;

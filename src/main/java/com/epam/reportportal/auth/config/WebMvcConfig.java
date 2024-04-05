@@ -23,7 +23,7 @@ import com.epam.reportportal.rules.commons.exception.rest.DefaultErrorResolver;
 import com.epam.reportportal.rules.commons.exception.rest.ReportPortalExceptionResolver;
 import com.epam.reportportal.rules.commons.exception.rest.RestErrorDefinition;
 import com.epam.reportportal.rules.commons.exception.rest.RestExceptionHandler;
-import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;

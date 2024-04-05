@@ -20,7 +20,7 @@ import static com.epam.reportportal.auth.integration.converter.OAuthRegistration
 
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;

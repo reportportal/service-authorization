@@ -21,7 +21,7 @@ import static com.epam.reportportal.rules.commons.validation.Suppliers.formatted
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.integration.validator.request.param.provider.ParamNamesProvider;
-import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.List;
 import java.util.Optional;

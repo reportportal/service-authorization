@@ -23,7 +23,7 @@ import static com.epam.ta.reportportal.commons.Predicates.equalTo;
 
 import com.epam.reportportal.auth.integration.validator.request.param.provider.ParamNamesProvider;
 import com.epam.reportportal.rules.commons.validation.BusinessRule;
-import com.epam.ta.reportportal.ws.reporting.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.function.Predicate;
 
