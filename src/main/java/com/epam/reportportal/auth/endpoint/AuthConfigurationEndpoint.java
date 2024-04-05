@@ -23,7 +23,7 @@ import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.ta.reportportal.ws.reporting.OperationCompletionRS;
+import com.epam.reportportal.auth.OperationCompletionRS;
 import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
 import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import io.swagger.v3.oas.annotations.Operation;

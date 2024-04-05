@@ -24,7 +24,7 @@ import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandl
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.model.settings.OAuthRegistrationResource;
-import com.epam.ta.reportportal.ws.reporting.OperationCompletionRS;
+import com.epam.reportportal.auth.OperationCompletionRS;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;

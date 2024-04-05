@@ -30,7 +30,7 @@ import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.ta.reportportal.ws.reporting.OperationCompletionRS;
+import com.epam.reportportal.auth.OperationCompletionRS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

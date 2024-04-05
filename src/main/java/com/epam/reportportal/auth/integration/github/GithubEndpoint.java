@@ -20,7 +20,7 @@ import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenC
 
 import com.epam.reportportal.rules.commons.validation.BusinessRule;
 import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.ta.reportportal.ws.reporting.OperationCompletionRS;
+import com.epam.reportportal.auth.OperationCompletionRS;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.Serializable;
