@@ -73,8 +73,8 @@ public class SpringDocConfiguration {
   public OpenAPI openAPI() {
     final String securitySchemeName = "bearerAuth";
     return new OpenAPI()
-        .info(new Info().title("Report Portal")
-            .description("Report Portal UAT documentation")
+        .info(new Info().title("ReportPortal")
+            .description("ReportPortal UAT documentation")
             .version(buildVersion)
             .contact(new Contact()
                 .name("Support")
