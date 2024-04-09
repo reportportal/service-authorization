@@ -71,6 +71,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-core:5.8.5'
     implementation 'org.springframework.security:spring-security-config:5.8.5'
     implementation 'org.springframework.security:spring-security-web:5.8.5'
+    implementation 'org.springframework:spring-jdbc:6.1.5'
     //
 
     api 'org.springframework.security:spring-security-oauth2-client'
