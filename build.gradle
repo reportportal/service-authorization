@@ -86,7 +86,7 @@ dependencies {
 
 
     api 'javax.inject:javax.inject:1'
-    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    api 'org.springdoc:springdoc-openapi-ui:1.7.0'
     api 'org.apache.commons:commons-compress:1.21'
     implementation 'org.cryptacular:cryptacular:1.1.4'
     // TODO: snakeyaml 2.0 supported by Spring Boot 3 only
