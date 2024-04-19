@@ -95,6 +95,8 @@ dependencies {
     implementation 'org.springframework:spring-core:5.3.30'
     implementation "com.rabbitmq:http-client:5.2.0"
 
+    api 'org.apache.tika:tika-core'
+
     // add lombok support
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
