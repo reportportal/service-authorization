@@ -66,7 +66,7 @@ public class SpringDocConfiguration {
   @Value("${spring.application.name}")
   private String applicationName;
 
-  @Value("${info.build.version}")
+  @Value("${info.build.version:}")
   private String buildVersion;
 
   @Bean
