@@ -18,7 +18,7 @@ package com.epam.reportportal.auth.integration.builder;
 
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -46,7 +46,7 @@ public class AuthIntegrationBuilder {
     return this;
   }
 
-  public AuthIntegrationBuilder addCreationDate(LocalDateTime creationDate) {
+  public AuthIntegrationBuilder addCreationDate(Instant creationDate) {
     integration.setCreationDate(creationDate);
     return this;
   }

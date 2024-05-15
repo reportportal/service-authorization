@@ -47,12 +47,13 @@ public class SsoEndpoint {
 
     ImmutableMap.Builder<String, Object> details = ImmutableMap.<String, Object>builder()
         .put("user", user.getName())
-        .put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-            .collect(Collectors.toList()));
+        .put("authorities", user.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .toList());
 
-    if (user.getPrincipal() instanceof ReportPortalUser) {
-      details.put("userId", ((ReportPortalUser) user.getPrincipal()).getUserId());
-      details.put("projects", ((ReportPortalUser) user.getPrincipal()).getProjectDetails());
+    if (user.getPrincipal() instanceof ReportPortalUser reportPortalUser) {
+      details.put("userId", reportPortalUser.getUserId());
+      details.put("organizations", reportPortalUser.getOrganizationDetails());
     }
     return details.build();
   }

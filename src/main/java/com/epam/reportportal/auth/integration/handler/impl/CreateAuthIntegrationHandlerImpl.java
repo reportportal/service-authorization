@@ -60,7 +60,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
   public AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request,
       ReportPortalUser user) {
     final IntegrationType integrationType = getIntegrationType(type);
-    final AuthIntegrationStrategy authIntegrationStrategy = getAuthStragegy(type);
+    final AuthIntegrationStrategy authIntegrationStrategy = getAuthStrategy(type);
     final Integration integration = authIntegrationStrategy.createIntegration(integrationType,
         request, user.getUsername());
     return type.getToResourceMapper().apply(integration);
@@ -71,7 +71,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
       UpdateAuthRQ request,
       ReportPortalUser user) {
     final IntegrationType integrationType = getIntegrationType(type);
-    final AuthIntegrationStrategy authIntegrationStrategy = getAuthStragegy(type);
+    final AuthIntegrationStrategy authIntegrationStrategy = getAuthStrategy(type);
     final Integration integration = authIntegrationStrategy.updateIntegration(integrationType,
         integrationId, request);
     return type.getToResourceMapper().apply(integration);
@@ -83,7 +83,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
             () -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
   }
 
-  private AuthIntegrationStrategy getAuthStragegy(AuthIntegrationType type) {
+  private AuthIntegrationStrategy getAuthStrategy(AuthIntegrationType type) {
     return strategyProvider.provide(type)
         .orElseThrow(
             () -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, type.getName()));
