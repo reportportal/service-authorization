@@ -58,6 +58,8 @@ public class AuthConfigurationEndpoint {
 	 * Creates or updates auth integration settings
 	 *
 	 * @param request Update request
+	 * @param authType Type of Auth
+	 * @param user User
 	 * @return Successful message or an error
 	 */
 	@Transactional
@@ -73,6 +75,9 @@ public class AuthConfigurationEndpoint {
 	 * Creates or updates auth integration settings
 	 *
 	 * @param request Update request
+	 * @param authType Type of Auth
+	 * @param user User
+	 * @param integrationId Integration ID
 	 * @return Successful message or an error
 	 */
 	@Transactional
