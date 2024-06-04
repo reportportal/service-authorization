@@ -109,6 +109,10 @@ dependencies {
     implementation 'org.hibernate:hibernate-core:5.4.24.Final'
     implementation 'org.springframework:spring-core:5.3.30'
     implementation "com.rabbitmq:http-client:5.2.0"
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
 }
 
 processResources {
