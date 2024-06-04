@@ -2,6 +2,7 @@ package com.epam.reportportal.auth.integration.handler.impl;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
+import com.epam.reportportal.auth.model.SamlProvidersResource;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
@@ -9,7 +10,6 @@ import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.exception.ReportPortalException;
 import com.epam.ta.reportportal.ws.model.ErrorType;
 import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.SamlProvidersResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
