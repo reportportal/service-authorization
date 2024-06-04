@@ -112,7 +112,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     }
 
     user.setUserType(UserType.SAML);
-    user.setRole(UserRole.USER);
     user.setExpired(false);
 
     Project project = generatePersonalProject(user);
@@ -160,6 +159,8 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         findAttributeValue(details, UserAttribute.FIRST_NAME.toString(), String.class);
     String lastName = findAttributeValue(details, UserAttribute.LAST_NAME.toString(), String.class);
     user.setFullName(String.join(" ", firstName, lastName));
+
+    user.setRole(UserRole.USER);
   }
 
   private void populateUserDetailsIfSettingsArePresent(User user, Integration integration,
@@ -173,7 +174,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     Optional<String> idpFullNameOptional =
         SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
-    if (!idpFullNameOptional.isPresent()) {
+    if (idpFullNameOptional.isEmpty()) {
       String firstName = findAttributeValue(details,
           SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null), String.class
       );
@@ -184,6 +185,14 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     } else {
       String fullName = findAttributeValue(details, idpFullNameOptional.get(), String.class);
       user.setFullName(fullName);
+    }
+
+    Optional<String> rolesAttribute = SamlParameter.ROLES_ATTRIBUTE.getParameter(integration);
+
+    if (rolesAttribute.isPresent() && rolesAttribute.get().toLowerCase().contains("admin")) {
+      user.setRole(UserRole.ADMINISTRATOR);
+    } else {
+      user.setRole(UserRole.USER);
     }
   }
 
