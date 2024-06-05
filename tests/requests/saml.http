@@ -1,0 +1,47 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTc2ODk0MzUsInVzZXJfbmFtZSI6InN1cGVyYWRtaW4iLCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOSVNUUkFUT1IiXSwianRpIjoiQ3A1QlNLSU1pd2tCT3BtZ1FUQjhFY3VseEJJIiwiY2xpZW50X2lkIjoidWkiLCJzY29wZSI6WyJ1aSJdfQ.8Q8vEARJDJIh2CRj44BCxaT7-mImMb_0WB2oqtIduM4
+
+
+POST http://localhost:8080/uat/settings/auth/saml/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "enabled":true,
+  "integrationParameters":
+  {
+    "rolesAttribute":"jobRole",
+    "firstNameAttribute":"givenname",
+    "lastNameAttribute":"surname",
+    "emailAttribute":"mail",
+    "identityProviderMetadataUrl":"https://login.microsoftonline.com/2198f05c-a47f-44d6-b373-666ad7285c23/federationmetadata/2007-06/federationmetadata.xml?appid=2a4f3ab8-9ad5-4a44-b7d5-b17d20839dc9",
+    "identityProviderUrl":"https://sts.windows.net/2198f05c-a47f-44d6-b373-666ad7285c23/",
+    "identityProviderName":"Azure",
+    "identityProviderAlias":"https://sts.windows.net/2198f05c-a47f-44d6-b373-666ad7285c23/",
+    "identityProviderNameId":"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+    "callbackUrl":"http://localhost:8080/uat"
+  }
+}
+
+###
+@saml_resource=1
+
+PUT http://localhost:8080/uat/settings/auth/saml/{{saml_resource}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "enabled":true,
+  "integrationParameters":
+  {
+    "rolesAttribute":"jobRole",
+    "firstNameAttribute":"givenname",
+    "lastNameAttribute":"surname",
+    "emailAttribute":"mail",
+    "identityProviderMetadataUrl":"https://login.microsoftonline.com/2198f05c-a47f-44d6-b373-666ad7285c23/federationmetadata/2007-06/federationmetadata.xml?appid=2a4f3ab8-9ad5-4a44-b7d5-b17d20839dc9",
+    "identityProviderUrl":"https://sts.windows.net/2198f05c-a47f-44d6-b373-666ad7285c23/",
+    "identityProviderName":"Azure",
+    "identityProviderAlias":"https://sts.windows.net/2198f05c-a47f-44d6-b373-666ad7285c23/",
+    "identityProviderNameId":"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+    "callbackUrl":"http://localhost:8080/uat"
+  }
+}

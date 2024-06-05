@@ -187,9 +187,10 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       user.setFullName(fullName);
     }
 
-    Optional<String> rolesAttribute = SamlParameter.ROLES_ATTRIBUTE.getParameter(integration);
-
-    if (rolesAttribute.isPresent() && rolesAttribute.get().toLowerCase().contains("admin")) {
+    String roles = findAttributeValue(details,
+        SamlParameter.ROLES_ATTRIBUTE.getParameter(integration).orElse(null), String.class
+    );
+    if (Objects.requireNonNull(roles).toLowerCase().contains("admin")) {
       user.setRole(UserRole.ADMINISTRATOR);
     } else {
       user.setRole(UserRole.USER);
