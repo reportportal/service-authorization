@@ -16,25 +16,24 @@
 
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.RESOURCE_KEY_MAPPER;
+import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.TO_RESOURCE;
+import static java.util.Optional.ofNullable;
+
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
-import com.epam.ta.reportportal.commons.validation.Suppliers;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
-import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.rules.commons.validation.Suppliers;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-
-import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.RESOURCE_KEY_MAPPER;
-import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.TO_RESOURCE;
-import static java.util.Optional.ofNullable;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -42,37 +41,41 @@ import static java.util.Optional.ofNullable;
 @Service
 public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler {
 
-	private final Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping;
+  private final Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping;
 
-	private final MutableClientRegistrationRepository clientRegistrationRepository;
+  private final MutableClientRegistrationRepository clientRegistrationRepository;
 
-	@Autowired
-	public GetAuthIntegrationHandlerImpl(@Qualifier(value = "getAuthIntegrationStrategyMapping")
-			Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping,
-			MutableClientRegistrationRepository clientRegistrationRepository) {
-		this.authIntegrationStrategyMapping = authIntegrationStrategyMapping;
-		this.clientRegistrationRepository = clientRegistrationRepository;
-	}
+  @Autowired
+  public GetAuthIntegrationHandlerImpl(
+      @Qualifier(value = "getAuthIntegrationStrategyMapping")
+      Map<AuthIntegrationType, GetAuthIntegrationStrategy> authIntegrationStrategyMapping,
+      MutableClientRegistrationRepository clientRegistrationRepository) {
+    this.authIntegrationStrategyMapping = authIntegrationStrategyMapping;
+    this.clientRegistrationRepository = clientRegistrationRepository;
+  }
 
-	@Override
-	public AbstractAuthResource getIntegrationByType(AuthIntegrationType integrationType) {
-		return ofNullable(authIntegrationStrategyMapping.get(integrationType)).orElseThrow(() -> new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
-				"Unable to find suitable auth integration strategy for type= " + integrationType
-		))
-				.getIntegration();
-	}
+  @Override
+  public AbstractAuthResource getIntegrationByType(AuthIntegrationType integrationType) {
+    return ofNullable(authIntegrationStrategyMapping.get(integrationType)).orElseThrow(
+            () -> new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
+                "Unable to find suitable auth integration strategy for type= " + integrationType
+            ))
+        .getIntegration();
+  }
 
-	@Override
-	public Map<String, OAuthRegistrationResource> getAllOauthIntegrations() {
-		return clientRegistrationRepository.findAll().stream().map(TO_RESOURCE).collect(RESOURCE_KEY_MAPPER);
-	}
+  @Override
+  public Map<String, OAuthRegistrationResource> getAllOauthIntegrations() {
+    return clientRegistrationRepository.findAll().stream().map(TO_RESOURCE)
+        .collect(RESOURCE_KEY_MAPPER);
+  }
 
-	@Override
-	public OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId) {
-		return clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
-				.map(OAuthRegistrationConverters.TO_RESOURCE)
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
-						Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.", oauthProviderId).get()
-				));
-	}
+  @Override
+  public OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId) {
+    return clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
+        .map(OAuthRegistrationConverters.TO_RESOURCE)
+        .orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
+            Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
+                oauthProviderId).get()
+        ));
+  }
 }

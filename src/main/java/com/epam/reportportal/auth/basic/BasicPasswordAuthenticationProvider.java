@@ -13,45 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.reportportal.rules.exception.ErrorType;
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * Checks whether client have more auth errors than defined and throws exception if so
+ * Checks whether client have more auth errors than defined and throws exception if so.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvider {
 
-	@Autowired
-	private ApplicationEventPublisher eventPublisher;
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
-	@Autowired
-	private UiAuthenticationFailureEventHandler failureEventHandler;
+  @Autowired
+  private UiAuthenticationFailureEventHandler failureEventHandler;
 
-	@Autowired
-	private Provider<HttpServletRequest> request;
+  @Autowired
+  private Provider<HttpServletRequest> request;
 
-	@Override
-	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
-		if (!accountNonLocked) {
-			throw new ReportPortalException(ErrorType.ADDRESS_LOCKED);
-		}
-		Authentication auth = super.authenticate(authentication);
-		eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
-		return auth;
-	}
+  @Override
+  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
+    if (!accountNonLocked) {
+      throw new ReportPortalException(ErrorType.ADDRESS_LOCKED);
+    }
+    Authentication auth = super.authenticate(authentication);
+    eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
+    return auth;
+  }
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.event;
 
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
@@ -20,9 +21,12 @@ import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.exception.ReportPortalException;
+import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.util.PersonalProjectService;
-import com.epam.ta.reportportal.ws.model.ErrorType;
+import com.epam.reportportal.rules.exception.ErrorType;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -30,49 +34,48 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
 /**
- * Updates Last Login field in database User entity
+ * Updates Last Login field in database User entity.
  *
  * @author Andrei Varabyeu
  */
 @Component
 public class UiAuthenticationSuccessEventHandler {
 
-	private UserRepository userRepository;
+  private UserRepository userRepository;
 
-	private PersonalProjectService personalProjectService;
+  private PersonalProjectService personalProjectService;
 
-	@Autowired
-	public UiAuthenticationSuccessEventHandler(UserRepository userRepository, PersonalProjectService personalProjectService) {
-		this.userRepository = userRepository;
-		this.personalProjectService = personalProjectService;
-	}
+  @Autowired
+  public UiAuthenticationSuccessEventHandler(UserRepository userRepository,
+      PersonalProjectService personalProjectService) {
+    this.userRepository = userRepository;
+    this.personalProjectService = personalProjectService;
+  }
 
-	@EventListener
-	@Transactional
-	public void onApplicationEvent(UiUserSignedInEvent event) {
-		String username = event.getAuthentication().getName();
-		userRepository.updateLastLoginDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC), username);
+  @EventListener
+  @Transactional
+  public void onApplicationEvent(UiUserSignedInEvent event) {
+    String username = event.getAuthentication().getName();
+    userRepository.updateLastLoginDate(
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
+        username);
 
-		if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
-			User user = userRepository.findByLogin(username)
-					.orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
-			Project project = personalProjectService.generatePersonalProject(user);
-			user.getProjects().addAll(project.getUsers());
-		}
-	}
+    if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
+      User user = userRepository.findByLogin(username)
+          .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
+      Project project = personalProjectService.generatePersonalProject(user);
+      user.getProjects().addAll(project.getUsers());
+    }
+  }
 
-	private ReportPortalUser acquireUser(Authentication authentication) {
-		if (authentication instanceof ReportPortalSamlAuthentication) {
-			ReportPortalSamlAuthentication rpAuthentication = (ReportPortalSamlAuthentication) authentication;
-			return userRepository.findUserDetails(rpAuthentication.getPrincipal())
-					.orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuthentication.getPrincipal()));
-		} else {
-			return (ReportPortalUser) authentication.getPrincipal();
-		}
-	}
+  private ReportPortalUser acquireUser(Authentication authentication) {
+    if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
+      return userRepository.findUserDetails(rpAuth.getPrincipal())
+          .orElseThrow(() ->
+              new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+    } else {
+      return (ReportPortalUser) authentication.getPrincipal();
+    }
+  }
 }

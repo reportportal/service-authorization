@@ -19,38 +19,39 @@ package com.epam.reportportal.auth.util;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * {@link org.apache.catalina.util.RequestUtil#getRequestURL} analogue
- * with replaced {@link HttpServletRequest#getRequestURI()} to {@link HttpServletRequest#getContextPath()} method invocation
+ * {@link org.apache.catalina.util.RequestUtil#getRequestURL} analogue with replaced.
+ * {@link HttpServletRequest#getRequestURI()} to {@link HttpServletRequest#getContextPath()} method
+ * invocation
  *
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
 public class RequestUtil {
 
-	private RequestUtil() {
-		//static only
-	}
+  private RequestUtil() {
+    //static only
+  }
 
-	public static String getRequestBasePath(HttpServletRequest request) {
+  public static String getRequestBasePath(HttpServletRequest request) {
 
-		StringBuilder url = new StringBuilder();
-		String scheme = request.getScheme();
-		int port = request.getServerPort();
-		if (port < 0) {
-			// Work around java.net.URL bug
-			port = 80;
-		}
+    StringBuilder url = new StringBuilder();
+    String scheme = request.getScheme();
+    int port = request.getServerPort();
+    if (port < 0) {
+      // Work around java.net.URL bug
+      port = 80;
+    }
 
-		url.append(scheme);
-		url.append("://");
-		url.append(request.getServerName());
-		if ((scheme.equals("http") && (port != 80)) || (scheme.equals("https") && (port != 443))) {
-			url.append(':');
-			url.append(port);
-		}
+    url.append(scheme);
+    url.append("://");
+    url.append(request.getServerName());
+    if ((scheme.equals("http") && (port != 80)) || (scheme.equals("https") && (port != 443))) {
+      url.append(':');
+      url.append(port);
+    }
 
-		url.append(request.getContextPath());
+    url.append(request.getContextPath());
 
-		return url.toString();
-	}
+    return url.toString();
+  }
 
 }

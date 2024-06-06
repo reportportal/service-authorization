@@ -18,18 +18,21 @@ package com.epam.reportportal.auth.integration.handler;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
-import com.epam.ta.reportportal.ws.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
 public interface CreateAuthIntegrationHandler {
 
-	AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request, ReportPortalUser user);
+  AbstractAuthResource createAuthIntegration(AuthIntegrationType type, UpdateAuthRQ request,
+      ReportPortalUser user);
 
-	AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId, UpdateAuthRQ request, ReportPortalUser user);
+  AbstractAuthResource updateAuthIntegration(AuthIntegrationType type, Long integrationId,
+      UpdateAuthRQ request, ReportPortalUser user);
 
-	OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId, OAuthRegistrationResource clientRegistrationResource);
+  OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId,
+      OAuthRegistrationResource clientRegistrationResource);
 }

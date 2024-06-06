@@ -13,41 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.endpoint;
+
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 /**
- * Base SSO controller
+ * Base SSO controller.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 @RestController
 @Transactional
+@Tag(name = "sso-endpoint", description = "Sso Endpoint")
 public class SsoEndpoint {
 
-	@RequestMapping(value = { "/sso/me", "/sso/user" }, method = { GET, POST })
-	public Map<String, Object> user(Authentication user) {
+  @RequestMapping(value = {"/sso/me", "/sso/user"}, method = {GET, POST})
+  @Operation(summary = "Get user details")
+  public Map<String, Object> user(Authentication user) {
 
-		ImmutableMap.Builder<String, Object> details = ImmutableMap.<String, Object>builder().put("user", user.getName())
-				.put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+    ImmutableMap.Builder<String, Object> details = ImmutableMap.<String, Object>builder()
+        .put("user", user.getName())
+        .put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList()));
 
-		if (user.getPrincipal() instanceof ReportPortalUser) {
-			details.put("userId", ((ReportPortalUser) user.getPrincipal()).getUserId());
-			details.put("projects", ((ReportPortalUser) user.getPrincipal()).getProjectDetails());
-		}
-		return details.build();
-	}
+    if (user.getPrincipal() instanceof ReportPortalUser) {
+      details.put("userId", ((ReportPortalUser) user.getPrincipal()).getUserId());
+      details.put("projects", ((ReportPortalUser) user.getPrincipal()).getProjectDetails());
+    }
+    return details.build();
+  }
 }

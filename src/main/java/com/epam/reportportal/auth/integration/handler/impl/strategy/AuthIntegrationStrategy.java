@@ -22,10 +22,9 @@ import com.epam.reportportal.auth.integration.validator.request.AuthRequestValid
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.exception.ReportPortalException;
-import com.epam.ta.reportportal.ws.model.ErrorType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
-
+import com.epam.reportportal.rules.exception.ReportPortalException;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -34,44 +33,49 @@ import java.time.ZoneOffset;
  */
 public abstract class AuthIntegrationStrategy {
 
-	private final IntegrationRepository integrationRepository;
-	private final AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator;
-	private final IntegrationDuplicateValidator integrationDuplicateValidator;
+  private final IntegrationRepository integrationRepository;
+  private final AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator;
+  private final IntegrationDuplicateValidator integrationDuplicateValidator;
 
-	public AuthIntegrationStrategy(IntegrationRepository integrationRepository,
-			AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator, IntegrationDuplicateValidator integrationDuplicateValidator) {
-		this.integrationRepository = integrationRepository;
-		this.updateAuthRequestValidator = updateAuthRequestValidator;
-		this.integrationDuplicateValidator = integrationDuplicateValidator;
-	}
+  public AuthIntegrationStrategy(IntegrationRepository integrationRepository,
+      AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator,
+      IntegrationDuplicateValidator integrationDuplicateValidator) {
+    this.integrationRepository = integrationRepository;
+    this.updateAuthRequestValidator = updateAuthRequestValidator;
+    this.integrationDuplicateValidator = integrationDuplicateValidator;
+  }
 
-	protected abstract void fill(Integration integration, UpdateAuthRQ updateRequest);
+  protected abstract void fill(Integration integration, UpdateAuthRQ updateRequest);
 
-	public Integration createIntegration(IntegrationType integrationType, UpdateAuthRQ request, String username) {
-		updateAuthRequestValidator.validate(request);
+  public Integration createIntegration(IntegrationType integrationType, UpdateAuthRQ request,
+      String username) {
+    updateAuthRequestValidator.validate(request);
 
-		final Integration integration = new AuthIntegrationBuilder().addCreator(username)
-				.addIntegrationType(integrationType)
-				.addCreationDate(LocalDateTime.now(ZoneOffset.UTC))
-				.build();
-		fill(integration, request);
+    final Integration integration = new AuthIntegrationBuilder().addCreator(username)
+        .addIntegrationType(integrationType)
+        .addCreationDate(LocalDateTime.now(ZoneOffset.UTC))
+        .build();
+    fill(integration, request);
 
-		return save(integration);
-	}
+    return save(integration);
+  }
 
-	public Integration updateIntegration(IntegrationType integrationType, Long integrationId, UpdateAuthRQ request) {
-		updateAuthRequestValidator.validate(request);
+  public Integration updateIntegration(IntegrationType integrationType, Long integrationId,
+      UpdateAuthRQ request) {
+    updateAuthRequestValidator.validate(request);
 
-		final Integration integration = integrationRepository.findByIdAndTypeIdAndProjectIdIsNull(integrationId, integrationType.getId())
-				.orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND, integrationType.getName()));
-		fill(integration, request);
+    final Integration integration = integrationRepository.findByIdAndTypeIdAndProjectIdIsNull(
+            integrationId, integrationType.getId())
+        .orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
+            integrationType.getName()));
+    fill(integration, request);
 
-		return save(integration);
-	}
+    return save(integration);
+  }
 
-	protected Integration save(Integration integration) {
-		integrationDuplicateValidator.validate(integration);
-		return integrationRepository.save(integration);
-	}
+  protected Integration save(Integration integration) {
+    integrationDuplicateValidator.validate(integration);
+    return integrationRepository.save(integration);
+  }
 
 }

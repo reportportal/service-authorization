@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.converter;
 
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
-
+import com.epam.reportportal.model.integration.auth.ActiveDirectoryResource;
 import java.util.function.Function;
 
 /**
@@ -26,16 +26,18 @@ import java.util.function.Function;
  */
 public final class ActiveDirectoryConverter {
 
-	private ActiveDirectoryConverter() {
-		//static only
-	}
+  private ActiveDirectoryConverter() {
+    //static only
+  }
 
-	public static final Function<Integration, ActiveDirectoryResource> TO_RESOURCE = adIntegration -> {
-		ActiveDirectoryResource resource = new ActiveDirectoryResource();
-		resource.setId(adIntegration.getId());
-		LdapParameter.DOMAIN.getParameter(adIntegration).ifPresent(resource::setDomain);
-		LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(adIntegration).ifPresent(resource::setSearchFilter);
-		resource.setLdapAttributes(LdapConverter.LDAP_ATTRIBUTES_TO_RESOURCE.apply(adIntegration));
-		return resource;
-	};
+  public static final Function<Integration, ActiveDirectoryResource> TO_RESOURCE =
+      adIntegration -> {
+        ActiveDirectoryResource resource = new ActiveDirectoryResource();
+        resource.setId(adIntegration.getId());
+        LdapParameter.DOMAIN.getParameter(adIntegration).ifPresent(resource::setDomain);
+        LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(adIntegration)
+            .ifPresent(resource::setSearchFilter);
+        resource.setLdapAttributes(LdapConverter.LDAP_ATTRIBUTES_TO_RESOURCE.apply(adIntegration));
+        return resource;
+      };
 }
