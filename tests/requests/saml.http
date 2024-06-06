@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTc2ODk0MzUsInVzZXJfbmFtZSI6InN1cGVyYWRtaW4iLCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOSVNUUkFUT1IiXSwianRpIjoiQ3A1QlNLSU1pd2tCT3BtZ1FUQjhFY3VseEJJIiwiY2xpZW50X2lkIjoidWkiLCJzY29wZSI6WyJ1aSJdfQ.8Q8vEARJDJIh2CRj44BCxaT7-mImMb_0WB2oqtIduM4
+@token = ""
 
 
 POST http://localhost:8080/uat/settings/auth/saml/
@@ -23,7 +23,7 @@ Authorization: Bearer {{token}}
 }
 
 ###
-@saml_resource=1
+@saml_resource=""
 
 PUT http://localhost:8080/uat/settings/auth/saml/{{saml_resource}}
 Content-Type: application/json
