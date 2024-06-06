@@ -16,10 +16,10 @@
 package com.epam.reportportal.auth.integration.converter;
 
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
+import com.epam.reportportal.auth.model.SamlResource;
+import com.epam.reportportal.auth.model.SamlProvidersResource;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.ws.model.integration.auth.SamlProvidersResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.SamlResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
 import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
 import org.springframework.security.saml.saml2.metadata.BindingType;
@@ -64,6 +64,7 @@ public class SamlConverter {
 		IDP_METADATA_URL.getParameter(integration).ifPresent(resource::setIdentityProviderMetadataUrl);
 		IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
 		IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
+		ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
 		final IntegrationType integrationType = integration.getType();
 		ofNullable(integrationType.getDetails()).flatMap(typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
 				.flatMap(BASE_PATH::getParameter)

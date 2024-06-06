@@ -45,7 +45,8 @@ public enum SamlParameter {
 	IDP_URL("identityProviderUrl", false),
 	FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
 	FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
-	LAST_NAME_ATTRIBUTE("lastNameAttribute", false);
+	LAST_NAME_ATTRIBUTE("lastNameAttribute", false),
+	ROLES_ATTRIBUTE("rolesAttribute", false);
 
 	private String parameterName;
 

@@ -4,10 +4,10 @@ ARG APP_VERSION
 WORKDIR /usr/app
 COPY . /usr/app
 RUN if [ "${RELEASE_MODE}" = true ]; then \
-    gradle build --exclude-task test \
+    gradle build --no-build-cache --exclude-task test \
         -PreleaseMode=true \
         -Dorg.gradle.project.version=${APP_VERSION}; \
-    else gradle build --exclude-task test -Dorg.gradle.project.version=${APP_VERSION}; fi
+    else gradle build --no-build-cache --exclude-task test -Dorg.gradle.project.version=${APP_VERSION}; fi
 
 # For ARM build use flag: `--platform linux/arm64`
 FROM --platform=$BUILDPLATFORM amazoncorretto:11.0.20

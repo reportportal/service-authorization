@@ -18,11 +18,11 @@ package com.epam.reportportal.auth.integration;
 import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
 import com.epam.reportportal.auth.integration.converter.LdapConverter;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
+import com.epam.reportportal.auth.model.SamlResource;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.ActiveDirectoryResource;
 import com.epam.ta.reportportal.ws.model.integration.auth.LdapResource;
-import com.epam.ta.reportportal.ws.model.integration.auth.SamlResource;
 
 import java.util.Arrays;
 import java.util.Optional;
