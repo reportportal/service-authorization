@@ -45,13 +45,14 @@ public final class ParameterUtils {
     Arrays.stream(LdapParameter.values()).forEach(it -> it.setParameter(request, integration));
   }
 
-  public static void setSamlParameters(UpdateAuthRQ request, Integration integration) {
-    IDP_NAME.setParameter(request, integration);
-    IDP_METADATA_URL.setParameter(request, integration);
-    EMAIL_ATTRIBUTE.setParameter(request, integration);
-    IDP_NAME_ID.setParameter(request, integration);
-    IDP_ALIAS.setParameter(request, integration);
-    IDP_URL.setParameter(request, integration);
+	public static void setSamlParameters(UpdateAuthRQ request, Integration integration) {
+		IDP_NAME.setParameter(request, integration);
+		IDP_METADATA_URL.setParameter(request, integration);
+		EMAIL_ATTRIBUTE.setParameter(request, integration);
+		IDP_NAME_ID.setParameter(request, integration);
+		IDP_ALIAS.setParameter(request, integration);
+		IDP_URL.setParameter(request, integration);
+		ROLES_ATTRIBUTE.setParameter(request, integration);
 
     FULL_NAME_ATTRIBUTE.getParameter(request).ifPresentOrElse(fullName -> {
       FIRST_NAME_ATTRIBUTE.removeParameter(integration);

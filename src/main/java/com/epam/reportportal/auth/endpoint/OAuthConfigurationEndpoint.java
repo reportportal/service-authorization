@@ -67,9 +67,10 @@ public class OAuthConfigurationEndpoint {
   }
 
   /**
-   * Updates oauth integration settings.
+   * Updates oauth integration settings
    *
    * @param clientRegistrationResource OAuth configuration
+   * @param oauthProviderId Oauth settings Profile Id
    * @return All defined OAuth integration settings
    */
   @Transactional
