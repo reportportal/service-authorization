@@ -42,7 +42,7 @@ dependencies {
         api 'com.epam.reportportal:commons-dao'
         api 'com.epam.reportportal:commons'
     } else {
-        api 'com.github.reportportal:commons-dao:0dd6151'
+        api 'com.github.reportportal:commons-dao:d0b04dd'
         api 'com.github.reportportal:commons:b6926df'
     }
 
