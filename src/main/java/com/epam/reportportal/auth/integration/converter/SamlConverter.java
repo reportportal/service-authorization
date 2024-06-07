@@ -26,6 +26,7 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_NAME_ID;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_URL;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAST_NAME_ATTRIBUTE;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROLES_ATTRIBUTE;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;

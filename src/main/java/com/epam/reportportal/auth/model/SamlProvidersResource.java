@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.model;
 
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
