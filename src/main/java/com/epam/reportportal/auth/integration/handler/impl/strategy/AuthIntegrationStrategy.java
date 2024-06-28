@@ -25,6 +25,7 @@ import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -53,7 +54,7 @@ public abstract class AuthIntegrationStrategy {
 
     final Integration integration = new AuthIntegrationBuilder().addCreator(username)
         .addIntegrationType(integrationType)
-        .addCreationDate(LocalDateTime.now(ZoneOffset.UTC))
+        .addCreationDate(Instant.now())
         .build();
     fill(integration, request);
 

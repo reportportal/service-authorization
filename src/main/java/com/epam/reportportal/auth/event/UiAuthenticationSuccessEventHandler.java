@@ -58,7 +58,7 @@ public class UiAuthenticationSuccessEventHandler {
   public void onApplicationEvent(UiUserSignedInEvent event) {
     String username = event.getAuthentication().getName();
     userRepository.updateLastLoginDate(
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
+        Instant.ofEpochMilli(event.getTimestamp()),
         username);
 
     if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
