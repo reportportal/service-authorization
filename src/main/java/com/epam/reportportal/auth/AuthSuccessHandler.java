@@ -43,7 +43,7 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
   private ApplicationEventPublisher eventPublisher;
 
-  @Value("${server.servlet.context-path:/}")
+  @Value("${server.servlet.context-path:/uat}")
   private String pathValue;
 
   public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade,
