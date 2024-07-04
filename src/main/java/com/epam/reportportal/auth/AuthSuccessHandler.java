@@ -61,13 +61,17 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
     MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
     query.add("token", token.getValue());
     query.add("token_type", token.getTokenType());
+    System.out.println("Request: " + request);
+    System.out.println("pathValue: " + pathValue);
     URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-        .replacePath(pathValue.replaceFirst("/uat", "") + "/ui/authSuccess")
+        .replacePath("/reportportal/ui/authSuccess")
         .replaceQueryParams(query)
         .build()
         .toUri();
 
     eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
+
+    System.out.println("rqUrl: " + rqUrl.toString());
 
     getRedirectStrategy().sendRedirect(request, response,
         rqUrl.toString().replaceFirst("authSuccess", "#authSuccess"));
