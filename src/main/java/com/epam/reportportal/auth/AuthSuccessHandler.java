@@ -17,11 +17,14 @@
 package com.epam.reportportal.auth;
 
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
+import com.epam.reportportal.auth.util.CertificationUtil;
 import java.io.IOException;
 import java.net.URI;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -38,6 +41,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Yevgeniy Svalukhin
  */
 public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthSuccessHandler.class);
 
   protected Provider<TokenServicesFacade> tokenServicesFacade;
 
@@ -61,8 +66,8 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
     MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
     query.add("token", token.getValue());
     query.add("token_type", token.getTokenType());
-    System.out.println("Request: " + request);
-    System.out.println("pathValue: " + pathValue);
+    LOGGER.debug("Request: " + request);
+    LOGGER.debug("pathValue: " + pathValue);
     URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
         .replacePath("/reportportal/ui/authSuccess")
         .replaceQueryParams(query)
@@ -71,10 +76,10 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
     eventPublisher.publishEvent(new UiUserSignedInEvent(authentication));
 
-    System.out.println("rqUrl: " + rqUrl.toString());
+    LOGGER.debug("rqUrl: " + rqUrl.toString());
 
     getRedirectStrategy().sendRedirect(request, response,
-        rqUrl.toString().replaceFirst("authSuccess", "#authSuccess"));
+        rqUrl.toString().replaceFirst("authSuccess", "#authSuccess").replaceFirst("/ui", "/reportportal/ui"));
   }
 
   protected abstract OAuth2AccessToken getToken(Authentication authentication);
