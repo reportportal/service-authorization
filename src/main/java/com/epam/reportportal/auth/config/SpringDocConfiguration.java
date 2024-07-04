@@ -66,7 +66,7 @@ public class SpringDocConfiguration {
   @Value("${info.build.version}")
   private String buildVersion;
 
-  @Value("${server.servlet.context-path:/api}")
+  @Value("${server.servlet.context-path:/uat}")
   private String pathValue;
 
   @Bean

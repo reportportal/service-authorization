@@ -22,6 +22,7 @@ import java.net.URI;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
@@ -42,6 +43,9 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
 
   private ApplicationEventPublisher eventPublisher;
 
+  @Value("${server.servlet.context-path:/uat}")
+  private String pathValue;
+
   public AuthSuccessHandler(Provider<TokenServicesFacade> tokenServicesFacade,
       ApplicationEventPublisher eventPublisher) {
     super("/");
@@ -58,7 +62,7 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
     query.add("token", token.getValue());
     query.add("token_type", token.getTokenType());
     URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
-        .replacePath("/ui/authSuccess")
+        .replacePath(pathValue.replaceFirst("/uat", "") + "/ui/authSuccess")
         .replaceQueryParams(query)
         .build()
         .toUri();
