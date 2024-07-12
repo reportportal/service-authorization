@@ -84,7 +84,7 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
     } else {
       return new ResponseEntity<>(new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
           Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
-              oauthProviderId).get()), HttpStatus.NOT_FOUND);
+              oauthProviderId).get()).getMessage(), HttpStatus.NOT_FOUND);
     }
   }
 }
