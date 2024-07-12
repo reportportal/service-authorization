@@ -30,9 +30,14 @@ import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
 import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
@@ -70,12 +75,18 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
   }
 
   @Override
-  public OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId) {
-    return clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
-        .map(OAuthRegistrationConverters.TO_RESOURCE)
-        .orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
-            Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
-                oauthProviderId).get()
-        ));
+  public ResponseEntity<?> getOauthIntegrationById(String oauthProviderId) {
+    Optional<OAuthRegistration> oAuthRegistrationById = clientRegistrationRepository.findOAuthRegistrationById(
+        oauthProviderId);
+    if (oAuthRegistrationById.isPresent()) {
+      return oAuthRegistrationById.map(OAuthRegistrationConverters.TO_RESOURCE)
+          .map(ResponseEntity::ok).get();
+    } else {
+      Map<String, String> body = new HashMap<>();
+      body.put("errorCode", String.valueOf(ErrorType.AUTH_INTEGRATION_NOT_FOUND.getCode()));
+      body.put("message", Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
+          oauthProviderId).get());
+      return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
   }
 }

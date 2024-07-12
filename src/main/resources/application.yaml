@@ -31,7 +31,6 @@ logging:
     org.hibernate: info
     org.hibernate.stat: info
     org.springframework.web.bind: fatal
-    com.epam.reportportal.auth.integration.handler.impl.GetAuthIntegrationHandlerImpl: off
 
 springdoc:
   writer-with-order-by-keys: true
