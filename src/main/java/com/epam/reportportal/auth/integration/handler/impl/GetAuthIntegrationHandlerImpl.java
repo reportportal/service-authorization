@@ -82,11 +82,9 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
       return oAuthRegistrationById.map(OAuthRegistrationConverters.TO_RESOURCE)
           .map(ResponseEntity::ok).get();
     } else {
-      Map<String, String> body = new HashMap<>();
-      body.put("errorCode", String.valueOf(ErrorType.AUTH_INTEGRATION_NOT_FOUND.getCode()));
-      body.put("message", Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
-          oauthProviderId).get());
-      return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
+          Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
+              oauthProviderId).get()), HttpStatus.NOT_FOUND);
     }
   }
 }
