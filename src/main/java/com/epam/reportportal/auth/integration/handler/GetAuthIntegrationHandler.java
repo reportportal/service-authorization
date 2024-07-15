@@ -20,6 +20,7 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
 import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import java.util.Map;
+import org.springframework.http.ResponseEntity;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
@@ -30,5 +31,5 @@ public interface GetAuthIntegrationHandler {
 
   Map<String, OAuthRegistrationResource> getAllOauthIntegrations();
 
-  OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId);
+  ResponseEntity<OAuthRegistrationResource> getOauthIntegrationById(String oauthProviderId);
 }

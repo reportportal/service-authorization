@@ -24,6 +24,7 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
+import com.epam.reportportal.auth.model.ExtendedOAuthRegistrationResource;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.epam.reportportal.rules.commons.validation.Suppliers;
 import com.epam.reportportal.rules.exception.ReportPortalException;
@@ -33,6 +34,8 @@ import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
@@ -70,12 +73,17 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
   }
 
   @Override
-  public OAuthRegistrationResource getOauthIntegrationById(String oauthProviderId) {
+  public ResponseEntity<OAuthRegistrationResource> getOauthIntegrationById(String oauthProviderId) {
     return clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
         .map(OAuthRegistrationConverters.TO_RESOURCE)
-        .orElseThrow(() -> new ReportPortalException(ErrorType.AUTH_INTEGRATION_NOT_FOUND,
-            Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
-                oauthProviderId).get()
-        ));
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> {
+          ExtendedOAuthRegistrationResource body = new ExtendedOAuthRegistrationResource();
+          body.setErrorCode(ErrorType.AUTH_INTEGRATION_NOT_FOUND.getCode());
+          body.setMessage(Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
+              oauthProviderId).get()
+          );
+          return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+        });
   }
 }
