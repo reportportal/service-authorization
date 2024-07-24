@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
+import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.SpringDocUtils;
 import org.springdoc.core.customizers.OpenApiCustomiser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +94,7 @@ public class SpringDocConfiguration {
                         .bearerFormat("JWT")
                 )
         )
-        .addServersItem(new Server().url(pathValue));
+        .addServersItem(new Server().url(getPathValue()));
   }
 
   @Bean
@@ -112,5 +113,9 @@ public class SpringDocConfiguration {
           .collect(Collectors.toList());
       openApi.setTags(sortedTags);
     };
+  }
+
+  private String getPathValue() {
+    return StringUtils.isEmpty(pathValue) || pathValue.equals("/")  ? "/uat" : pathValue;
   }
 }
