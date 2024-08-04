@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -67,9 +68,10 @@ public class OAuthConfigurationEndpoint {
   }
 
   /**
-   * Updates oauth integration settings.
+   * Updates oauth integration settings
    *
    * @param clientRegistrationResource OAuth configuration
+   * @param oauthProviderId Oauth settings Profile Id
    * @return All defined OAuth integration settings
    */
   @Transactional
@@ -121,7 +123,7 @@ public class OAuthConfigurationEndpoint {
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @Operation(summary = "Returns OAuth Server Settings")
-  public OAuthRegistrationResource getOAuthSettings(
+  public ResponseEntity<OAuthRegistrationResource> getOAuthSettings(
       @PathVariable("authId") String oauthProviderId) {
     return getAuthIntegrationHandler.getOauthIntegrationById(oauthProviderId);
   }

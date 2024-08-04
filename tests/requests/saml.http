@@ -1,0 +1,47 @@
+@token = ""
+
+
+POST http://localhost:8080/uat/settings/auth/saml/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "enabled":true,
+  "integrationParameters":
+  {
+    "rolesAttribute":"jobRole",
+    "firstNameAttribute":"givenname",
+    "lastNameAttribute":"surname",
+    "emailAttribute":"mail",
+    "identityProviderMetadataUrl":"https://login.microsoftonline.com/...",
+    "identityProviderUrl":"https://sts.windows.net/...",
+    "identityProviderName":"Azure",
+    "identityProviderAlias":"https://sts.windows.net/...",
+    "identityProviderNameId":"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+    "callbackUrl":"http://localhost:8080/uat"
+  }
+}
+
+###
+@saml_resource=""
+
+PUT http://localhost:8080/uat/settings/auth/saml/{{saml_resource}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "enabled":true,
+  "integrationParameters":
+  {
+    "rolesAttribute":"jobRole",
+    "firstNameAttribute":"givenname",
+    "lastNameAttribute":"surname",
+    "emailAttribute":"mail",
+    "identityProviderMetadataUrl":"https://login.microsoftonline.com/...",
+    "identityProviderUrl":"https://sts.windows.net/...",
+    "identityProviderName":"Azure",
+    "identityProviderAlias":"https://sts.windows.net/...",
+    "identityProviderNameId":"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+    "callbackUrl":"http://localhost:8080/uat"
+  }
+}
