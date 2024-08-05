@@ -49,6 +49,10 @@ public final class LdapConverter {
         LdapParameter.EMAIL_ATTRIBUTE.getParameter(ldapIntegration).ifPresent(attributes::setEmail);
         LdapParameter.FULL_NAME_ATTRIBUTE.getParameter(ldapIntegration)
             .ifPresent(attributes::setFullName);
+        LdapParameter.FIRST_NAME_ATTRIBUTE.getParameter(ldapIntegration)
+            .ifPresent(attributes::setFirstName);
+        LdapParameter.LAST_NAME_ATTRIBUTE.getParameter(ldapIntegration)
+            .ifPresent(attributes::setLastName);
         LdapParameter.PHOTO_ATTRIBUTE.getParameter(ldapIntegration).ifPresent(attributes::setPhoto);
         ldapAttributes.setSynchronizationAttributes(attributes);
         return ldapAttributes;
@@ -86,6 +90,10 @@ public final class LdapConverter {
               it -> LdapParameter.EMAIL_ATTRIBUTE.setParameter(integration, it));
           ofNullable(syncAttr.getFullName()).ifPresent(
               it -> LdapParameter.FULL_NAME_ATTRIBUTE.setParameter(integration, it));
+          ofNullable(syncAttr.getFirstName()).ifPresent(
+              it -> LdapParameter.FIRST_NAME_ATTRIBUTE.setParameter(integration, it));
+          ofNullable(syncAttr.getLastName()).ifPresent(
+              it -> LdapParameter.LAST_NAME_ATTRIBUTE.setParameter(integration, it));
           ofNullable(syncAttr.getPhoto()).ifPresent(
               it -> LdapParameter.PHOTO_ATTRIBUTE.setParameter(integration, it));
         });
