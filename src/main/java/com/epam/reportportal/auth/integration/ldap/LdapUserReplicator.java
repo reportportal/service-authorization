@@ -104,10 +104,8 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     User newUser = new User();
     newUser.setLogin(login);
 
-    ofNullable(syncAttributes.get(LdapParameter.FULL_NAME_ATTRIBUTE.getParameterName()))
-        .filter(StringUtils::isNotBlank)
-        .flatMap(it -> ofNullable(ctx.getStringAttribute(it)))
-        .ifPresent(newUser::setFullName);
+    String fullName = getFullName(ctx, syncAttributes);
+    newUser.setFullName(fullName);
 
     checkEmail(email);
     newUser.setEmail(email);
@@ -120,6 +118,29 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     newUser.getProjects().add(project.getUsers().iterator().next());
 
     return userRepository.save(newUser);
+  }
+
+  private String getFullName(DirContextOperations ctx, Map<String, String> syncAttributes) {
+
+    Optional<String> fullName = getAttribute(ctx, syncAttributes,
+        LdapParameter.FULL_NAME_ATTRIBUTE);
+    if (fullName.isPresent()) {
+      return fullName.get();
+    }
+
+    Optional<String> firstName = getAttribute(ctx, syncAttributes,
+        LdapParameter.FIRST_NAME_ATTRIBUTE);
+    Optional<String> lastName = getAttribute(ctx, syncAttributes,
+        LdapParameter.LAST_NAME_ATTRIBUTE);
+
+    String res = "";
+    if (firstName.isPresent()) {
+      res = firstName.get();
+      if (lastName.isPresent()) {
+        res += " " + lastName;
+      }
+    }
+    return res;
   }
 
   private void checkUserType(User user) {
@@ -136,4 +157,10 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     }
   }
 
+  private Optional<String> getAttribute(DirContextOperations ctx,
+      Map<String, String> syncAttributes, LdapParameter parameter) {
+    return ofNullable(syncAttributes.get(parameter.getParameterName()))
+        .filter(StringUtils::isNotBlank)
+        .flatMap(it -> ofNullable(ctx.getStringAttribute(it)));
+  }
 }
