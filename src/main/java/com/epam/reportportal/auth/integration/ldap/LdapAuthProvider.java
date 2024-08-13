@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.integration.ldap;
 
 import static java.util.Collections.singletonList;
 
+import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
@@ -27,6 +28,8 @@ import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.reportportal.rules.exception.ReportPortalException;
 import java.util.Map;
 import org.jasypt.util.text.BasicTextEncryptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -47,6 +50,8 @@ import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopul
  * @author Andrei Varabyeu
  */
 public class LdapAuthProvider extends EnableableAuthProvider {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LdapAuthProvider.class);
 
   private final DetailsContextMapper detailsContextMapper;
 
@@ -111,13 +116,14 @@ public class LdapAuthProvider extends EnableableAuthProvider {
        * This is why we just wrap old encoder with new one interface
        * New encoder cannot be used everywhere since it does not have implementation for LDAP
        */
+      LOGGER.error("PASSWORD_ENCODER_TYPE: " + it);
       final PasswordEncoder delegate;
-      if (it.equalsIgnoreCase("PBKDF2_SHA256") || it.equalsIgnoreCase("PBKDF2_SHA512")) {
+      if ("PBKDF2_SHA256".equalsIgnoreCase(it) || "PBKDF2_SHA512".equalsIgnoreCase(it)) {
         Pbkdf2PasswordEncoder pbkdf2HmacSha512Encoder = new Pbkdf2PasswordEncoder();
         pbkdf2HmacSha512Encoder.setAlgorithm(
             it.equalsIgnoreCase("PBKDF2_SHA256") ? SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256
                 : SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA512);
-        delegate = new DelegatingPasswordEncoder(it, Map.of(it, pbkdf2HmacSha512Encoder));
+        delegate = new DelegatingPasswordEncoder("bcrypt", Map.of(it, pbkdf2HmacSha512Encoder)); //it == PBKDF2_SHA512
       } else {
         delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
       }
