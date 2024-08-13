@@ -119,11 +119,11 @@ public class LdapAuthProvider extends EnableableAuthProvider {
       LOGGER.error("PASSWORD_ENCODER_TYPE: " + it);
       final PasswordEncoder delegate;
       if ("PBKDF2_SHA256".equalsIgnoreCase(it) || "PBKDF2_SHA512".equalsIgnoreCase(it)) {
-        Pbkdf2PasswordEncoder pbkdf2HmacSha512Encoder = new Pbkdf2PasswordEncoder();
-        pbkdf2HmacSha512Encoder.setAlgorithm(
+        Pbkdf2PasswordEncoder pbkdf2Encoder = new Pbkdf2PasswordEncoder();
+        pbkdf2Encoder.setAlgorithm(
             it.equalsIgnoreCase("PBKDF2_SHA256") ? SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256
                 : SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA512);
-        delegate = new DelegatingPasswordEncoder("bcrypt", Map.of(it, pbkdf2HmacSha512Encoder)); //it == PBKDF2_SHA512
+        delegate = new DelegatingPasswordEncoder(it, Map.of(it, pbkdf2Encoder)); //it == PBKDF2_SHA512
       } else {
         delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
       }
