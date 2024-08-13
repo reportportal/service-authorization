@@ -21,6 +21,7 @@ import static java.util.Collections.singletonList;
 import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.parameter.CustomPasswordEncoderFactory;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
@@ -117,16 +118,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
        * New encoder cannot be used everywhere since it does not have implementation for LDAP
        */
       LOGGER.error("PASSWORD_ENCODER_TYPE: " + it);
-      final PasswordEncoder delegate;
-      if ("PBKDF2_SHA256".equalsIgnoreCase(it) || "PBKDF2_SHA512".equalsIgnoreCase(it)) {
-        Pbkdf2PasswordEncoder pbkdf2Encoder = new Pbkdf2PasswordEncoder();
-        pbkdf2Encoder.setAlgorithm(
-            it.equalsIgnoreCase("PBKDF2_SHA256") ? SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256
-                : SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA512);
-        delegate = new DelegatingPasswordEncoder("pbkdf2", Map.of("pbkdf2", pbkdf2Encoder));
-      } else {
-        delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-      }
+      final PasswordEncoder delegate = CustomPasswordEncoderFactory.createDelegatingPasswordEncoder();
 
       builder.passwordEncoder(new org.springframework.security.crypto.password.PasswordEncoder() {
 
