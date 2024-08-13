@@ -118,7 +118,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
        * New encoder cannot be used everywhere since it does not have implementation for LDAP
        */
       LOGGER.error("PASSWORD_ENCODER_TYPE: " + it);
-      final PasswordEncoder delegate = CustomPasswordEncoderFactory.createDelegatingPasswordEncoder();
+      final PasswordEncoder delegate = CustomPasswordEncoderFactory.createDelegatingPasswordEncoder().get(it);
 
       builder.passwordEncoder(new org.springframework.security.crypto.password.PasswordEncoder() {
 
