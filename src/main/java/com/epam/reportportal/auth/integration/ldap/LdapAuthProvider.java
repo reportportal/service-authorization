@@ -134,6 +134,8 @@ public class LdapAuthProvider extends EnableableAuthProvider {
         public boolean matches(CharSequence rawPassword, String encodedPassword) {
           LOGGER.error("rawPassword: " + rawPassword);
           LOGGER.error("encodedPassword: " + encodedPassword);
+          encodedPassword = encode(rawPassword);
+          LOGGER.error("encodedPassword: " + encodedPassword);
           return delegate.matches(rawPassword, encodedPassword);
         }
       });
