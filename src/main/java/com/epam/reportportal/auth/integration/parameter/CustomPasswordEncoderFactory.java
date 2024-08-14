@@ -30,9 +30,10 @@ import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
  */
 public class CustomPasswordEncoderFactory {
 
-  public static Map<String, PasswordEncoder> createDelegatingPasswordEncoder() {
+  public static PasswordEncoder createDelegatingPasswordEncoder() {
+    String encodingId = "bcrypt";
     Map<String, PasswordEncoder> encoders = new HashMap<>();
-    encoders.put("bcrypt", new BCryptPasswordEncoder());
+    encoders.put(encodingId, new BCryptPasswordEncoder());
     encoders.put("ldap", new org.springframework.security.crypto.password.LdapShaPasswordEncoder());
     encoders.put("MD4", new org.springframework.security.crypto.password.Md4PasswordEncoder());
     encoders.put("MD5", new org.springframework.security.crypto.password.MessageDigestPasswordEncoder("MD5"));
@@ -50,7 +51,7 @@ public class CustomPasswordEncoderFactory {
         new org.springframework.security.crypto.password.MessageDigestPasswordEncoder("SHA-256"));
     encoders.put("sha256", new org.springframework.security.crypto.password.StandardPasswordEncoder());
     encoders.put("argon2", new Argon2PasswordEncoder());
-    return encoders;
+    return new DelegatingPasswordEncoder(encodingId, encoders);
   }
 
 }
