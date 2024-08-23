@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.integration.parameter;
 import static com.epam.reportportal.rules.commons.validation.Suppliers.formattedSupplier;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.rules.exception.ReportPortalException;
@@ -29,6 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
@@ -45,15 +48,19 @@ public enum LdapParameter {
   SEARCH_FILTER_REMOVE_NOT_PRESENT("searchFilter", false, false) {
     @Override
     public void setParameter(UpdateAuthRQ request, Integration integration) {
-      getParameter(request).ifPresentOrElse(it -> setParameter(integration, it),
-          () -> removeParameter(integration));
+      setParameterOrRemoveIfAbsent(request, integration);
     }
   },
   USER_DN_PATTERN("userDnPattern", false, false),
   USER_SEARCH_FILTER("userSearchFilter", false, false),
   GROUP_SEARCH_BASE("groupSearchBase", false, false),
   GROUP_SEARCH_FILTER("groupSearchFilter", false, false),
-  PASSWORD_ENCODER_TYPE("passwordEncoderType", false, false),
+  PASSWORD_ENCODER_TYPE("passwordEncoderType", false, false) {
+    @Override
+    public void setParameter(UpdateAuthRQ request, Integration integration) {
+      setParameterOrRemoveIfAbsent(request, integration);
+    }
+  },
   PASSWORD_ATTRIBUTE("passwordAttribute", false, false),
   MANAGER_DN("managerDn", false, false),
   MANAGER_PASSWORD("managerPassword", false, false),
@@ -101,6 +108,11 @@ public enum LdapParameter {
   public void removeParameter(Integration integration) {
     ofNullable(integration.getParams()).map(IntegrationParams::getParams)
         .ifPresent(params -> params.remove(parameterName));
+  }
+
+  public void setParameterOrRemoveIfAbsent(UpdateAuthRQ request, Integration integration) {
+    getParameter(request).ifPresentOrElse(it -> setParameter(integration, it),
+        () -> removeParameter(integration));
   }
 
   public boolean exists(Integration integration) {
