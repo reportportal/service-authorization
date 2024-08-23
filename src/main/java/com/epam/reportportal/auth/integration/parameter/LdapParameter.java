@@ -42,13 +42,7 @@ public enum LdapParameter {
   FIRST_NAME_ATTRIBUTE("firstName", false, true),
   LAST_NAME_ATTRIBUTE("lastName", false, true),
   PHOTO_ATTRIBUTE("photo", false, true),
-  SEARCH_FILTER_REMOVE_NOT_PRESENT("searchFilter", false, false) {
-    @Override
-    public void setParameter(UpdateAuthRQ request, Integration integration) {
-      getParameter(request).ifPresentOrElse(it -> setParameter(integration, it),
-          () -> removeParameter(integration));
-    }
-  },
+  SEARCH_FILTER_REMOVE_NOT_PRESENT("searchFilter", false, false),
   USER_DN_PATTERN("userDnPattern", false, false),
   USER_SEARCH_FILTER("userSearchFilter", false, false),
   GROUP_SEARCH_BASE("groupSearchBase", false, false),
@@ -94,13 +88,21 @@ public enum LdapParameter {
   }
 
   public void setParameter(UpdateAuthRQ request, Integration integration) {
-    getParameter(request)
-        .ifPresent(it -> setParameter(integration, it));
+    if (this.isRequired()) {
+      getParameter(request).ifPresent(it -> setParameter(integration, it));
+    } else {
+      setParameterOrRemoveIfAbsent(request, integration);
+    }
   }
 
   public void removeParameter(Integration integration) {
     ofNullable(integration.getParams()).map(IntegrationParams::getParams)
         .ifPresent(params -> params.remove(parameterName));
+  }
+
+  public void setParameterOrRemoveIfAbsent(UpdateAuthRQ request, Integration integration) {
+    getParameter(request).ifPresentOrElse(it -> setParameter(integration, it),
+        () -> removeParameter(integration));
   }
 
   public boolean exists(Integration integration) {
