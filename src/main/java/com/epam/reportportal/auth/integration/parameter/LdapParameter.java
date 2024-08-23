@@ -19,7 +19,6 @@ package com.epam.reportportal.auth.integration.parameter;
 import static com.epam.reportportal.rules.commons.validation.Suppliers.formattedSupplier;
 import static java.util.Optional.ofNullable;
 
-import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import com.epam.reportportal.rules.exception.ErrorType;
 import com.epam.reportportal.rules.exception.ReportPortalException;
@@ -30,8 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
