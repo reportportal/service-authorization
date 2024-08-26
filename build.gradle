@@ -55,7 +55,7 @@ dependencies {
     //Fix CVE-2015-7501, CVE-2015-4852
     implementation 'org.apache.commons:commons-collections4:4.4'
     //Fix CVE-2018-10237
-    implementation 'com.google.guava:guava:32.0.0-android'
+    implementation 'com.google.guava:guava:33.3.0-jre'
     //Fix CVE-2020-13956
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     //Fix CVE-2022-40152
