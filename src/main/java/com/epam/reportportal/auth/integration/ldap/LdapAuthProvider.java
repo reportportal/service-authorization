@@ -21,10 +21,11 @@ import static java.util.Collections.singletonList;
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
+import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.reportportal.rules.exception.ReportPortalException;
+import java.util.Collections;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -44,6 +45,8 @@ import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopul
  */
 public class LdapAuthProvider extends EnableableAuthProvider {
 
+  //millis
+  private static final Long LDAP_TIMEOUT = 3000L;
   private final DetailsContextMapper detailsContextMapper;
 
   @Autowired
@@ -77,6 +80,8 @@ public class LdapAuthProvider extends EnableableAuthProvider {
     LdapParameter.MANAGER_PASSWORD.getParameter(integration)
         .ifPresent(it -> contextSource.setPassword(encryptor.decrypt(it)));
     LdapParameter.MANAGER_DN.getParameter(integration).ifPresent(contextSource::setUserDn);
+    contextSource.setBaseEnvironmentProperties(
+        Collections.singletonMap("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT));
     contextSource.afterPropertiesSet();
 
     LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> builder =
