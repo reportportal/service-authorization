@@ -6,7 +6,7 @@ plugins {
 }
 
 apply from: 'project-properties.gradle'
-apply from: "$scriptsUrl/build-docker.gradle"
+//apply from: "$scriptsUrl/build-docker.gradle"
 apply from: "$scriptsUrl/build-info.gradle"
 apply from: "$scriptsUrl/build-commons.gradle"
 //apply from: "$scriptsUrl/build-quality.gradle"
@@ -15,7 +15,6 @@ apply from: "$scriptsUrl/signing.gradle"
 
 repositories {
     mavenCentral { url "https://repo1.maven.org/maven2" }
-
     if (!releaseMode) {
         maven { url 'https://jitpack.io' }
     }
