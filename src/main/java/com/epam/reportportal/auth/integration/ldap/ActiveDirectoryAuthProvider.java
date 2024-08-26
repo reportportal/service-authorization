@@ -16,11 +16,14 @@
 
 package com.epam.reportportal.auth.integration.ldap;
 
+import static com.epam.reportportal.auth.integration.ldap.LdapAuthProvider.LDAP_TIMEOUT;
+
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import java.util.Collections;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -61,10 +64,11 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
     ActiveDirectoryLdapAuthenticationProvider adAuth =
         new ActiveDirectoryLdapAuthenticationProvider(LdapParameter.DOMAIN.getParameter(integration)
             .orElse(null),
-        LdapParameter.URL.getRequiredParameter(integration),
-        LdapParameter.BASE_DN.getRequiredParameter(integration)
-    );
-
+            LdapParameter.URL.getRequiredParameter(integration),
+            LdapParameter.BASE_DN.getRequiredParameter(integration)
+        );
+    adAuth.setContextEnvironmentProperties(
+        Collections.singletonMap("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT));
     adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
     adAuth.setUserDetailsContextMapper(detailsContextMapper);
     LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(integration)

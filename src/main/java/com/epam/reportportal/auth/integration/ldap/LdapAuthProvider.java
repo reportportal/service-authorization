@@ -46,7 +46,7 @@ import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopul
 public class LdapAuthProvider extends EnableableAuthProvider {
 
   //millis
-  private static final String LDAP_TIMEOUT = "3000";
+  public static final String LDAP_TIMEOUT = "3000";
   private final DetailsContextMapper detailsContextMapper;
 
   @Autowired
