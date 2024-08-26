@@ -98,35 +98,6 @@ public class LdapAuthProvider extends EnableableAuthProvider {
     LdapParameter.GROUP_SEARCH_BASE.getParameter(integration).ifPresent(builder::groupSearchBase);
     LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(builder::userSearchFilter);
 
-    LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(it -> {
-      LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>
-          .PasswordCompareConfigurer passwordCompareConfigurer = builder.passwordCompare();
-      LdapParameter.PASSWORD_ATTRIBUTE.getParameter(integration)
-          .ifPresent(passwordCompareConfigurer::passwordAttribute);
-
-      /*
-       * DIRTY HACK. If LDAP password has salt, ldaptemplate.compare operation does not work
-       * since we don't know server's salt.
-       * To enable local password comparison, we need to provide password encoder from crypto's
-       * package
-       * This is why we just wrap old encoder with new one interface
-       * New encoder cannot be used everywhere since it does not have implementation for LDAP
-       */
-      final PasswordEncoder delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-      builder.passwordEncoder(new org.springframework.security.crypto.password.PasswordEncoder() {
-
-        @Override
-        public String encode(CharSequence rawPassword) {
-          return delegate.encode(rawPassword);
-        }
-
-        @Override
-        public boolean matches(CharSequence rawPassword, String encodedPassword) {
-          return delegate.matches(rawPassword, encodedPassword);
-        }
-      });
-    });
-
     LdapParameter.USER_DN_PATTERN.getParameter(integration).ifPresent(builder::userDnPatterns);
 
     try {
