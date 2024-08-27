@@ -20,6 +20,7 @@ import static java.util.Collections.singletonList;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.github.GitHubClient;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.commons.accessible.Accessible;
@@ -27,6 +28,8 @@ import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import java.util.Collections;
 import org.jasypt.util.text.BasicTextEncryptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -44,6 +47,8 @@ import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopul
  * @author Andrei Varabyeu
  */
 public class LdapAuthProvider extends EnableableAuthProvider {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LdapAuthProvider.class);
 
   //millis
   private static final Long LDAP_TIMEOUT = 3000L;
@@ -97,6 +102,8 @@ public class LdapAuthProvider extends EnableableAuthProvider {
         .ifPresent(builder::groupSearchFilter);
     LdapParameter.GROUP_SEARCH_BASE.getParameter(integration).ifPresent(builder::groupSearchBase);
     LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(builder::userSearchFilter);
+
+    LOGGER.error("PASSWORD_ENCODER_TYPE: " + LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration));
 
     LdapParameter.USER_DN_PATTERN.getParameter(integration).ifPresent(builder::userDnPatterns);
 
