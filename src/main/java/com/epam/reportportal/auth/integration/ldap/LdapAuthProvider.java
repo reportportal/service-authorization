@@ -98,13 +98,6 @@ public class LdapAuthProvider extends EnableableAuthProvider {
     LdapParameter.GROUP_SEARCH_BASE.getParameter(integration).ifPresent(builder::groupSearchBase);
     LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(builder::userSearchFilter);
 
-    LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(it -> {
-      LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>
-          .PasswordCompareConfigurer passwordCompareConfigurer = builder.passwordCompare();
-      LdapParameter.PASSWORD_ATTRIBUTE.getParameter(integration)
-          .ifPresent(passwordCompareConfigurer::passwordAttribute);
-    });
-
     LdapParameter.USER_DN_PATTERN.getParameter(integration).ifPresent(builder::userDnPatterns);
 
     try {

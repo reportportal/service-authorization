@@ -7,5 +7,4 @@ ${AnsiColor.BRIGHT_YELLOW}
           /_/
                 ${info.build.name}: ${info.build.version}
                 Built with ♡ by EPAM Systems
-                Some words
                 Spring Boot ${spring-boot.formatted-version}
