@@ -128,19 +128,11 @@ public class LdapUserReplicator extends AbstractUserReplicator {
       return fullName.get();
     }
 
-    Optional<String> firstName = getAttribute(ctx, syncAttributes,
-        LdapParameter.FIRST_NAME_ATTRIBUTE);
-    Optional<String> lastName = getAttribute(ctx, syncAttributes,
-        LdapParameter.LAST_NAME_ATTRIBUTE);
+    String res =
+        getAttribute(ctx, syncAttributes, LdapParameter.FIRST_NAME_ATTRIBUTE).orElse("") + " "
+            + getAttribute(ctx, syncAttributes, LdapParameter.LAST_NAME_ATTRIBUTE).orElse("");
 
-    String res = "";
-    if (firstName.isPresent()) {
-      res = firstName.get();
-      if (lastName.isPresent()) {
-        res += " " + lastName;
-      }
-    }
-    return res;
+    return res.trim();
   }
 
   private void checkUserType(User user) {
