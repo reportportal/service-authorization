@@ -104,7 +104,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
     LdapParameter.USER_SEARCH_FILTER.getParameter(integration).ifPresent(builder::userSearchFilter);
 
     //TODO: temporary solution for working with encoded passwords
-    if (!featureFlagHandler.isEnabled(FeatureFlag.DEFAULT_LDAP_ENCODER)) {
+    if (featureFlagHandler.isEnabled(FeatureFlag.DEFAULT_LDAP_ENCODER)) {
       LdapParameter.PASSWORD_ENCODER_TYPE.getParameter(integration).ifPresent(it -> {
         LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder>
             .PasswordCompareConfigurer passwordCompareConfigurer = builder.passwordCompare();
