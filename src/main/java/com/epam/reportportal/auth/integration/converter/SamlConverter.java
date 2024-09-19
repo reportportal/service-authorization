@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.converter;
+
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.BASE_PATH;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.EMAIL_ATTRIBUTE;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FIRST_NAME_ATTRIBUTE;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FULL_NAME_ATTRIBUTE;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_ALIAS;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_METADATA_URL;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_NAME;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_NAME_ID;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_URL;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAST_NAME_ATTRIBUTE;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROLES_ATTRIBUTE;
+import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.model.SamlResource;
 import com.epam.reportportal.auth.model.SamlProvidersResource;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.ws.model.integration.auth.UpdateAuthRQ;
-import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
-import org.springframework.security.saml.saml2.metadata.BindingType;
-import org.springframework.security.saml.saml2.metadata.NameId;
-import org.springframework.util.CollectionUtils;
-
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,28 +42,30 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static com.epam.reportportal.auth.integration.parameter.SamlParameter.*;
-import static java.util.Optional.ofNullable;
+import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
+import org.springframework.security.saml.saml2.metadata.BindingType;
+import org.springframework.security.saml.saml2.metadata.NameId;
+import org.springframework.util.CollectionUtils;
 
 /**
- * Used for mapping between SAML resource model and entity
+ * Used for mapping between SAML resource model and entity.
  *
  * @author Yevgeniy Svalukhin
  */
 public class SamlConverter {
 
-	public static final BiConsumer<UpdateAuthRQ, Integration> UPDATE_FROM_REQUEST = (request, integration) -> {
-		integration.setEnabled(request.getEnabled());
-		integration.setName(IDP_NAME.getRequiredParameter(request));
-		ParameterUtils.setSamlParameters(request, integration);
-	};
+  public static final BiConsumer<UpdateAuthRQ, Integration> UPDATE_FROM_REQUEST =
+      (request, integration) -> {
+        integration.setEnabled(request.getEnabled());
+        integration.setName(IDP_NAME.getRequiredParameter(request));
+        ParameterUtils.setSamlParameters(request, integration);
+      };
 
-	public final static Function<Integration, SamlResource> TO_RESOURCE = integration -> {
-		SamlResource resource = new SamlResource();
-		resource.setId(integration.getId());
-		resource.setIdentityProviderName(integration.getName());
-		resource.setEnabled(integration.isEnabled());
+  public static final Function<Integration, SamlResource> TO_RESOURCE = integration -> {
+    SamlResource resource = new SamlResource();
+    resource.setId(integration.getId());
+    resource.setIdentityProviderName(integration.getName());
+    resource.setEnabled(integration.isEnabled());
 
 		EMAIL_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
 		FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFirstNameAttribute);
@@ -72,27 +83,31 @@ public class SamlConverter {
 		return resource;
 	};
 
-	public final static Function<List<Integration>, List<ExternalIdentityProviderConfiguration>> TO_EXTERNAL_PROVIDER_CONFIG = integrations -> {
-		List<ExternalIdentityProviderConfiguration> externalProviders = integrations.stream()
-				.map(integration -> new ExternalIdentityProviderConfiguration().setAlias(IDP_ALIAS.getParameter(integration).get())
-						.setMetadata(IDP_METADATA_URL.getRequiredParameter(integration))
-						.setLinktext(integration.getName())
-						.setAuthenticationRequestBinding(BindingType.POST.toUri())
-						.setNameId(IDP_NAME_ID.getParameter(integration).map(NameId::fromUrn).orElse(NameId.UNSPECIFIED)))
-				.collect(Collectors.toList());
-		IntStream.range(0, externalProviders.size()).forEach(value -> externalProviders.get(value).setAssertionConsumerServiceIndex(value));
-		return externalProviders;
-	};
+  public static final Function<List<Integration>, List<ExternalIdentityProviderConfiguration>> TO_EXTERNAL_PROVIDER_CONFIG = integrations -> {
+    List<ExternalIdentityProviderConfiguration> externalProviders = integrations.stream()
+        .map(integration -> new ExternalIdentityProviderConfiguration().setAlias(
+                IDP_ALIAS.getParameter(integration).get())
+            .setMetadata(IDP_METADATA_URL.getRequiredParameter(integration))
+            .setLinktext(integration.getName())
+            .setAuthenticationRequestBinding(BindingType.POST.toUri())
+            .setNameId(IDP_NAME_ID.getParameter(integration).map(NameId::fromUrn)
+                .orElse(NameId.UNSPECIFIED)))
+        .collect(Collectors.toList());
+    IntStream.range(0, externalProviders.size())
+        .forEach(value -> externalProviders.get(value).setAssertionConsumerServiceIndex(value));
+    return externalProviders;
+  };
 
-	public final static Function<List<Integration>, SamlProvidersResource> TO_PROVIDERS_RESOURCE = integrations -> {
-		if (CollectionUtils.isEmpty(integrations)) {
-			SamlProvidersResource emptyResource = new SamlProvidersResource();
-			emptyResource.setProviders(Collections.emptyList());
-			return emptyResource;
-		}
-		SamlProvidersResource resource = new SamlProvidersResource();
-		resource.setProviders(integrations.stream().map(TO_RESOURCE).collect(Collectors.toList()));
-		return resource;
-	};
+  public static final Function<List<Integration>, SamlProvidersResource> TO_PROVIDERS_RESOURCE =
+      integrations -> {
+        if (CollectionUtils.isEmpty(integrations)) {
+          SamlProvidersResource emptyResource = new SamlProvidersResource();
+          emptyResource.setProviders(Collections.emptyList());
+          return emptyResource;
+        }
+        SamlProvidersResource resource = new SamlProvidersResource();
+        resource.setProviders(integrations.stream().map(TO_RESOURCE).collect(Collectors.toList()));
+        return resource;
+      };
 
 }

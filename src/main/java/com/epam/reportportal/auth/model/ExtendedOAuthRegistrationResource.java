@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 EPAM Systems
+ * Copyright 2024 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.epam.reportportal.auth.model;
 
-package com.epam.reportportal.auth.integration.validator.duplicate;
+import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import com.epam.ta.reportportal.entity.integration.Integration;
+/**
+ * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class ExtendedOAuthRegistrationResource extends OAuthRegistrationResource {
 
-public interface IntegrationDuplicateValidator {
+  private int errorCode;
 
-  void validate(Integration integration);
+  private String message;
 }

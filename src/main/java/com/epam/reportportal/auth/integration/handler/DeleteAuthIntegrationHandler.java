@@ -16,14 +16,16 @@
 
 package com.epam.reportportal.auth.integration.handler;
 
-import com.epam.ta.reportportal.ws.model.OperationCompletionRS;
+
+import com.epam.reportportal.auth.OperationCompletionRS;
+
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
 public interface DeleteAuthIntegrationHandler {
 
-	OperationCompletionRS deleteAuthIntegrationById(Long integrationId);
+  OperationCompletionRS deleteAuthIntegrationById(Long integrationId);
 
-	OperationCompletionRS deleteOauthSettingsById(String oauthProviderId);
+  OperationCompletionRS deleteOauthSettingsById(String oauthProviderId);
 }

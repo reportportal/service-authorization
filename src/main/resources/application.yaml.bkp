@@ -32,11 +32,10 @@ logging:
     org.hibernate.stat: info
     org.springframework.web.bind: fatal
 
-springfox:
-  documentation:
-    swagger:
-      v2:
-        path: /api-docs
+springdoc:
+  writer-with-order-by-keys: true
+  api-docs:
+    path: /api-docs
 
 
 #### Custom ReportPortal Properties ######

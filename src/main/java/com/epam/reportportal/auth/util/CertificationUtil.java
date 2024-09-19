@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.util;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility class for loading certificates from trusted stores
+ * Utility class for loading certificates from trusted stores.
  *
  * @author Yevgeniy Svalukhin
  */
@@ -39,43 +40,48 @@ public class CertificationUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CertificationUtil.class);
 
-  public static X509Certificate getCertificateByName(String certificateAlias, String trustStoreName, String password) {
-		try {
-			KeyStore keyStore = KeyStore.getInstance("JKS");
-			loadKeyStore(keyStore, trustStoreName, password);
-			Certificate cert = keyStore.getCertificate(certificateAlias);
-			if ("X.509".equals(cert.getType())) {
-				return (X509Certificate) cert;
-			}
-			throw new Error("Could not find a suitable x509 certificate for alias " + certificateAlias + " in " + trustStoreName);
-		} catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
-			throw new Error("Error opening keystore: " + e.getCause(), e);
-		}
-	}
+  public static X509Certificate getCertificateByName(String certificateAlias, String trustStoreName,
+      String password) {
+    try {
+      KeyStore keyStore = KeyStore.getInstance("JKS");
+      loadKeyStore(keyStore, trustStoreName, password);
+      Certificate cert = keyStore.getCertificate(certificateAlias);
+      if ("X.509".equals(cert.getType())) {
+        return (X509Certificate) cert;
+      }
+      throw new Error(
+          "Could not find a suitable x509 certificate for alias " + certificateAlias + " in "
+              + trustStoreName);
+    } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
+      throw new Error("Error opening keystore: " + e.getCause(), e);
+    }
+  }
 
-	public static PrivateKey getPrivateKey(String keyAlias, String keyPass, String trustStore, String password) {
-		try {
-			KeyStore keyStore = KeyStore.getInstance("JKS");
-			loadKeyStore(keyStore, trustStore, password);
-			Key key = keyStore.getKey(keyAlias, keyPass.toCharArray());
-			if (key instanceof PrivateKey) {
-				return (PrivateKey) key;
-			}
-			throw new Error("Unable to find private key in store: " + trustStore);
-		} catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
-			throw new Error("Error opening keystore: " + e.getCause(), e);
-		}
-	}
+  public static PrivateKey getPrivateKey(String keyAlias, String keyPass, String trustStore,
+      String password) {
+    try {
+      KeyStore keyStore = KeyStore.getInstance("JKS");
+      loadKeyStore(keyStore, trustStore, password);
+      Key key = keyStore.getKey(keyAlias, keyPass.toCharArray());
+      if (key instanceof PrivateKey) {
+        return (PrivateKey) key;
+      }
+      throw new Error("Unable to find private key in store: " + trustStore);
+    } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException
+             | UnrecoverableKeyException e) {
+      throw new Error("Error opening keystore: " + e.getCause(), e);
+    }
+  }
 
-	private static void loadKeyStore(KeyStore keyStore, String jksPath, String jksPassword)
-			throws IOException, NoSuchAlgorithmException, CertificateException {
-		char[] password = null;
-		if (jksPassword != null) {
-			password = jksPassword.toCharArray();
-		}
-		if (jksPath.startsWith("file://")) {
-			keyStore.load(Files.newInputStream(Paths.get(jksPath.replaceFirst("file://", ""))), password);
-		} else {
+  private static void loadKeyStore(KeyStore keyStore, String jksPath, String jksPassword)
+      throws IOException, NoSuchAlgorithmException, CertificateException {
+    char[] password = null;
+    if (jksPassword != null) {
+      password = jksPassword.toCharArray();
+    }
+    if (jksPath.startsWith("file://")) {
+      keyStore.load(Files.newInputStream(Paths.get(jksPath.replaceFirst("file://", ""))), password);
+    } else {
       try (var is = ClassLoader.getSystemResourceAsStream(jksPath)) {
         keyStore.load(is, password);
       } catch (Exception e) {
@@ -83,6 +89,6 @@ public class CertificationUtil {
         throw e;
       }
 
-		}
-	}
+    }
+  }
 }

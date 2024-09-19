@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.ldap;
+
+import static com.epam.reportportal.auth.integration.ldap.LdapAuthProvider.LDAP_TIMEOUT;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
+import java.util.Collections;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -27,42 +31,48 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 
 /**
- * Active Directory provider
+ * Active Directory provider.
  *
  * @author Andrei Varabyeu
  */
 public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
-	private final DetailsContextMapper detailsContextMapper;
+  private final DetailsContextMapper detailsContextMapper;
 
-	public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository, ApplicationEventPublisher eventPublisher,
-			DetailsContextMapper detailsContextMapper) {
-		super(integrationRepository, eventPublisher);
-		this.detailsContextMapper = detailsContextMapper;
-	}
+  public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository,
+      ApplicationEventPublisher eventPublisher,
+      DetailsContextMapper detailsContextMapper) {
+    super(integrationRepository, eventPublisher);
+    this.detailsContextMapper = detailsContextMapper;
+  }
 
-	@Override
-	protected boolean isEnabled() {
-		return integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName()).stream().findFirst().isPresent();
-	}
+  @Override
+  protected boolean isEnabled() {
+    return integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+        .stream().findFirst().isPresent();
+  }
 
-	@Override
-	protected AuthenticationProvider getDelegate() {
+  @Override
+  protected AuthenticationProvider getDelegate() {
 
-		Integration integration = integrationRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
-				.stream()
-				.findFirst()
-				.orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
+    Integration integration = integrationRepository.findAllByTypeIn(
+            AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new BadCredentialsException("Active Directory is not configured"));
 
-		ActiveDirectoryLdapAuthenticationProvider adAuth = new ActiveDirectoryLdapAuthenticationProvider(LdapParameter.DOMAIN.getParameter(
-				integration).orElse(null),
-				LdapParameter.URL.getRequiredParameter(integration),
-				LdapParameter.BASE_DN.getRequiredParameter(integration)
-		);
-
-		adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
-		adAuth.setUserDetailsContextMapper(detailsContextMapper);
-		LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(integration).ifPresent(adAuth::setSearchFilter);
-		return adAuth;
-	}
+    ActiveDirectoryLdapAuthenticationProvider adAuth =
+        new ActiveDirectoryLdapAuthenticationProvider(LdapParameter.DOMAIN.getParameter(integration)
+            .orElse(null),
+            LdapParameter.URL.getRequiredParameter(integration),
+            LdapParameter.BASE_DN.getRequiredParameter(integration)
+        );
+    adAuth.setContextEnvironmentProperties(
+        Collections.singletonMap("com.sun.jndi.ldap.connect.timeout", LDAP_TIMEOUT));
+    adAuth.setAuthoritiesMapper(new NullAuthoritiesMapper());
+    adAuth.setUserDetailsContextMapper(detailsContextMapper);
+    LdapParameter.SEARCH_FILTER_REMOVE_NOT_PRESENT.getParameter(integration)
+        .ifPresent(adAuth::setSearchFilter);
+    return adAuth;
+  }
 }

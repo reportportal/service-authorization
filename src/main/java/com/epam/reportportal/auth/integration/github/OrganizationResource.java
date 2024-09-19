@@ -13,71 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.github;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * GitHub API: Organization resource representation
+ * GitHub API: Organization resource representation.
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public class OrganizationResource {
 
-    private String login;
-    private Long id;
-    private String url;
-    private String description;
+  private String login;
+  private Long id;
+  private String url;
+  private String description;
 
-    private Map<String, Object> details = new HashMap<>();
+  private Map<String, Object> details = new HashMap<>();
 
-    @JsonAnyGetter
-    public Map<String, Object> any() {
-        return details;
-    }
+  @JsonAnyGetter
+  public Map<String, Object> any() {
+    return details;
+  }
 
-    @JsonAnySetter
-    public void setUnknown(String name, Object value) {
-        details.put(name, value);
-    }
+  @JsonAnySetter
+  public void setUnknown(String name, Object value) {
+    details.put(name, value);
+  }
 
-    public String getLogin() {
-        return login;
-    }
+  public String getLogin() {
+    return login;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
+  public void setLogin(String login) {
+    this.login = login;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+  public void setUrl(String url) {
+    this.url = url;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setDetails(Map<String, Object> details) {
-        this.details = details;
-    }
+  public void setDetails(Map<String, Object> details) {
+    this.details = details;
+  }
 }

@@ -16,10 +16,10 @@
 
 package com.epam.reportportal.auth.model;
 
-import com.epam.ta.reportportal.ws.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +31,7 @@ import javax.validation.constraints.NotEmpty;
 
 @Setter
 @Getter
-@ApiModel
+@Schema
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SamlResource extends AbstractAuthResource {
 
