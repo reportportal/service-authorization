@@ -1,8 +1,8 @@
 FROM --platform=$BUILDPLATFORM gradle:8.10.0-jdk21-alpine AS build
 ARG RELEASE_MODE
 ARG APP_VERSION
-ARG DAO_COMMIT_HASH
-ARG COMMONS_COMMIT_HASH
+ARG DAO_COMMIT_HASH=develop-SNAPSHOT
+ARG COMMONS_COMMIT_HASH=develop-SNAPSHOT
 WORKDIR /usr/app
 COPY . /usr/app
 RUN if [ "${RELEASE_MODE}" = true ]; then \
@@ -10,8 +10,8 @@ RUN if [ "${RELEASE_MODE}" = true ]; then \
         -PreleaseMode=true \
         -Dorg.gradle.project.version=${APP_VERSION}; \
     else gradle build --no-build-cache --exclude-task test \
-      -PdaoCommitHash= ${DAO_COMMIT_HASH} \
-      -PcommonsCommitHash= ${COMMONS_COMMIT_HASH}\
+      -PdaoCommitHash=${DAO_COMMIT_HASH} \
+      -PcommonsCommitHash=${COMMONS_COMMIT_HASH}\
       -Dorg.gradle.project.version=${APP_VERSION}; fi
 
 FROM amazoncorretto:21.0.4

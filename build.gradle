@@ -6,9 +6,6 @@ plugins {
     id "org.owasp.dependencycheck" version "9.0.9"
 }
 
-def daoCommitHash = project.hasProperty('daoCommitHash') ? project.daoCommitHash : 'develop-SNAPSHOT'
-def commonsCommitHash = project.hasProperty('commonsCommitHash') ? project.commonsCommitHash : 'develop-SNAPSHOT'
-
 apply from: 'project-properties.gradle'
 //apply from: "$scriptsUrl/build-docker.gradle"
 apply from: "$scriptsUrl/build-info.gradle"
