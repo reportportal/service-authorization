@@ -104,7 +104,6 @@ public class LdapUserReplicator extends AbstractUserReplicator {
       String email, String login) {
     User newUser = new User();
     newUser.setLogin(login);
-    newUser.setUuid(UUID.randomUUID());
 
     String fullName = getFullName(ctx, syncAttributes);
     newUser.setFullName(fullName);

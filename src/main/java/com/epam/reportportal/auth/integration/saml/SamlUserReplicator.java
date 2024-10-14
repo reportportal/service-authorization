@@ -103,7 +103,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     User user = new User();
     user.setLogin(userName);
-    user.setUuid(UUID.randomUUID());
 
     List<Attribute> details = samlAuthentication.getDetails();
 
