@@ -45,6 +45,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -144,6 +145,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
   private User createUser(UserResource userResource, GitHubClient gitHubClient) {
     User user = new User();
     String login = normalizeId(userResource.getLogin());
+    user.setUuid(UUID.randomUUID());
     user.setLogin(login);
     updateUser(user, userResource, gitHubClient);
     user.setUserType(UserType.GITHUB);
