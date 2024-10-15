@@ -44,7 +44,7 @@ dependencies {
         api 'com.epam.reportportal:commons'
     } else {
         api 'com.github.reportportal:commons-dao:develop-SNAPSHOT'
-        api 'com.github.reportportal:commons:50a1192'
+        api 'com.github.reportportal:commons:develop-SNAPSHOT'
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252, CVE-2023-46589, CVE-2024-24549
