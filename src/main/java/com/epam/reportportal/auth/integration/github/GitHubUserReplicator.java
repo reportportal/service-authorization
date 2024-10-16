@@ -144,8 +144,10 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 
   private User createUser(UserResource userResource, GitHubClient gitHubClient) {
     User user = new User();
-    String login = normalizeId(userResource.getLogin());
-    user.setLogin(login);
+    user.setLogin(normalizeId(userResource.getLogin()));
+    user.setUuid(UUID.randomUUID());
+    user.setActive(Boolean.TRUE);
+
     updateUser(user, userResource, gitHubClient);
     user.setUserType(UserType.GITHUB);
     user.setRole(UserRole.USER);
