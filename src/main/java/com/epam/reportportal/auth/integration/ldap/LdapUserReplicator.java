@@ -102,23 +102,25 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
   private User createNewUser(DirContextOperations ctx, Map<String, String> syncAttributes,
       String email, String login) {
-    User newUser = new User();
-    newUser.setLogin(login);
+    User user = new User();
+    user.setLogin(login);
+    user.setUuid(UUID.randomUUID());
+    user.setActive(Boolean.TRUE);
 
     String fullName = getFullName(ctx, syncAttributes);
-    newUser.setFullName(fullName);
+    user.setFullName(fullName);
 
     checkEmail(email);
-    newUser.setEmail(email);
-    newUser.setMetadata(defaultMetaData());
-    newUser.setUserType(UserType.LDAP);
-    newUser.setRole(UserRole.USER);
-    newUser.setExpired(false);
+    user.setEmail(email);
+    user.setMetadata(defaultMetaData());
+    user.setUserType(UserType.LDAP);
+    user.setRole(UserRole.USER);
+    user.setExpired(false);
 
-    final Project project = generatePersonalProject(newUser);
-    newUser.getProjects().add(project.getUsers().iterator().next());
+    final Project project = generatePersonalProject(user);
+    user.getProjects().add(project.getUsers().iterator().next());
 
-    return userRepository.save(newUser);
+    return userRepository.save(user);
   }
 
   private String getFullName(DirContextOperations ctx, Map<String, String> syncAttributes) {
