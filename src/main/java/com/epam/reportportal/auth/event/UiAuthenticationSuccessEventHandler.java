@@ -17,20 +17,20 @@
 package com.epam.reportportal.auth.event;
 
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
-import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.util.PersonalProjectService;
-import com.epam.reportportal.rules.exception.ErrorType;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +57,10 @@ public class UiAuthenticationSuccessEventHandler {
   @Transactional
   public void onApplicationEvent(UiUserSignedInEvent event) {
     String username = event.getAuthentication().getName();
+    if (!((ReportPortalUser) event.getAuthentication().getPrincipal()).isEnabled()) {
+      SecurityContextHolder.clearContext();
+      throw new LockedException("User account is locked");
+    }
     userRepository.updateLastLoginDate(
         Instant.ofEpochMilli(event.getTimestamp()),
         username);
