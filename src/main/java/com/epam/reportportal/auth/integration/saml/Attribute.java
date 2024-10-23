@@ -19,10 +19,8 @@ package com.epam.reportportal.auth.integration.saml;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.springframework.security.saml.saml2.attribute.AttributeNameFormat;
 
 /**
  * Represents attributes extracted from SAML response message.
@@ -38,7 +36,7 @@ public class Attribute implements Serializable {
   private String name;
   private String friendlyName;
   private List<Object> values = new LinkedList<>();
-  private String nameFormat = AttributeNameFormat.UNSPECIFIED.toString();
+  private String nameFormat = "";
   private boolean required;
 
 

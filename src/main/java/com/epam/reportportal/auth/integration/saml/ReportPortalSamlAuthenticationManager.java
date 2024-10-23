@@ -22,7 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.saml.spi.DefaultSamlAuthentication;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
 import org.springframework.stereotype.Component;
 
 /**
@@ -41,7 +41,7 @@ public class ReportPortalSamlAuthenticationManager implements AuthenticationMana
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    if (authentication instanceof DefaultSamlAuthentication defaultSamlAuthentication) {
+    if (authentication instanceof Saml2Authentication defaultSamlAuthentication) {
       ReportPortalSamlAuthentication reportPortalSamlAuthentication =
           new ReportPortalSamlAuthentication(defaultSamlAuthentication);
       if (reportPortalSamlAuthentication.isAuthenticated()) {

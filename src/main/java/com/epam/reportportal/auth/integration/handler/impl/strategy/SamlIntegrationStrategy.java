@@ -18,35 +18,24 @@ package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
 import static com.epam.reportportal.auth.integration.converter.SamlConverter.UPDATE_FROM_REQUEST;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.BASE_PATH;
-import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_ALIAS;
-import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_NAME_ID;
-import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_URL;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.event.SamlProvidersReloadEvent;
-import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
 import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
+import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.entity.integration.Integration;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.epam.ta.reportportal.entity.integration.IntegrationTypeDetails;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.saml.provider.provisioning.SamlProviderProvisioning;
-import org.springframework.security.saml.provider.service.ServiceProviderService;
-import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
-import org.springframework.security.saml.saml2.metadata.IdentityProvider;
-import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
-import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.stereotype.Service;
 
 /**
@@ -55,7 +44,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
-  private final SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning;
+//  private final SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning;
   private final ApplicationEventPublisher eventPublisher;
 
   @Autowired
@@ -63,10 +52,8 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
       @Qualifier("samlUpdateAuthRequestValidator")
       AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator,
       IntegrationDuplicateValidator integrationDuplicateValidator,
-      SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning,
       ApplicationEventPublisher eventPublisher) {
     super(integrationRepository, updateAuthRequestValidator, integrationDuplicateValidator);
-    this.serviceProviderProvisioning = serviceProviderProvisioning;
     this.eventPublisher = eventPublisher;
   }
 
@@ -105,31 +92,31 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
   @Override
   protected Integration save(Integration integration) {
-    populateProviderDetails(integration);
+//    populateProviderDetails(integration);
     final Integration result = super.save(integration);
     eventPublisher.publishEvent(new SamlProvidersReloadEvent(result.getType()));
     return result;
   }
 
-  private void populateProviderDetails(Integration samlIntegration) {
-    Map<String, Object> params = samlIntegration.getParams().getParams();
-    ExternalIdentityProviderConfiguration externalConfiguration =
-        new ExternalIdentityProviderConfiguration()
-            .setMetadata(SamlParameter.IDP_METADATA_URL.getRequiredParameter(samlIntegration));
-    IdentityProviderMetadata remoteProvider = serviceProviderProvisioning.getHostedProvider()
-        .getRemoteProvider(externalConfiguration);
-    params.put(IDP_URL.getParameterName(), remoteProvider.getEntityId());
-    params.put(IDP_ALIAS.getParameterName(), remoteProvider.getEntityAlias());
-
-    NameId nameId = ofNullable(remoteProvider.getDefaultNameId()).orElseGet(
-        () -> remoteProvider.getProviders()
-            .stream()
-            .filter(IdentityProvider.class::isInstance)
-            .map(IdentityProvider.class::cast)
-            .flatMap(v -> v.getNameIds().stream())
-            .filter(Objects::nonNull)
-            .findFirst().orElse(NameId.UNSPECIFIED));
-
-    params.put(IDP_NAME_ID.getParameterName(), nameId.toString());
-  }
+//  private void populateProviderDetails(Integration samlIntegration) {
+//    Map<String, Object> params = samlIntegration.getParams().getParams();
+//    ExternalIdentityProviderConfiguration externalConfiguration =
+//        new ExternalIdentityProviderConfiguration()
+//            .setMetadata(SamlParameter.IDP_METADATA_URL.getRequiredParameter(samlIntegration));
+//    IdentityProviderMetadata remoteProvider = serviceProviderProvisioning.getHostedProvider()
+//        .getRemoteProvider(externalConfiguration);
+//    params.put(IDP_URL.getParameterName(), remoteProvider.getEntityId());
+//    params.put(IDP_ALIAS.getParameterName(), remoteProvider.getEntityAlias());
+//
+//    NameId nameId = ofNullable(remoteProvider.getDefaultNameId()).orElseGet(
+//        () -> remoteProvider.getProviders()
+//            .stream()
+//            .filter(IdentityProvider.class::isInstance)
+//            .map(IdentityProvider.class::cast)
+//            .flatMap(v -> v.getNameIds().stream())
+//            .filter(Objects::nonNull)
+//            .findFirst().orElse(NameId.UNSPECIFIED));
+//
+//    params.put(IDP_NAME_ID.getParameterName(), nameId.toString());
+//  }
 }

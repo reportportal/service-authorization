@@ -29,6 +29,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -75,7 +76,7 @@ public class UiAuthenticationSuccessEventHandler {
 
   private ReportPortalUser acquireUser(Authentication authentication) {
     if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      return userRepository.findUserDetails(rpAuth.getPrincipal())
+      return userRepository.findUserDetails(rpAuth.getPrincipalName())
           .orElseThrow(() ->
               new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
     } else {
