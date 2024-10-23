@@ -137,9 +137,9 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
-    X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore,
-        keyStorePassword);
-    Saml2X509Credential credential = Saml2X509Credential.verification(certificate);
+//    X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore,
+//        keyStorePassword);
+//    Saml2X509Credential credential = Saml2X509Credential.verification(certificate);
 
     List<RelyingPartyRegistration> registrations = providers.stream().map(provider -> {
       RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
@@ -151,7 +151,7 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
               .wantAuthnRequestsSigned(false)
 //              .singleSignOnServiceLocation(samlProperties.getAssertingpParty().getServiceLocation())
               .singleSignOnServiceBinding(Saml2MessageBinding.POST))
-          .signingX509Credentials(c -> c.add(credential))
+//          .signingX509Credentials(c -> c.add(credential))
           .build();
       return relyingPartyRegistration;
 
