@@ -17,6 +17,7 @@ package com.epam.reportportal.auth.config.saml;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.auth.AuthFailureHandler;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
@@ -32,6 +33,8 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -58,6 +61,8 @@ import org.springframework.security.saml2.provider.service.web.authentication.Op
 @Configuration
 @Order(4)
 public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SamlSecurityConfiguration.class);
 
   @Value("${rp.auth.saml.base-path}")
   private String basePath;
@@ -154,6 +159,10 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
       return relyingPartyRegistration;
 
     }).collect(Collectors.toList());
+    String listAsString = registrations.stream()
+        .map(Object::toString)
+        .collect(Collectors.joining(", "));
+    LOGGER.error("RelyingPartyRegistration: " + listAsString);
     return new InMemoryRelyingPartyRegistrationRepository(registrations);
   }
 }
