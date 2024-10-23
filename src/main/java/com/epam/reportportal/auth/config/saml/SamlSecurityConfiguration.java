@@ -123,7 +123,7 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .successHandler(successHandler)
                     .failureHandler(failureHandler)
                     .authenticationManager(new ReportPortalSamlAuthenticationManager(samlUserReplicator))
-                    .loginProcessingUrl("/saml/sp/discovery")
+                    .loginProcessingUrl("/saml/sp/discovery/{registrationId}")
         )
         .addFilterBefore(filter, Saml2WebSsoAuthenticationFilter.class);
   }
