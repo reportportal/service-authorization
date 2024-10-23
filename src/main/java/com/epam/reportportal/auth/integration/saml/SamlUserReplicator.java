@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.integration.saml;
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.epam.reportportal.auth.util.AuthUtils.NORMALIZE_STRING;
 
+import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.auth.event.activity.AssignUserEvent;
 import com.epam.reportportal.auth.event.activity.ProjectCreatedEvent;
 import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
@@ -45,6 +46,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -58,6 +63,8 @@ import org.springframework.util.CollectionUtils;
  */
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SamlUserReplicator.class);
 
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
@@ -80,6 +87,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   @Transactional
   public User replicateUser(ReportPortalSamlAuthentication samlAuthentication) {
+    LOGGER.error("Start replication: " + samlAuthentication);
     String userName = CROP_DOMAIN.apply(samlAuthentication.getPrincipalName());
     Optional<User> userOptional = userRepository.findByLogin(userName);
 
