@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.config.saml;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.epam.reportportal.auth.AuthFailureHandler;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthenticationManager;
 import com.epam.reportportal.auth.integration.saml.SamlAuthSuccessHandler;
@@ -131,7 +132,7 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Bean
   public RelyingPartyRegistrationRepository relyingParty() throws Exception {
-    IntegrationType samlIntegrationType = integrationTypeRepository.findByName("SAML")
+    IntegrationType samlIntegrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
         .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
 
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
