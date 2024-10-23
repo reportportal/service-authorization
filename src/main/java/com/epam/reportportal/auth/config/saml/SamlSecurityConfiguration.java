@@ -146,7 +146,7 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
           .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
           .registrationId("report.portal.sp.id")
           .entityId(entityId)
-          .assertionConsumerServiceLocation(SamlParameter.BASE_PATH.getParameter(provider).get())
+          .assertionConsumerServiceLocation(samlIntegrationType.getDetails().getDetails().get("callbackUrl").toString())
           .assertingPartyDetails(party -> party.entityId(SamlParameter.IDP_NAME.getParameter(provider).get())
               .wantAuthnRequestsSigned(false)
 //              .singleSignOnServiceLocation(samlProperties.getAssertingpParty().getServiceLocation())
