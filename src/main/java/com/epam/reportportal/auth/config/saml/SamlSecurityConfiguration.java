@@ -44,6 +44,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.saml2.core.Saml2X509Credential;
+import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider;
 import org.springframework.security.saml2.provider.service.metadata.OpenSamlMetadataResolver;
 import org.springframework.security.saml2.provider.service.metadata.Saml2MetadataResolver;
 import org.springframework.security.saml2.provider.service.registration.InMemoryRelyingPartyRegistrationRepository;
@@ -52,9 +53,12 @@ import org.springframework.security.saml2.provider.service.registration.RelyingP
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
 import org.springframework.security.saml2.provider.service.web.DefaultRelyingPartyRegistrationResolver;
+import org.springframework.security.saml2.provider.service.web.RelyingPartyRegistrationResolver;
+import org.springframework.security.saml2.provider.service.web.Saml2AuthenticationTokenConverter;
 import org.springframework.security.saml2.provider.service.web.Saml2MetadataFilter;
 import org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4AuthenticationRequestResolver;
 import org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
@@ -113,14 +117,19 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Autowired
   private SamlUserReplicator samlUserReplicator;
 
+  @Autowired
+  private RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
+
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
 
     // add auto-generation of ServiceProvider Metadata
-    Converter<HttpServletRequest, RelyingPartyRegistration> relyingPartyRegistrationResolver = new DefaultRelyingPartyRegistrationResolver(relyingParty());
+    RelyingPartyRegistrationResolver relyingPartyRegistrationResolver = new DefaultRelyingPartyRegistrationResolver(relyingPartyRegistrationRepository);
     Saml2MetadataFilter filter = new Saml2MetadataFilter(relyingPartyRegistrationResolver, new OpenSamlMetadataResolver());
-
+    var authenticationRequestResolver = new OpenSaml4AuthenticationRequestResolver(relyingPartyRegistrationResolver);
+    authenticationRequestResolver.setRequestMatcher(new AntPathRequestMatcher("/saml/login"));
+    var authenticationProvider = new OpenSaml4AuthenticationProvider();
     http
         // Configure SAML 2.0 Login
         .saml2Login(
@@ -129,41 +138,10 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .successHandler(successHandler)
                     .failureHandler(failureHandler)
                     .authenticationManager(new ReportPortalSamlAuthenticationManager(samlUserReplicator))
+                    .authenticationRequestResolver(authenticationRequestResolver)
+                    .authenticationConverter(new Saml2AuthenticationTokenConverter(relyingPartyRegistrationResolver))
                     .loginProcessingUrl("/saml/sp/discovery/{registrationId}")
         )
         .addFilterBefore(filter, Saml2WebSsoAuthenticationFilter.class);
-  }
-
-  @Bean
-  public RelyingPartyRegistrationRepository relyingParty() {
-    IntegrationType samlIntegrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
-        .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
-
-    List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
-
-//    X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore,
-//        keyStorePassword);
-//    Saml2X509Credential credential = Saml2X509Credential.verification(certificate);
-
-    List<RelyingPartyRegistration> registrations = providers.stream().map(provider -> {
-      RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
-          .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
-          .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
-          .entityId(entityId)
-          .assertionConsumerServiceLocation(samlIntegrationType.getDetails().getDetails().get("callbackUrl").toString())
-          .assertingPartyDetails(party -> party.entityId(SamlParameter.IDP_NAME.getParameter(provider).get())
-              .wantAuthnRequestsSigned(false)
-//              .singleSignOnServiceLocation(samlProperties.getAssertingpParty().getServiceLocation())
-              .singleSignOnServiceBinding(Saml2MessageBinding.POST))
-//          .signingX509Credentials(c -> c.add(credential))
-          .build();
-      return relyingPartyRegistration;
-
-    }).collect(Collectors.toList());
-    String listAsString = registrations.stream()
-        .map(RelyingPartyRegistration::getRegistrationId)
-        .collect(Collectors.joining(", "));
-    LOGGER.error("RelyingPartyRegistration: " + listAsString);
-    return new InMemoryRelyingPartyRegistrationRepository(registrations);
   }
 }
