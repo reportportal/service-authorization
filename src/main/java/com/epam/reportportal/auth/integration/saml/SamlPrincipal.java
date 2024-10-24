@@ -19,15 +19,15 @@ package com.epam.reportportal.auth.integration.saml;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Objects;
-import org.springframework.security.saml.saml2.authentication.SubjectPrincipal;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticatedPrincipal;
 
 /**
  * Represents principal extracted from SAML response and used for authentication.
  *
  * @author Yevgeniy Svalukhin
  */
-public class SamlPrincipal extends SubjectPrincipal<SamlPrincipal> implements Serializable,
-    Principal {
+public class SamlPrincipal implements Serializable,
+    Principal, Saml2AuthenticatedPrincipal {
 
   private static final long serialVersionUID = -341083232L;
 
@@ -43,12 +43,10 @@ public class SamlPrincipal extends SubjectPrincipal<SamlPrincipal> implements Se
     return this;
   }
 
-  @Override
   public String getValue() {
     return value;
   }
 
-  @Override
   public SamlPrincipal setValue(String value) {
     this.value = value;
     return this;

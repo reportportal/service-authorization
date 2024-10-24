@@ -6,5 +6,5 @@ ${AnsiColor.BRIGHT_YELLOW}
 /_/ |_|\___/ .___/\____/_/   \__/_/    \____/_/   \__/\__,_/_/
           /_/
                 ${info.build.name}: ${info.build.version}
-                Built with ♡ by EPAM Systems
+                Built with ♡ by EPAM Systems 123
                 Spring Boot ${spring-boot.formatted-version}
