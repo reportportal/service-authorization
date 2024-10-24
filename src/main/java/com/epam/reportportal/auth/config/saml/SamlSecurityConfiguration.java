@@ -123,13 +123,12 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-
+    LOGGER.error("findByRegistrationId: " + relyingPartyRegistrationRepository.findByRegistrationId("microsoft"));
     // add auto-generation of ServiceProvider Metadata
     RelyingPartyRegistrationResolver relyingPartyRegistrationResolver = new DefaultRelyingPartyRegistrationResolver(relyingPartyRegistrationRepository);
     Saml2MetadataFilter filter = new Saml2MetadataFilter(relyingPartyRegistrationResolver, new OpenSamlMetadataResolver());
     var authenticationRequestResolver = new OpenSaml4AuthenticationRequestResolver(relyingPartyRegistrationResolver);
     authenticationRequestResolver.setRequestMatcher(new AntPathRequestMatcher("/saml/login"));
-    var authenticationProvider = new OpenSaml4AuthenticationProvider();
     http
         // Configure SAML 2.0 Login
         .saml2Login(
