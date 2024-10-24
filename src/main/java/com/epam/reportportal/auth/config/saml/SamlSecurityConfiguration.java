@@ -147,7 +147,7 @@ public class SamlSecurityConfiguration extends WebSecurityConfigurerAdapter {
     List<RelyingPartyRegistration> registrations = providers.stream().map(provider -> {
       RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
           .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
-          .registrationId("report.portal.sp.id")
+          .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
           .entityId(entityId)
           .assertionConsumerServiceLocation(samlIntegrationType.getDetails().getDetails().get("callbackUrl").toString())
           .assertingPartyDetails(party -> party.entityId(SamlParameter.IDP_NAME.getParameter(provider).get())
