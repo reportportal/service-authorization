@@ -28,7 +28,9 @@ import java.time.Instant;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +57,10 @@ public class UiAuthenticationSuccessEventHandler {
   @Transactional
   public void onApplicationEvent(UiUserSignedInEvent event) {
     String username = event.getAuthentication().getName();
+    if (!((ReportPortalUser) event.getAuthentication().getPrincipal()).isEnabled()) {
+      SecurityContextHolder.clearContext();
+      throw new LockedException("User account is locked");
+    }
     userRepository.updateLastLoginDate(Instant.ofEpochMilli(event.getTimestamp()), username);
 
     if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getOrganizationDetails())) {
