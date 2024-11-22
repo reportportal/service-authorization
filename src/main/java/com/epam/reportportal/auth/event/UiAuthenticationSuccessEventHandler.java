@@ -24,7 +24,6 @@ import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
 import com.epam.ta.reportportal.util.PersonalProjectService;
-import java.time.Instant;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -61,9 +60,7 @@ public class UiAuthenticationSuccessEventHandler {
       SecurityContextHolder.clearContext();
       throw new LockedException("User account is locked");
     }
-    userRepository.updateLastLoginDate(
-        Instant.ofEpochMilli(event.getTimestamp()),
-        username);
+    userRepository.updateLastLoginDate(username);
 
     if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
       User user = userRepository.findByLogin(username)
