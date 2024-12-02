@@ -20,3 +20,5 @@ jobs:
   call-java-cheks:
     name: Call Java checks
     uses: reportportal/.github/.github/workflows/java-checks.yaml@main
+    with:
+      runs-on: ubuntu-latest
