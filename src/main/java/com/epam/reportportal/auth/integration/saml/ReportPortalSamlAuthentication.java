@@ -16,136 +16,42 @@
 
 package com.epam.reportportal.auth.integration.saml;
 
-import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
-
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.saml.SamlAuthentication;
-import org.springframework.security.saml.saml2.authentication.Assertion;
-import org.springframework.security.saml.saml2.authentication.SubjectPrincipal;
-import org.springframework.security.saml.spi.DefaultSamlAuthentication;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
 
 /**
  * Information extracted from SAML response.
  *
  * @author Yevgeniy Svalukhin
  */
-public class ReportPortalSamlAuthentication implements SamlAuthentication {
+public class ReportPortalSamlAuthentication extends Saml2Authentication {
 
   private static final long serialVersionUID = -289812989450932L;
 
   private boolean authenticated;
-  private Subject subject;
   private List<Attribute> attributes = new LinkedList<>();
+
   private List<? extends GrantedAuthority> grantedAuthorities;
-  private transient Assertion assertion;
-  private String assertingEntityId;
-  private String holdingEntityId;
-  private String relayState;
+
   private String responseXml;
   private String issuer;
 
-  public ReportPortalSamlAuthentication(boolean authenticated, Assertion assertion,
-      String assertingEntityId, String holdingEntityId,
-      String relayState) {
-    this.authenticated = authenticated;
-    this.assertingEntityId = assertingEntityId;
-    this.holdingEntityId = holdingEntityId;
-    this.relayState = relayState;
-    this.assertion = assertion;
-    fillSubject(assertion);
-    fillAttributes(assertion);
-    issuer = assertion.getIssuer().getValue();
-  }
-
-  public ReportPortalSamlAuthentication(DefaultSamlAuthentication defaultSamlAuthentication) {
-    this(
-        defaultSamlAuthentication.isAuthenticated(),
-        defaultSamlAuthentication.getAssertion(),
-        defaultSamlAuthentication.getAssertingEntityId(),
-        defaultSamlAuthentication.getHoldingEntityId(),
-        defaultSamlAuthentication.getRelayState()
-    );
-  }
-
-  private void fillAttributes(Assertion assertion) {
-    List<Attribute> mappedAttributes = assertion.getAttributes()
-        .stream()
-        .map(attr -> new Attribute().withName(attr.getName())
-            .withFriendlyName(attr.getFriendlyName())
-            .withNameFormat(attr.getNameFormat().toString())
-            .withRequired(attr.isRequired())
-            .withValues(attr.getValues()))
-        .collect(Collectors.toList());
-    attributes.addAll(mappedAttributes);
-  }
-
-  private void fillSubject(Assertion assertion) {
-    subject = new Subject().setSamlPrincipal(new SamlPrincipal().setFormat(assertion.getSubject()
-        .getPrincipal()
-        .getFormat()
-        .getFormat()
-        .toString()).setValue(CROP_DOMAIN.apply(assertion.getSubject().getPrincipal().getValue())));
-  }
-
-  @Override
-  public String getAssertingEntityId() {
-    return assertingEntityId;
-  }
-
-  @Override
-  public String getHoldingEntityId() {
-    return holdingEntityId;
-  }
-
-  @Override
-  public SubjectPrincipal<? extends SubjectPrincipal> getSamlPrincipal() {
-    return subject.getSamlPrincipal();
-  }
-
-  @Override
-  public Assertion getAssertion() {
-    return assertion;
-  }
-
-  @Override
-  public String getRelayState() {
-    return relayState;
-  }
-
-  public void setRelayState(String relayState) {
-    this.relayState = relayState;
-  }
-
-  protected void setHoldingEntityId(String holdingEntityId) {
-    this.holdingEntityId = holdingEntityId;
-  }
-
-  protected void setAssertingEntityId(String assertingEntityId) {
-    this.assertingEntityId = assertingEntityId;
-  }
-
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return grantedAuthorities;
-  }
-
-  @Override
-  public Subject getCredentials() {
-    return subject;
+  public ReportPortalSamlAuthentication(Saml2Authentication defaultSamlAuthentication) {
+    super((AuthenticatedPrincipal) defaultSamlAuthentication.getPrincipal(),
+        defaultSamlAuthentication.getSaml2Response(), Collections.EMPTY_LIST);
+    AuthenticatedPrincipal principal = (AuthenticatedPrincipal) defaultSamlAuthentication.getPrincipal();
+    this.authenticated = defaultSamlAuthentication.isAuthenticated();
+    this.issuer = principal.getName();
   }
 
   @Override
   public List<Attribute> getDetails() {
     return attributes;
-  }
-
-  @Override
-  public String getPrincipal() {
-    return subject.getSamlPrincipal().getValue();
   }
 
   @Override
@@ -161,9 +67,8 @@ public class ReportPortalSamlAuthentication implements SamlAuthentication {
     }
   }
 
-  @Override
-  public String getName() {
-    return subject.getSamlPrincipal().getName();
+  public String getPrincipalName() {
+    return getName();
   }
 
   public String getResponseXml() {
@@ -177,6 +82,10 @@ public class ReportPortalSamlAuthentication implements SamlAuthentication {
 
   public void setAuthorities(List<? extends GrantedAuthority> grantedAuthorities) {
     this.grantedAuthorities = grantedAuthorities;
+  }
+
+  public List<? extends GrantedAuthority> getGrantedAuthorities() {
+    return grantedAuthorities;
   }
 
   public String getIssuer() {
