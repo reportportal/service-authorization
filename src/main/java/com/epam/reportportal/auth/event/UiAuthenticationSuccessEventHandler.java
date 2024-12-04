@@ -91,6 +91,10 @@ public class UiAuthenticationSuccessEventHandler {
               ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
           ));
     } else {
+      if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
+        SecurityContextHolder.clearContext();
+        throw new LockedException("User account is locked");
+      }
       return (ReportPortalUser) authentication.getPrincipal();
     }
   }
