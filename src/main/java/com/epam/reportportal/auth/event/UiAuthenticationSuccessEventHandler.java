@@ -59,25 +59,28 @@ public class UiAuthenticationSuccessEventHandler {
 
     userRepository.updateLastLoginDate(username);
 
-    if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
-      User user = userRepository.findByLogin(username)
-              .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
+    User user = acquireUser(event.getAuthentication());
+
+    if (user.getProjects().isEmpty()) {
       Project project = personalProjectService.generatePersonalProject(user);
       user.getProjects().addAll(project.getUsers());
     }
   }
 
-  private ReportPortalUser acquireUser(Authentication authentication) {
-    if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      userRepository.findByLogin(rpAuth.getPrincipal())
-              .filter(user -> !user.getActive())
-              .ifPresent(user -> {
-                user.setActive(true);
-                userRepository.save(user);
-              });
-      return userRepository.findUserDetails(rpAuth.getPrincipal()).orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
-    } else {
-      return (ReportPortalUser) authentication.getPrincipal();
-    }
+    private User acquireUser (Authentication authentication){
+      if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
+        User user = userRepository.findByLogin(rpAuth.getPrincipal())
+                .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+
+        if (!user.getActive()) {
+          user.setActive(true);
+          userRepository.save(user);
+        }
+
+        return user;
+      } else {
+        return userRepository.findByLogin(authentication.getName())
+                .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, authentication.getName()));
+      }
   }
 }
