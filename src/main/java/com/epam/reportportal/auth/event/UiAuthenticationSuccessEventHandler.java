@@ -56,15 +56,12 @@ public class UiAuthenticationSuccessEventHandler {
   @Transactional
   public void onApplicationEvent(UiUserSignedInEvent event) {
     String username = event.getAuthentication().getName();
-    if (!((ReportPortalUser) event.getAuthentication().getPrincipal()).isEnabled()) {
-      SecurityContextHolder.clearContext();
-      throw new LockedException("User account is locked");
-    }
+
     userRepository.updateLastLoginDate(username);
 
     if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
       User user = userRepository.findByLogin(username)
-          .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
+              .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
       Project project = personalProjectService.generatePersonalProject(user);
       user.getProjects().addAll(project.getUsers());
     }
@@ -72,9 +69,13 @@ public class UiAuthenticationSuccessEventHandler {
 
   private ReportPortalUser acquireUser(Authentication authentication) {
     if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      return userRepository.findUserDetails(rpAuth.getPrincipal())
-          .orElseThrow(() ->
-              new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+      userRepository.findByLogin(rpAuth.getPrincipal())
+              .filter(user -> !user.getActive())
+              .ifPresent(user -> {
+                user.setActive(true);
+                userRepository.save(user);
+              });
+      return userRepository.findUserDetails(rpAuth.getPrincipal()).orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
     } else {
       return (ReportPortalUser) authentication.getPrincipal();
     }
