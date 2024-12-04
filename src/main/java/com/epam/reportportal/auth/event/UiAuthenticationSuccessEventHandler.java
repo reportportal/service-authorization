@@ -45,6 +45,10 @@ public class UiAuthenticationSuccessEventHandler {
 
   private PersonalProjectService personalProjectService;
 
+  /**
+   * Event handler for successful UI authentication events. Updates the last login date for the user
+   * and generates a personal project if the user has no projects.
+   */
   @Autowired
   public UiAuthenticationSuccessEventHandler(UserRepository userRepository,
       PersonalProjectService personalProjectService) {
@@ -52,14 +56,18 @@ public class UiAuthenticationSuccessEventHandler {
     this.personalProjectService = personalProjectService;
   }
 
+  /**
+   * Handles the UI user signed-in event. Updates the last login date for the user
+   * and generates a personal project if the user has no projects.
+   * Also, if the user is inactive, it will be activated for SAML authentication.
+   *
+   * @param event the UI user signed-in event
+   */
   @EventListener
   @Transactional
   public void onApplicationEvent(UiUserSignedInEvent event) {
     String username = event.getAuthentication().getName();
-    if (!((ReportPortalUser) event.getAuthentication().getPrincipal()).isEnabled()) {
-      SecurityContextHolder.clearContext();
-      throw new LockedException("User account is locked");
-    }
+
     userRepository.updateLastLoginDate(username);
 
     if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
@@ -72,10 +80,21 @@ public class UiAuthenticationSuccessEventHandler {
 
   private ReportPortalUser acquireUser(Authentication authentication) {
     if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
+      userRepository.findByLogin(rpAuth.getPrincipal())
+          .filter(user -> !user.getActive())
+          .ifPresent(user -> {
+            user.setActive(true);
+            userRepository.save(user);
+          });
       return userRepository.findUserDetails(rpAuth.getPrincipal())
-          .orElseThrow(() ->
-              new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+          .orElseThrow(() -> new ReportPortalException(
+              ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
+          ));
     } else {
+      if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
+        SecurityContextHolder.clearContext();
+        throw new LockedException("User account is locked");
+      }
       return (ReportPortalUser) authentication.getPrincipal();
     }
   }
