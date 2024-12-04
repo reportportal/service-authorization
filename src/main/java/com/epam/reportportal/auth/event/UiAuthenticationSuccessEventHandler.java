@@ -45,6 +45,11 @@ public class UiAuthenticationSuccessEventHandler {
 
   private PersonalProjectService personalProjectService;
 
+  /**
+   * Event handler for successful UI authentication events.
+   * Updates the last login date for the user and generates
+   * a personal project if the user has no projects.
+   */
   @Autowired
   public UiAuthenticationSuccessEventHandler(UserRepository userRepository,
       PersonalProjectService personalProjectService) {
@@ -52,6 +57,13 @@ public class UiAuthenticationSuccessEventHandler {
     this.personalProjectService = personalProjectService;
   }
 
+  /**
+   * Handles the UI user signed-in event.
+   * Updates the last login date for the user and generates
+   * a personal project if the user has no projects.
+   *
+   * @param event the UI user signed-in event
+   */
   @EventListener
   @Transactional
   public void onApplicationEvent(UiUserSignedInEvent event) {
@@ -67,20 +79,22 @@ public class UiAuthenticationSuccessEventHandler {
     }
   }
 
-    private User acquireUser (Authentication authentication){
-      if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-        User user = userRepository.findByLogin(rpAuth.getPrincipal())
-                .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
-
-        if (!user.getActive()) {
-          user.setActive(true);
-          userRepository.save(user);
-        }
-
-        return user;
-      } else {
-        return userRepository.findByLogin(authentication.getName())
-                .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, authentication.getName()));
-      }
+  private User acquireUser(Authentication authentication) {
+    if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
+      return userRepository.findByLogin(rpAuth.getPrincipal())
+          .map(user -> {
+            if (!user.getActive()) {
+              user.setActive(true);
+              userRepository.save(user);
+            }
+            return user;
+          })
+          .orElseThrow(
+              () -> new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+    } else {
+      return userRepository.findByLogin(authentication.getName())
+          .orElseThrow(
+              () -> new ReportPortalException(ErrorType.USER_NOT_FOUND, authentication.getName()));
+    }
   }
 }
