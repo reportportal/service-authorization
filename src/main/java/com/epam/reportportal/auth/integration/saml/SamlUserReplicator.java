@@ -43,6 +43,7 @@ import com.epam.reportportal.rules.exception.ErrorType;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -102,6 +103,8 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     User user = new User();
     user.setLogin(userName);
+    user.setUuid(UUID.randomUUID());
+    user.setActive(Boolean.TRUE);
 
     List<Attribute> details = samlAuthentication.getDetails();
 

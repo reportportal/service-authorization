@@ -17,20 +17,19 @@
 package com.epam.reportportal.auth.event;
 
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
+import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.commons.ReportPortalUser;
 import com.epam.ta.reportportal.dao.UserRepository;
 import com.epam.ta.reportportal.entity.project.Project;
 import com.epam.ta.reportportal.entity.user.User;
-import com.epam.reportportal.rules.exception.ReportPortalException;
 import com.epam.ta.reportportal.util.PersonalProjectService;
-import com.epam.reportportal.rules.exception.ErrorType;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +45,10 @@ public class UiAuthenticationSuccessEventHandler {
 
   private PersonalProjectService personalProjectService;
 
+  /**
+   * Event handler for successful UI authentication events. Updates the last login date for the user
+   * and generates a personal project if the user has no projects.
+   */
   @Autowired
   public UiAuthenticationSuccessEventHandler(UserRepository userRepository,
       PersonalProjectService personalProjectService) {
@@ -53,13 +56,19 @@ public class UiAuthenticationSuccessEventHandler {
     this.personalProjectService = personalProjectService;
   }
 
+  /**
+   * Handles the UI user signed-in event. Updates the last login date for the user
+   * and generates a personal project if the user has no projects.
+   * Also, if the user is inactive, it will be activated for SAML authentication.
+   *
+   * @param event the UI user signed-in event
+   */
   @EventListener
   @Transactional
   public void onApplicationEvent(UiUserSignedInEvent event) {
     String username = event.getAuthentication().getName();
-    userRepository.updateLastLoginDate(
-        Instant.ofEpochMilli(event.getTimestamp()),
-        username);
+
+    userRepository.updateLastLoginDate(username);
 
     if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
       User user = userRepository.findByLogin(username)
@@ -71,10 +80,21 @@ public class UiAuthenticationSuccessEventHandler {
 
   private ReportPortalUser acquireUser(Authentication authentication) {
     if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
+      userRepository.findByLogin(rpAuth.getPrincipal())
+          .filter(user -> !user.getActive())
+          .ifPresent(user -> {
+            user.setActive(true);
+            userRepository.save(user);
+          });
       return userRepository.findUserDetails(rpAuth.getPrincipal())
-          .orElseThrow(() ->
-              new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+          .orElseThrow(() -> new ReportPortalException(
+              ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
+          ));
     } else {
+      if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
+        SecurityContextHolder.clearContext();
+        throw new LockedException("User account is locked");
+      }
       return (ReportPortalUser) authentication.getPrincipal();
     }
   }
