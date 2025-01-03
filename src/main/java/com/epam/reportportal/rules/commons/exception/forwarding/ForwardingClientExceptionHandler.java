@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.rules.commons.exception.forwarding;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
 /**
- * Exception handler for Spring's RestTemplate Throws exception with downstream service response to
+ * Exception handler for Spring RestTemplate. Throws exception with downstream service response to
  * be forwarded to upstream service (just propagates exception to upstream service)
  *
  * @author Andrei Varabyeu

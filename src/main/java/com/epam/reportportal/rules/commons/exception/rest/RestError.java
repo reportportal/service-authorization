@@ -22,27 +22,27 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
- * Rest Error representation. Contains rest error template and real exception data
+ * Rest Error representation. Contains rest error template and real exception data.
  *
  * @author Andrei Varabyeu
  */
 @Getter
 public class RestError {
 
-  private final ErrorRS errorRS;
+  private final ErrorRS errorRs;
 
   /**
    * HTTP Status
    */
   private final HttpStatus httpStatus;
 
-  public RestError(HttpStatus httpStatus, ErrorRS errorRS) {
+  public RestError(HttpStatus httpStatus, ErrorRS errorRs) {
     this.httpStatus = httpStatus;
-    this.errorRS = errorRS;
+    this.errorRs = errorRs;
   }
 
   /**
-   * Builder for Rest Error
+   * Builder for Rest Error.
    *
    * @author Andrei Varabyeu
    */
@@ -73,6 +73,11 @@ public class RestError {
       return this;
     }
 
+    /**
+     * Builds the RestError object.
+     *
+     * @return a new instance of RestError
+     */
     public RestError build() {
       ErrorRS errorRS = new ErrorRS();
       errorRS.setMessage(message);

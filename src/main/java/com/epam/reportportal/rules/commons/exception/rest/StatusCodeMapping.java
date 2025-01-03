@@ -23,7 +23,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 
 /**
- * {@link ErrorType} to {@link HttpStatus} mapping
+ * {@link ErrorType} to {@link HttpStatus} mapping.
  *
  * @author Andrei Varabyeu
  */

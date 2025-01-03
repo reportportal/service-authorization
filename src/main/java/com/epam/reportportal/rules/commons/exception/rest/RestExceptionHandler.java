@@ -40,7 +40,7 @@ import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
 import org.springframework.web.util.WebUtils;
 
 /**
- * Custom implementation of Spring's error handler
+ * Custom implementation of Spring's error handler.
  *
  * @author Andrei Varabyeu
  */
@@ -52,7 +52,7 @@ public class RestExceptionHandler extends DefaultHandlerExceptionResolver {
   private ErrorResolver errorResolver;
 
   /**
-   * Set of converters to be able to render response
+   * Set of converters to be able to render response.
    */
   private List<HttpMessageConverter<?>> messageConverters;
 
@@ -64,15 +64,7 @@ public class RestExceptionHandler extends DefaultHandlerExceptionResolver {
     this.messageConverters = messageConverters;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver
-   * #doResolveException(javax.servlet.http.HttpServletRequest,
-   * javax.servlet.http.HttpServletResponse, java.lang.Object,
-   * java.lang.Exception)
-   */
+
   @Override
   protected ModelAndView doResolveException(HttpServletRequest request,
       HttpServletResponse response, Object handler, Exception ex) {
@@ -96,7 +88,7 @@ public class RestExceptionHandler extends DefaultHandlerExceptionResolver {
     applyStatusIfPossible(webRequest, error.getHttpStatus());
 
     try {
-      return handleResponseBody(error.getErrorRS(), webRequest);
+      return handleResponseBody(error.getErrorRs(), webRequest);
     } catch (IOException e) {
       if (logger.isWarnEnabled()) {
         logger.warn("Unable to write error message", e);

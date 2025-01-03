@@ -16,8 +16,6 @@
 
 package com.epam.ta.reportportal.config;
 
-import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
@@ -28,6 +26,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
+/**
+ * Configuration class for unit tests.
+ */
 @SpringBootConfiguration
 @EnableConfigurationProperties
 @EnableAutoConfiguration(exclude = {QuartzAutoConfiguration.class})

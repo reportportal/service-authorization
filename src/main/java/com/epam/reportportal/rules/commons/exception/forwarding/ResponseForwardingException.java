@@ -29,6 +29,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Report Portal.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package com.epam.reportportal.rules.commons.exception.forwarding;
 
 import com.google.common.io.ByteStreams;
@@ -39,7 +40,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
 /**
- * Exception to be forwarded from downstream to upstream microservice
+ * Exception to be forwarded from downstream to upstream microservice.
  *
  * @author Andrei Varabyeu
  */

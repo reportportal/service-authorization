@@ -21,7 +21,7 @@ import com.epam.reportportal.rules.exception.ErrorType;
 import org.springframework.http.HttpStatus;
 
 /**
- * REST Error template. Created to be able to configure error templates in Spring's IoC container
+ * REST Error template. Created to be able to configure error templates in Spring's IoC container.
  *
  * @author Andrei Varabyeu
  */

@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 /**
- * Resolver for ReportPortal Exceptions
+ * Resolver for ReportPortal Exceptions.
  *
  * @author Andrei Varabyeu
  */

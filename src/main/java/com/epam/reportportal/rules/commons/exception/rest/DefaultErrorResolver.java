@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Default implementation of ErrorResolver
+ * Default implementation of ErrorResolver.
  *
  * @author Andrei Varabyeu
  */
@@ -38,18 +38,12 @@ public class DefaultErrorResolver implements ErrorResolver {
 
   public DefaultErrorResolver(
       Map<Class<? extends Throwable>, RestErrorDefinition> exceptionMappingDefinitions) {
-    Preconditions.checkNotNull(exceptionMappingDefinitions, "Exceptions mappings should't be null");
+    Preconditions
+        .checkNotNull(exceptionMappingDefinitions, "Exceptions mappings should't be null");
     this.exceptionMappingDefinitions = exceptionMappingDefinitions;
   }
 
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * com.epam.ta.reportportal.ws.exception.ErrorResolver#resolveError(java
-   * .lang.Exception)
-   */
   @Override
   public RestError resolveError(Exception ex) {
     RestErrorDefinition errorDefinition = getRestErrorDefinition(ex);
@@ -70,7 +64,6 @@ public class DefaultErrorResolver implements ErrorResolver {
     }
     errorBuilder.setError(errorDefinition.getError())
         .setMessage(message)
-        // .setStackTrace(errors.toString())
         .setStatus(errorDefinition.getHttpStatus());
 
     return errorBuilder.build();

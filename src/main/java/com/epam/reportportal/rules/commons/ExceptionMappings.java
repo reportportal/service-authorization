@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.rules.commons;
 
 import com.epam.reportportal.rules.commons.exception.message.ArgumentNotValidMessageBuilder;
@@ -34,20 +35,22 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 /**
- * Set of default exception mappings
+ * Set of default exception mappings.
  *
  * @author Andrei Varabyeu
  */
 public final class ExceptionMappings {
 
-  private static final ReloadableResourceBundleMessageSource MESSAGE_SOURCE = new ReloadableResourceBundleMessageSource() {
-    {
-      setBasename("classpath:ValidationMessages");
-      setDefaultEncoding("UTF-8");
-    }
-  };
+  private static final ReloadableResourceBundleMessageSource MESSAGE_SOURCE =
+      new ReloadableResourceBundleMessageSource() {
+        {
+          setBasename("classpath:ValidationMessages");
+          setDefaultEncoding("UTF-8");
+        }
+      };
 
-  private static final ExceptionMessageBuilder<Exception> DEFAULT_MESSAGE_BUILDER = new DefaultExceptionMessageBuilder();
+  private static final ExceptionMessageBuilder<Exception> DEFAULT_MESSAGE_BUILDER =
+      new DefaultExceptionMessageBuilder();
 
   public static Map<Class<? extends Throwable>, RestErrorDefinition> DEFAULT_MAPPING = ImmutableMap
       .<Class<? extends Throwable>, RestErrorDefinition>builder()

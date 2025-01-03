@@ -39,6 +39,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 
+/**
+ * Base class for all test classes. It sets up the PostgreSQL container and applies migration
+ * scripts. It also configures dynamic properties for the test context.
+ */
 @Testcontainers
 @Log4j2
 @SpringBootTest(classes = TestConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT)
@@ -64,16 +68,7 @@ public abstract class BaseTest {
   @SneakyThrows
   private static void applyMigrationScripts() {
     try (Stream<Path> stream = Files.list(Paths.get(MIGRATIONS_PATH))) {
-    /*TODO: consider migration scripts renaming with ability to run sequentially,
-       so no need to sort the scripts before
-       e.g:
-       000_filename.sql
-       001_another_file.sql
-       002_the_third_file.sql
-       etc...
-    */
       log.info("Copy database scripts");
-
       stream
           .filter(file -> !Files.isDirectory(file))
           .map(Path::getFileName)
@@ -95,6 +90,7 @@ public abstract class BaseTest {
             }
           });
 
+      // get sorted list of migration files
       try (Stream<Path> copiedFiles = Files.list(Paths.get(DB_MIGRATION_PATH))) {
         var list = copiedFiles
             .map(Path::getFileName)
