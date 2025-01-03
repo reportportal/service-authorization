@@ -17,8 +17,6 @@
 package com.epam.reportportal.auth.config;
 
 import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.commons.querygen.Filter;
-import com.epam.ta.reportportal.commons.querygen.Queryable;
 import com.epam.ta.reportportal.entity.user.UserRole;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -55,8 +53,7 @@ public class SpringDocConfiguration {
 
   static {
     SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthenticationPrincipal.class);
-    SpringDocUtils.getConfig().addRequestWrapperToIgnore(Filter.class, Queryable.class,
-        ReportPortalUser.class, UserRole.class);
+    SpringDocUtils.getConfig().addRequestWrapperToIgnore(ReportPortalUser.class, UserRole.class);
     SpringDocUtils.getConfig().replaceWithClass(org.springframework.data.domain.Pageable.class,
         org.springdoc.core.converters.models.Pageable.class);
   }
@@ -82,7 +79,7 @@ public class SpringDocConfiguration {
                 .email("support@reportportal.io")
             )
             .license(new License().name("Apache 2.0")
-                .url("http://www.apache.org/licenses/LICENSE-2.0")))
+                .url("https://www.apache.org/licenses/LICENSE-2.0")))
         .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
         .components(
             new Components()

@@ -80,16 +80,15 @@ public class UiAuthenticationSuccessEventHandler {
 
   private ReportPortalUser acquireUser(Authentication authentication) {
     if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      userRepository.findByLogin(rpAuth.getPrincipal())
+      return userRepository.findByLogin(rpAuth.getPrincipal())
           .filter(user -> !user.getActive())
-          .ifPresent(user -> {
+          .map(user -> {
             user.setActive(true);
-            userRepository.save(user);
-          });
-      return userRepository.findUserDetails(rpAuth.getPrincipal())
-          .orElseThrow(() -> new ReportPortalException(
-              ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
-          ));
+            return userRepository.save(user);
+          })
+          .map(user -> ReportPortalUser.userBuilder().fromUser(user))
+          .orElseThrow(() ->
+              new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
     } else {
       if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
         SecurityContextHolder.clearContext();

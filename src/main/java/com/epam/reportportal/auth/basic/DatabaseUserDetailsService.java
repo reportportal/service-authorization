@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -34,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
+
+@Service
 public class DatabaseUserDetailsService implements UserDetailsService {
 
   private UserRepository userRepository;
@@ -46,7 +49,8 @@ public class DatabaseUserDetailsService implements UserDetailsService {
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    ReportPortalUser user = userRepository.findUserDetails(normalizeId(username))
+    ReportPortalUser user = userRepository.findByLogin(normalizeId(username))
+        .map(rpUser -> ReportPortalUser.userBuilder().fromUser(rpUser))
         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()

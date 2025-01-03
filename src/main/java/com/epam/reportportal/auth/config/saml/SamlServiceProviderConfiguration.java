@@ -101,9 +101,9 @@ public class SamlServiceProviderConfiguration {
   @Autowired
   private Provider<HttpServletRequest> requestProvider;
 
-  private IntegrationTypeRepository integrationTypeRepository;
+  private final IntegrationTypeRepository integrationTypeRepository;
 
-  private IntegrationRepository integrationRepository;
+  private final IntegrationRepository integrationRepository;
 
   public SamlServiceProviderConfiguration(IntegrationTypeRepository integrationTypeRepository,
       IntegrationRepository integrationRepository) {
