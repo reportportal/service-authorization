@@ -16,12 +16,12 @@
 
 package com.epam.reportportal.auth.config;
 
-import com.epam.reportportal.commons.Thumbnailator;
-import com.epam.reportportal.commons.ThumbnailatorImpl;
-import com.epam.ta.reportportal.filesystem.DataStore;
-import com.epam.ta.reportportal.filesystem.LocalDataStore;
-import com.epam.ta.reportportal.filesystem.distributed.s3.S3DataStore;
-import com.epam.ta.reportportal.util.FeatureFlagHandler;
+import com.epam.reportportal.auth.commons.Thumbnailator;
+import com.epam.reportportal.auth.commons.ThumbnailatorImpl;
+import com.epam.reportportal.auth.filesystem.DataStore;
+import com.epam.reportportal.auth.filesystem.LocalDataStore;
+import com.epam.reportportal.auth.filesystem.distributed.s3.S3DataStore;
+import com.epam.reportportal.auth.util.FeatureFlagHandler;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.cache.CacheLoader;

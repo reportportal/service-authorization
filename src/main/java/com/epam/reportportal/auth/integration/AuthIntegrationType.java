@@ -18,14 +18,14 @@ package com.epam.reportportal.auth.integration;
 
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.converter.ActiveDirectoryConverter;
 import com.epam.reportportal.auth.integration.converter.LdapConverter;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.reportportal.auth.model.SamlResource;
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
-import com.epam.reportportal.model.integration.auth.ActiveDirectoryResource;
-import com.epam.reportportal.model.integration.auth.LdapResource;
-import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.ActiveDirectoryResource;
+import com.epam.reportportal.auth.model.integration.auth.LdapResource;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;

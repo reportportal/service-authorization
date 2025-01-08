@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.event;
 
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import org.springframework.context.ApplicationEvent;
 
 /**

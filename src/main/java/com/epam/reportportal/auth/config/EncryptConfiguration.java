@@ -16,13 +16,13 @@
 
 package com.epam.reportportal.auth.config;
 
-import static com.epam.ta.reportportal.binary.impl.DataStoreUtils.INTEGRATION_SECRETS_PATH;
+import static com.epam.reportportal.auth.binary.impl.DataStoreUtils.INTEGRATION_SECRETS_PATH;
 
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.entity.enums.FeatureFlag;
-import com.epam.ta.reportportal.filesystem.DataStore;
-import com.epam.ta.reportportal.util.FeatureFlagHandler;
+import com.epam.reportportal.auth.entity.enums.FeatureFlag;
+import com.epam.reportportal.auth.filesystem.DataStore;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import com.epam.reportportal.auth.util.FeatureFlagHandler;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;

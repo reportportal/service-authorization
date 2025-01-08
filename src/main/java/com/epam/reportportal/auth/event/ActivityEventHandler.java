@@ -16,8 +16,8 @@
 
 package com.epam.reportportal.auth.event;
 
+import com.epam.reportportal.auth.entity.activity.Activity;
 import com.epam.reportportal.auth.event.activity.ActivityEvent;
-import com.epam.ta.reportportal.entity.activity.Activity;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

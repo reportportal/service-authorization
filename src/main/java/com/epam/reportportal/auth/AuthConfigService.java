@@ -19,10 +19,10 @@ package com.epam.reportportal.auth;
 import static com.google.common.reflect.Reflection.newProxy;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;

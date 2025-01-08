@@ -29,12 +29,12 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAS
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROLES_ATTRIBUTE;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.reportportal.auth.model.SamlResource;
 import com.epam.reportportal.auth.model.SamlProvidersResource;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.SamlResource;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

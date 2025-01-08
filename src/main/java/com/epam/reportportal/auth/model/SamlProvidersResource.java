@@ -16,13 +16,12 @@
 
 package com.epam.reportportal.auth.model;
 
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
+import javax.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.Valid;
-import java.util.List;
 
 @Setter
 @Getter

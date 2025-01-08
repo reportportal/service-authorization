@@ -16,12 +16,12 @@
 
 package com.epam.reportportal.auth.basic;
 
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.util.AuthUtils;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

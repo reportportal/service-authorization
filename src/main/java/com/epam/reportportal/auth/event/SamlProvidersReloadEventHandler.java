@@ -16,10 +16,10 @@
 
 package com.epam.reportportal.auth.event;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import java.util.List;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.saml.provider.SamlServerConfiguration;

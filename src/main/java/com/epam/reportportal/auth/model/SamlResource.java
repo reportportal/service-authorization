@@ -16,14 +16,13 @@
 
 package com.epam.reportportal.auth.model;
 
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotEmpty;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>

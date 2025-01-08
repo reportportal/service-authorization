@@ -16,18 +16,16 @@
 
 package com.epam.reportportal.auth.integration.handler.impl.strategy;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.builder.AuthIntegrationBuilder;
 import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
 import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>

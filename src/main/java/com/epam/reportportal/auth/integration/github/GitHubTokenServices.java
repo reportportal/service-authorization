@@ -20,8 +20,8 @@ import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenC
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
 import java.io.Serializable;
 import java.util.Collections;

@@ -16,8 +16,6 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import com.google.common.base.MoreObjects;
-import java.util.Objects;
 import lombok.Data;
 
 /**

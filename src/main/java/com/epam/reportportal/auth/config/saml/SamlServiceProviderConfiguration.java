@@ -20,14 +20,14 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.BAS
 import static java.util.Base64.getEncoder;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.reportportal.auth.util.CertificationUtil;
 import com.epam.reportportal.auth.util.RequestUtil;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
 import com.google.common.collect.Lists;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;

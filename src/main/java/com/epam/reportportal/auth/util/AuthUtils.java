@@ -16,9 +16,9 @@
 
 package com.epam.reportportal.auth.util;
 
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 
-import com.epam.ta.reportportal.entity.user.UserRole;
+import com.epam.reportportal.auth.entity.user.UserRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;

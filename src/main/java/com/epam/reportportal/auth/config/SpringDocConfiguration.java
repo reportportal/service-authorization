@@ -16,8 +16,8 @@
 
 package com.epam.reportportal.auth.config;
 
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.entity.user.UserRole;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.entity.user.UserRole;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;

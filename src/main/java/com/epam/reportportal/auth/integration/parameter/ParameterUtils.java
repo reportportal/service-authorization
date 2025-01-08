@@ -27,8 +27,8 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAST_NAME_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROLES_ATTRIBUTE;
 
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;

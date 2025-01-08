@@ -16,8 +16,8 @@
 
 package com.epam.reportportal.auth.integration.saml;
 
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.util.AuthUtils;
-import com.epam.ta.reportportal.entity.user.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;

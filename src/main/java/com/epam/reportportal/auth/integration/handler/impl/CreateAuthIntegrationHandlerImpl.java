@@ -16,23 +16,23 @@
 
 package com.epam.reportportal.auth.integration.handler.impl;
 
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.impl.strategy.AuthIntegrationStrategy;
 import com.epam.reportportal.auth.integration.provider.AuthIntegrationStrategyProvider;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

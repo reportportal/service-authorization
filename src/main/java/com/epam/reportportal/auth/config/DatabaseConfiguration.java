@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.config;
 
-import com.epam.ta.reportportal.dao.ReportPortalRepositoryImpl;
+import com.epam.reportportal.auth.dao.ReportPortalRepositoryImpl;
 import java.io.Serializable;
 import java.util.Properties;
 import javax.persistence.EntityManager;
@@ -51,7 +51,7 @@ import org.springframework.util.Assert;
 @Configuration
 @EnableJpaAuditing
 @EnableJpaRepositories(basePackages = {
-    "com.epam.ta.reportportal.dao"}, repositoryBaseClass = ReportPortalRepositoryImpl.class, repositoryFactoryBeanClass = DatabaseConfiguration.RpRepoFactoryBean.class)
+    "com.epam.reportportal.auth.dao"}, repositoryBaseClass = ReportPortalRepositoryImpl.class, repositoryFactoryBeanClass = DatabaseConfiguration.RpRepoFactoryBean.class)
 @EnableTransactionManagement
 @EnableCaching
 public class DatabaseConfiguration {
@@ -67,13 +67,13 @@ public class DatabaseConfiguration {
 
     LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
     factory.setJpaVendorAdapter(vendorAdapter);
-    factory.setPackagesToScan("com.epam.ta.reportportal.commons",
-        "com.epam.ta.reportportal.entity");
+    factory.setPackagesToScan("com.epam.reportportal.auth.commons",
+        "com.epam.reportportal.auth.entity");
     factory.setDataSource(dataSource);
 
     Properties jpaProperties = new Properties();
     jpaProperties.setProperty("hibernate.dialect",
-        "com.epam.ta.reportportal.commons.JsonbAwarePostgresDialect");
+        "com.epam.reportportal.auth.commons.JsonbAwarePostgresDialect");
     factory.setJpaProperties(jpaProperties);
 
     factory.afterPropertiesSet();

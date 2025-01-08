@@ -16,14 +16,14 @@
 
 package com.epam.reportportal.auth.event;
 
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.project.Project;
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.project.Project;
-import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import com.epam.reportportal.auth.util.PersonalProjectService;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
