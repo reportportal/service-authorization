@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.entity.user;
 
-import com.google.common.base.Strings;
 import java.util.Arrays;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * UserRole representation<br> Role has more rights than the following one. So, Administrator is
@@ -37,15 +36,9 @@ public enum UserRole {
     return Arrays.stream(UserRole.values()).filter(role -> role.name().equals(name)).findAny();
   }
 
-  public static Optional<UserRole> findByAuthority(String name) {
-    if (Strings.isNullOrEmpty(name)) {
-      return Optional.empty();
-    }
-    return findByName(StringUtils.substringAfter(name, ROLE_PREFIX));
-  }
 
   public String getAuthority() {
-    return "ROLE_" + this.name();
+    return ROLE_PREFIX + this.name();
   }
 
 }

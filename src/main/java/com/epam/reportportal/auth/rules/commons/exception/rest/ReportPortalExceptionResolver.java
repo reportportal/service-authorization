@@ -39,7 +39,7 @@ public class ReportPortalExceptionResolver implements ErrorResolver {
   @Override
   public RestError resolveError(Exception ex) {
 
-    LOGGER.error("ReportPortalExceptionResolver > " + ex.getMessage(), ex);
+    LOGGER.error("ReportPortalExceptionResolver > {}", ex.getMessage(), ex);
 
     if (ReportPortalException.class.isAssignableFrom(ex.getClass())) {
       ReportPortalException currentException = (ReportPortalException) ex;

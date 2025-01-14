@@ -46,6 +46,7 @@ public class S3DataStore implements DataStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3DataStore.class);
   private static final Lock CREATE_BUCKET_LOCK = new ReentrantLock();
+  public static final String UNABLE_TO_FIND_FILE = "Unable to find file";
 
   private final BlobStore blobStore;
   private final String bucketPrefix;
@@ -107,8 +108,8 @@ public class S3DataStore implements DataStore {
   @Override
   public InputStream load(String filePath) {
     if (filePath == null) {
-      LOGGER.error("Unable to find file");
-      throw new ReportPortalException(ErrorType.UNABLE_TO_LOAD_BINARY_DATA, "Unable to find file");
+      LOGGER.error(UNABLE_TO_FIND_FILE);
+      throw new ReportPortalException(ErrorType.UNABLE_TO_LOAD_BINARY_DATA, UNABLE_TO_FIND_FILE);
     }
     StoredFile storedFile = getStoredFile(filePath);
     Blob fileBlob = blobStore.getBlob(storedFile.bucket(), storedFile.filePath());
@@ -120,7 +121,7 @@ public class S3DataStore implements DataStore {
       }
     }
     LOGGER.error("Unable to find file '{}'", filePath);
-    throw new ReportPortalException(ErrorType.UNABLE_TO_LOAD_BINARY_DATA, "Unable to find file");
+    throw new ReportPortalException(ErrorType.UNABLE_TO_LOAD_BINARY_DATA, UNABLE_TO_FIND_FILE);
   }
 
   @Override
@@ -181,13 +182,15 @@ public class S3DataStore implements DataStore {
   }
 
   private Location getLocationFromString(String locationString) {
-    Location location = null;
+    Location loc = null;
     if (locationString != null) {
-      location =
-          new LocationBuilder().scope(LocationScope.REGION).id(locationString).description("region")
-              .build();
+      loc = new LocationBuilder()
+          .scope(LocationScope.REGION)
+          .id(locationString)
+          .description("region")
+          .build();
     }
-    return location;
+    return loc;
   }
 
   private String retrievePath(Path path, int beginIndex, int endIndex) {

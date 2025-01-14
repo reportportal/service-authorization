@@ -24,7 +24,7 @@ public abstract class RuleValidator<T> {
   protected final Predicate<T> predicate;
   protected final T target;
 
-  public RuleValidator(T target, Predicate<T> predicate) {
+  protected RuleValidator(T target, Predicate<T> predicate) {
     this.target = target;
     this.predicate = predicate;
 

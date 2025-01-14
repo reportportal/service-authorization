@@ -24,7 +24,7 @@ import java.util.Optional;
 import lombok.Getter;
 
 /**
- * Enum with a list of basic required project parameters
+ * Enum with a list of basic required project parameters.
  *
  * @author Andrey Plisunov
  */
@@ -77,6 +77,9 @@ public enum ProjectAttributeEnum {
   }
 
   public static class Prefix {
+
+    private Prefix() {
+    }
 
     public static final String ANALYZER = "analyzer.";
     public static final String JOB = "job.";

@@ -28,28 +28,11 @@ import java.util.function.Supplier;
 public class BusinessRule {
 
   private BusinessRule() {
-    //should be create by factory-methods only
+    //should be created via factory-methods only
   }
 
   /**
-   * Create rule from object to be verified, predicate and error message in case of violation
-   *
-   * @param <T>       Type of object being checked
-   * @param object    Object to be validated
-   * @param predicate Validation predicate
-   * @param message   Error message
-   * @return Validator
-   * @deprecated in favor of {@link #expect(Object, Predicate, Supplier)}<br> This approach would be
-   * better in case you need to concatenate some error string
-   */
-  @Deprecated
-  public static <T> DefaultRuleValidator<T> expect(T object, Predicate<T> predicate,
-      String message) {
-    return new DefaultRuleValidator<>(object, predicate, Suppliers.stringSupplier(message));
-  }
-
-  /**
-   * Create rule from object to be verified, predicate and error message in case of violation
+   * Create rule from object to be verified, predicate and error message in case of violation.
    *
    * @param <T>             Type of object being checked
    * @param object          Object to be validated
@@ -63,7 +46,7 @@ public class BusinessRule {
   }
 
   /**
-   * Create rule from object to be verified, predicate
+   * Create rule from object to be verified, predicate.
    *
    * @param <T>       Type of object being checked
    * @param object    Object to be validated
@@ -75,7 +58,7 @@ public class BusinessRule {
   }
 
   /**
-   * For cases where we are going to fail something
+   * For cases where we are going to fail something.
    *
    * @return {@link AlwaysFailRuleValidator}
    */

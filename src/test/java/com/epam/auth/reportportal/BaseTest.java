@@ -19,6 +19,7 @@ package com.epam.auth.reportportal;
 import com.epam.auth.reportportal.config.TestConfig;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,8 +83,9 @@ public abstract class BaseTest {
             try {
               var file = new File(
                   DB_MIGRATION_PATH + "/V" + filename.replace(" ", "0"));
-              FileUtils.writeStringToFile(file,
-                  "\n" + FileUtils.readFileToString(new File(MIGRATIONS_PATH + filename.trim())));
+              FileUtils.writeStringToFile(file, "\n"
+                  + FileUtils.readFileToString(new File(MIGRATIONS_PATH + filename.trim()),
+                  StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 
             } catch (IOException e) {
               throw new RuntimeException(e);
