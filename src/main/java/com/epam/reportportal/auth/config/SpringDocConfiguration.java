@@ -113,6 +113,6 @@ public class SpringDocConfiguration {
   }
 
   private String getPathValue() {
-    return StringUtils.isEmpty(pathValue) || pathValue.equals("/")  ? "/uat" : pathValue;
+    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? "/uat" : pathValue;
   }
 }

@@ -25,6 +25,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  */
 @NoRepositoryBean
 public interface ReportPortalRepository<T, ID extends Serializable> extends JpaRepository<T, ID> {
+
   void refresh(T t);
 
 }

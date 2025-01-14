@@ -35,17 +35,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum SamlParameter {
 
-	BASE_PATH("callbackUrl", false),
-	IDP_NAME("identityProviderName", true),
-	IDP_METADATA_URL("identityProviderMetadataUrl", true),
-	EMAIL_ATTRIBUTE("emailAttribute", true),
-	IDP_NAME_ID("identityProviderNameId", false),
-	IDP_ALIAS("identityProviderAlias", false),
-	IDP_URL("identityProviderUrl", false),
-	FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
-	FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
-	LAST_NAME_ATTRIBUTE("lastNameAttribute", false),
-	ROLES_ATTRIBUTE("rolesAttribute", false);
+  BASE_PATH("callbackUrl", false),
+  IDP_NAME("identityProviderName", true),
+  IDP_METADATA_URL("identityProviderMetadataUrl", true),
+  EMAIL_ATTRIBUTE("emailAttribute", true),
+  IDP_NAME_ID("identityProviderNameId", false),
+  IDP_ALIAS("identityProviderAlias", false),
+  IDP_URL("identityProviderUrl", false),
+  FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
+  FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
+  LAST_NAME_ATTRIBUTE("lastNameAttribute", false),
+  ROLES_ATTRIBUTE("rolesAttribute", false);
 
   private String parameterName;
 

@@ -27,6 +27,7 @@ import lombok.Setter;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SamlProvidersResource extends AbstractAuthResource {
-    @Valid
-    private List<SamlResource> providers;
+
+  @Valid
+  private List<SamlResource> providers;
 }

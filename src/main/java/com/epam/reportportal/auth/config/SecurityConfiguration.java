@@ -239,19 +239,19 @@ public class SecurityConfiguration {
       authCompositeFilter.setFilters(additionalFilters);
 
       http
-        .antMatcher("/**")
-        .authorizeRequests()
-        .antMatchers(SSO_LOGIN_PATH
-            + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
-        .permitAll()
-        .anyRequest()
-        .authenticated()
-        .and()
-        .csrf().disable()
-        .formLogin().disable()
-        .sessionManagement()
-                  .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
+          .antMatcher("/**")
+          .authorizeRequests()
+          .antMatchers(SSO_LOGIN_PATH
+              + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
+          .permitAll()
+          .anyRequest()
+          .authenticated()
+          .and()
+          .csrf().disable()
+          .formLogin().disable()
+          .sessionManagement()
+          .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+          .and()
           .addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
     }
 
@@ -279,7 +279,6 @@ public class SecurityConfiguration {
         ApplicationEventPublisher applicationEventPublisher) {
       return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
     }
-
 
 
     @Bean

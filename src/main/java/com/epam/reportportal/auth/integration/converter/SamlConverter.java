@@ -67,21 +67,22 @@ public class SamlConverter {
     resource.setIdentityProviderName(integration.getName());
     resource.setEnabled(integration.isEnabled());
 
-		EMAIL_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
-		FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFirstNameAttribute);
-		LAST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setLastNameAttribute);
-		FULL_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFullNameAttribute);
-		IDP_ALIAS.getParameter(integration).ifPresent(resource::setIdentityProviderAlias);
-		IDP_METADATA_URL.getParameter(integration).ifPresent(resource::setIdentityProviderMetadataUrl);
-		IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
-		IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
-		ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
-		final IntegrationType integrationType = integration.getType();
-		ofNullable(integrationType.getDetails()).flatMap(typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
-				.flatMap(BASE_PATH::getParameter)
-				.ifPresent(resource::setCallbackUrl);
-		return resource;
-	};
+    EMAIL_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
+    FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFirstNameAttribute);
+    LAST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setLastNameAttribute);
+    FULL_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFullNameAttribute);
+    IDP_ALIAS.getParameter(integration).ifPresent(resource::setIdentityProviderAlias);
+    IDP_METADATA_URL.getParameter(integration).ifPresent(resource::setIdentityProviderMetadataUrl);
+    IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
+    IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
+    ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
+    final IntegrationType integrationType = integration.getType();
+    ofNullable(integrationType.getDetails()).flatMap(
+            typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
+        .flatMap(BASE_PATH::getParameter)
+        .ifPresent(resource::setCallbackUrl);
+    return resource;
+  };
 
   public static final Function<List<Integration>, List<ExternalIdentityProviderConfiguration>> TO_EXTERNAL_PROVIDER_CONFIG = integrations -> {
     List<ExternalIdentityProviderConfiguration> externalProviders = integrations.stream()

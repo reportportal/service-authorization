@@ -69,10 +69,10 @@ public class AuthConfigurationEndpoint {
   /**
    * Creates or updates auth integration settings.
    *
-   * @param request Update request
+   * @param request  Update request
    * @param authType Type of Auth
-	 * @param user User
-	 * @return Successful message or an error
+   * @param user     User
+   * @return Successful message or an error
    */
   @Transactional
   @PostMapping(value = "/{authType}")
@@ -87,9 +87,9 @@ public class AuthConfigurationEndpoint {
   /**
    * Creates or updates auth integration settings
    *
-   * @param request Update request
-   * @param authType Type of Auth
-   * @param user User
+   * @param request       Update request
+   * @param authType      Type of Auth
+   * @param user          User
    * @param integrationId Integration ID
    * @return Successful message or an error
    */

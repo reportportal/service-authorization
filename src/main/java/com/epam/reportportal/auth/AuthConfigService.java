@@ -109,18 +109,18 @@ public class AuthConfigService {
    */
   private static final Function<OAuthRegistrationResource, OAuth2ProtectedResourceDetails>
       RESOURCE_DETAILS_CONVERTER = d -> {
-        BaseOAuth2ProtectedResourceDetails details = getOauth2ProtectedResourceDetails(d);
-        details.setId(d.getId());
-        details.setAccessTokenUri(d.getTokenUri());
-        Arrays.stream(AuthenticationScheme.values())
-            .filter(scheme -> scheme.name().equalsIgnoreCase(d.getClientAuthMethod()))
-            .findFirst()
-            .ifPresent(details::setClientAuthenticationScheme);
-        details.setClientId(d.getClientId());
-        details.setClientSecret(d.getClientSecret());
-        details.setScope(new ArrayList<>(d.getScopes()));
-        return details;
-      };
+    BaseOAuth2ProtectedResourceDetails details = getOauth2ProtectedResourceDetails(d);
+    details.setId(d.getId());
+    details.setAccessTokenUri(d.getTokenUri());
+    Arrays.stream(AuthenticationScheme.values())
+        .filter(scheme -> scheme.name().equalsIgnoreCase(d.getClientAuthMethod()))
+        .findFirst()
+        .ifPresent(details::setClientAuthenticationScheme);
+    details.setClientId(d.getClientId());
+    details.setClientSecret(d.getClientSecret());
+    details.setScope(new ArrayList<>(d.getScopes()));
+    return details;
+  };
 
   private static BaseOAuth2ProtectedResourceDetails getOauth2ProtectedResourceDetails(
       OAuthRegistrationResource oAuthRegistrationResource) {

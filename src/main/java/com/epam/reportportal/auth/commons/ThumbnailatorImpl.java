@@ -28,8 +28,8 @@ import java.io.InputStream;
 import net.coobird.thumbnailator.Thumbnails;
 
 /**
- * Thumbnailator implementation using <a href="http://code.google.com/p/thumbnailator/">Thumbnailator</a>
- * API
+ * Thumbnailator implementation. Using <a
+ * href="http://code.google.com/p/thumbnailator/">Thumbnailator</a> API.
  *
  * @author Andrei Varabyeu
  */

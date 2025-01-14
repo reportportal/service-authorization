@@ -57,9 +57,9 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   /**
-   * Handles the UI user signed-in event. Updates the last login date for the user
-   * and generates a personal project if the user has no projects.
-   * Also, if the user is inactive, it will be activated for SAML authentication.
+   * Handles the UI user signed-in event. Updates the last login date for the user and generates a
+   * personal project if the user has no projects. Also, if the user is inactive, it will be
+   * activated for SAML authentication.
    *
    * @param event the UI user signed-in event
    */

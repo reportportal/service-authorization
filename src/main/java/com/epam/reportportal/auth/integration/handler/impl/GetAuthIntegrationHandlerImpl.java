@@ -80,8 +80,9 @@ public class GetAuthIntegrationHandlerImpl implements GetAuthIntegrationHandler 
         .orElseGet(() -> {
           ExtendedOAuthRegistrationResource body = new ExtendedOAuthRegistrationResource();
           body.setErrorCode(ErrorType.AUTH_INTEGRATION_NOT_FOUND.getCode());
-          body.setMessage(Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
-              oauthProviderId).get()
+          body.setMessage(
+              Suppliers.formattedSupplier("Oauth settings with id = {} have not been found.",
+                  oauthProviderId).get()
           );
           return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
         });

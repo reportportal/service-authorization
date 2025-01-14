@@ -24,53 +24,54 @@ import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Binary data representation. Contains only input stream and data type.
- * Introduced to simplify store/retrieve operations
+ * Binary data representation. Contains only input stream and data type. Introduced to simplify
+ * store/retrieve operations
  *
  * @author Andrei Varabyeu
  */
 @Getter
 public class BinaryData {
 
-	private String fileName;
+  private String fileName;
 
-	/**
-	 * MIME Type of Binary Data
-	 */
-	private final String contentType;
+  /**
+   * MIME Type of Binary Data
+   */
+  private final String contentType;
 
-	/**
-	 * Data Stream
-	 */
-	private final InputStream inputStream;
+  /**
+   * Data Stream
+   */
+  private final InputStream inputStream;
 
-	/**
-	 * Content length
-	 */
-	private final Long length;
+  /**
+   * Content length
+   */
+  private final Long length;
 
-	public BinaryData(String contentType, Long length, InputStream inputStream) {
-		this.contentType = contentType;
-		this.inputStream = inputStream;
-		this.length = length;
-	}
+  public BinaryData(String contentType, Long length, InputStream inputStream) {
+    this.contentType = contentType;
+    this.inputStream = inputStream;
+    this.length = length;
+  }
 
-	public BinaryData(String fileName, String contentType, Long length, InputStream inputStream) {
-		this.fileName = fileName;
-		this.contentType = contentType;
-		this.length = length;
-		this.inputStream = inputStream;
-	}
+  public BinaryData(String fileName, String contentType, Long length, InputStream inputStream) {
+    this.fileName = fileName;
+    this.contentType = contentType;
+    this.length = length;
+    this.inputStream = inputStream;
+  }
 
-	public BinaryData(MultipartFile multipartFile) {
-		this.contentType = multipartFile.getContentType();
-		this.length = multipartFile.getSize();
+  public BinaryData(MultipartFile multipartFile) {
+    this.contentType = multipartFile.getContentType();
+    this.length = multipartFile.getSize();
 
-		try {
-			this.inputStream = multipartFile.getInputStream();
-		} catch (IOException e) {
-			throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, "Unable to create binary data from multipart file");
-		}
-	}
+    try {
+      this.inputStream = multipartFile.getInputStream();
+    } catch (IOException e) {
+      throw new ReportPortalException(ErrorType.INCORRECT_REQUEST,
+          "Unable to create binary data from multipart file");
+    }
+  }
 
 }
