@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.auth.reportportal.config;
+package com.epam.reportportal.auth.config;
 
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

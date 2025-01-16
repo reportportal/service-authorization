@@ -26,6 +26,7 @@ import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.entity.Metadata;
 import com.epam.reportportal.auth.entity.enums.ProjectAttributeEnum;
 import com.epam.reportportal.auth.entity.enums.ProjectType;
+import com.epam.reportportal.auth.entity.enums.TestItemIssueGroup;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.project.ProjectRole;
 import com.epam.reportportal.auth.entity.user.ProjectUser;
@@ -108,8 +109,12 @@ public final class PersonalProjectService {
         .collect(Collectors.toSet());
     project.setProjectAttributes(
         defaultProjectAttributes(project, attributeRepository.findAllByNameIn(attrs)));
+
+    var locators = Arrays.stream(TestItemIssueGroup.values())
+        .map(TestItemIssueGroup::getLocator)
+        .toList();
     project.setProjectIssueTypes(
-        defaultIssueTypes(project, issueTypeRepository.getDefaultIssueTypes()));
+        defaultIssueTypes(project, issueTypeRepository.getDefaultIssueTypes(locators)));
 
     return project;
   }

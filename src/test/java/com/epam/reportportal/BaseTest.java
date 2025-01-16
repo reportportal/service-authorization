@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.epam.auth.reportportal;
+package com.epam.reportportal;
 
-import com.epam.auth.reportportal.config.TestConfig;
+import com.epam.reportportal.auth.config.TestConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,8 +27,6 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -65,6 +63,11 @@ public abstract class BaseTest {
       .withAccessToHost(true)
       .withDatabaseName("reportportal");
 
+  static {
+    applyMigrationScripts();
+    postgres.start();
+    log.info("PostgreSQL container started on port: {}", postgres.getFirstMappedPort());
+  }
 
   @SneakyThrows
   private static void applyMigrationScripts() {
@@ -109,17 +112,6 @@ public abstract class BaseTest {
     }
   }
 
-  @BeforeAll
-  static void beforeAll() {
-    applyMigrationScripts();
-    postgres.start();
-    log.info("PostgreSQL container started on port: {}", postgres.getFirstMappedPort());
-  }
-
-  @AfterAll
-  static void afterAll() {
-    postgres.stop();
-  }
 
   @DynamicPropertySource
   static void configureProperties(DynamicPropertyRegistry registry) {

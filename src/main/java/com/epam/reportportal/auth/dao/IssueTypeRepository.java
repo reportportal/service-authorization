@@ -20,13 +20,25 @@ package com.epam.reportportal.auth.dao;
 import com.epam.reportportal.auth.entity.item.issue.IssueType;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
+ * Repository interface for managing IssueType entities. Extends the ReportPortalRepository
+ * interface to provide CRUD operations.
+ *
  * @author Siarhei Hrabko
+ * @see ReportPortalRepository
+ * @see IssueType
+ * @see Long
  */
 public interface IssueTypeRepository extends ReportPortalRepository<IssueType, Long> {
 
-  @Query(value = "SELECT from issue_type it join public.issue_group ig on it.issue_group_id = ig.issue_group_id where it.locator in (:TestItemIssueGroup.values())", nativeQuery = true)
-  List<IssueType> getDefaultIssueTypes();
+  @Query(value = """
+              SELECT * from issue_type it 
+                  join public.issue_group ig on it.issue_group_id = ig.issue_group_id 
+                  where it.locator in (:locators)
+      """,
+      nativeQuery = true)
+  List<IssueType> getDefaultIssueTypes(@Param("locators") List<String> locators);
 
 }
