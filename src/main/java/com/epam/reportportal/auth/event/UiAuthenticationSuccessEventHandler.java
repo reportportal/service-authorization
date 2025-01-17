@@ -57,11 +57,11 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   /**
-   * Handles the UI user signed-in event. Updates the last login date for the user and generates a
+   * Handles the UI user signed in event. Updates the last login date for the user and generates a
    * personal project if the user has no projects. Also, if the user is inactive, it will be
    * activated for SAML authentication.
    *
-   * @param event the UI user signed-in event
+   * @param event the UI user signed in event
    */
   @EventListener
   @Transactional
@@ -80,15 +80,17 @@ public class UiAuthenticationSuccessEventHandler {
 
   private ReportPortalUser acquireUser(Authentication authentication) {
     if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      return userRepository.findByLogin(rpAuth.getPrincipal())
+      userRepository.findByLogin(rpAuth.getPrincipal())
           .filter(user -> !user.getActive())
-          .map(user -> {
+          .ifPresent(user -> {
             user.setActive(true);
-            return userRepository.save(user);
-          })
+            userRepository.save(user);
+          });
+      return userRepository.findByLogin(rpAuth.getPrincipal())
           .map(user -> ReportPortalUser.userBuilder().fromUser(user))
-          .orElseThrow(() ->
-              new ReportPortalException(ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()));
+          .orElseThrow(() -> new ReportPortalException(
+              ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
+          ));
     } else {
       if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
         SecurityContextHolder.clearContext();
