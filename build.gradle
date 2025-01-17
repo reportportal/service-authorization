@@ -63,6 +63,8 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.20'
     implementation("org.apache.tika:tika-core:3.0.0")
 
+    implementation "software.amazon.awssdk:aws-core:${aws}"
+    implementation "software.amazon.awssdk:sts:${aws}"
     api "org.apache.jclouds.api:s3:${jclouds}" // 2.6.0 switched to jakarta annotations!
     implementation "org.apache.jclouds.provider:aws-s3:${jclouds}"
     implementation "org.apache.jclouds.api:filesystem:${jclouds}"

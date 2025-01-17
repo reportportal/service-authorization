@@ -30,6 +30,7 @@ import com.google.common.collect.Iterables;
 import com.google.inject.Module;
 import java.util.Properties;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.s3.config.AWSS3HttpApiModule;
 import org.jclouds.blobstore.BlobStore;
@@ -217,9 +218,18 @@ public class DataStoreConfiguration {
       @Value("${datastore.region}") String region) {
     Iterable<Module> modules = ImmutableSet.of(new CustomBucketToRegionModule(region));
 
-    BlobStoreContext blobStoreContext =
-        ContextBuilder.newBuilder("aws-s3").modules(modules).credentials(accessKey, secretKey)
-            .buildView(BlobStoreContext.class);
+    BlobStoreContext blobStoreContext;
+    if (StringUtils.isNotEmpty(accessKey) && StringUtils.isNotEmpty(secretKey)) {
+      blobStoreContext = ContextBuilder.newBuilder("aws-s3")
+          .modules(modules)
+          .credentials(accessKey, secretKey)
+          .buildView(BlobStoreContext.class);
+    } else {
+      blobStoreContext = ContextBuilder.newBuilder("aws-s3")
+          .credentialsSupplier(new IAMCredentialSupplier())
+          .modules(modules)
+          .buildView(BlobStoreContext.class);
+    }
 
     return blobStoreContext.getBlobStore();
   }
