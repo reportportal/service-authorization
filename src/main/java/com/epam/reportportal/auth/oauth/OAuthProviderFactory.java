@@ -18,10 +18,10 @@ package com.epam.reportportal.auth.oauth;
 
 import static com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters.FROM_SPRING_MERGE;
 
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 

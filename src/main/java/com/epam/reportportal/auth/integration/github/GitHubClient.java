@@ -16,8 +16,8 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import com.google.common.base.Charsets;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ public class GitHubClient {
       @Override
       public void handleError(ClientHttpResponse response) throws IOException {
         String errorMessage =
-            "Unable to load Github Data:" + new String(getResponseBody(response), Charsets.UTF_8);
+            "Unable to load Github Data:" + new String(getResponseBody(response), StandardCharsets.UTF_8);
         LOGGER.error(errorMessage);
         throw new AuthenticationServiceException(errorMessage);
       }
@@ -82,7 +82,8 @@ public class GitHubClient {
 
   public List<OrganizationResource> getUserOrganizations(String user) {
     return getForObject(GITHUB_BASE_URL + "/user/orgs",
-        new ParameterizedTypeReference<>() {},
+        new ParameterizedTypeReference<>() {
+        },
         user);
   }
 

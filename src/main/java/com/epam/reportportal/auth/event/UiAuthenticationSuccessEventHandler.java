@@ -16,14 +16,14 @@
 
 package com.epam.reportportal.auth.event;
 
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.project.Project;
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.project.Project;
-import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import com.epam.reportportal.auth.util.PersonalProjectService;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -57,11 +57,11 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   /**
-   * Handles the UI user signed-in event. Updates the last login date for the user
-   * and generates a personal project if the user has no projects.
-   * Also, if the user is inactive, it will be activated for SAML authentication.
+   * Handles the UI user signed in event. Updates the last login date for the user and generates a
+   * personal project if the user has no projects. Also, if the user is inactive, it will be
+   * activated for SAML authentication.
    *
-   * @param event the UI user signed-in event
+   * @param event the UI user signed in event
    */
   @EventListener
   @Transactional
@@ -86,7 +86,8 @@ public class UiAuthenticationSuccessEventHandler {
             user.setActive(true);
             userRepository.save(user);
           });
-      return userRepository.findUserDetails(rpAuth.getPrincipal())
+      return userRepository.findByLogin(rpAuth.getPrincipal())
+          .map(user -> ReportPortalUser.userBuilder().fromUser(user))
           .orElseThrow(() -> new ReportPortalException(
               ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
           ));

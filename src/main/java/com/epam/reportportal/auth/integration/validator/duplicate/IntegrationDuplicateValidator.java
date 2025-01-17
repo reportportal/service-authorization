@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.integration.validator.duplicate;
 
-import com.epam.ta.reportportal.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.Integration;
 
 public interface IntegrationDuplicateValidator {
 

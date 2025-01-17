@@ -16,14 +16,14 @@
 
 package com.epam.reportportal.auth.event.activity;
 
-import static com.epam.ta.reportportal.entity.activity.ActivityAction.ASSIGN_USER;
+import static com.epam.reportportal.auth.entity.activity.ActivityAction.ASSIGN_USER;
 
-import com.epam.ta.reportportal.builder.ActivityBuilder;
-import com.epam.ta.reportportal.entity.activity.Activity;
-import com.epam.ta.reportportal.entity.activity.EventAction;
-import com.epam.ta.reportportal.entity.activity.EventObject;
-import com.epam.ta.reportportal.entity.activity.EventPriority;
-import com.epam.ta.reportportal.entity.activity.EventSubject;
+import com.epam.reportportal.auth.builder.ActivityBuilder;
+import com.epam.reportportal.auth.entity.activity.Activity;
+import com.epam.reportportal.auth.entity.activity.EventAction;
+import com.epam.reportportal.auth.entity.activity.EventObject;
+import com.epam.reportportal.auth.entity.activity.EventPriority;
+import com.epam.reportportal.auth.entity.activity.EventSubject;
 
 /**
  * Event publish when user is assigned to a project.

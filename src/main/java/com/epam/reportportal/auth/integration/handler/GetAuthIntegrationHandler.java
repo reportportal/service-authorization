@@ -17,8 +17,8 @@
 package com.epam.reportportal.auth.integration.handler;
 
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 

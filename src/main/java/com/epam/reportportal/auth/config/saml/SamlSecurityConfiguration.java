@@ -32,7 +32,7 @@ import org.springframework.security.saml.provider.service.config.SamlServiceProv
 @Order(4)
 public class SamlSecurityConfiguration extends SamlServiceProviderSecurityConfiguration {
 
-  private SamlServerConfiguration serverConfiguration;
+  private final SamlServerConfiguration serverConfiguration;
 
   public SamlSecurityConfiguration(SamlServiceProviderServerBeanConfiguration configuration,
       SamlServerConfiguration spConfiguration) {

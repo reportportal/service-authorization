@@ -19,7 +19,6 @@ package com.epam.reportportal.auth.integration.saml;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.springframework.security.saml.saml2.attribute.AttributeNameFormat;

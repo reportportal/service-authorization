@@ -23,17 +23,17 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_URL;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
+import com.epam.reportportal.auth.entity.integration.IntegrationTypeDetails;
 import com.epam.reportportal.auth.event.SamlProvidersReloadEvent;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
 import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.entity.integration.IntegrationTypeDetails;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

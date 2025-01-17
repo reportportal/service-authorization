@@ -19,10 +19,10 @@ package com.epam.reportportal.auth;
 import static com.google.common.reflect.Reflection.newProxy;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,18 +109,18 @@ public class AuthConfigService {
    */
   private static final Function<OAuthRegistrationResource, OAuth2ProtectedResourceDetails>
       RESOURCE_DETAILS_CONVERTER = d -> {
-        BaseOAuth2ProtectedResourceDetails details = getOauth2ProtectedResourceDetails(d);
-        details.setId(d.getId());
-        details.setAccessTokenUri(d.getTokenUri());
-        Arrays.stream(AuthenticationScheme.values())
-            .filter(scheme -> scheme.name().equalsIgnoreCase(d.getClientAuthMethod()))
-            .findFirst()
-            .ifPresent(details::setClientAuthenticationScheme);
-        details.setClientId(d.getClientId());
-        details.setClientSecret(d.getClientSecret());
-        details.setScope(new ArrayList<>(d.getScopes()));
-        return details;
-      };
+    BaseOAuth2ProtectedResourceDetails details = getOauth2ProtectedResourceDetails(d);
+    details.setId(d.getId());
+    details.setAccessTokenUri(d.getTokenUri());
+    Arrays.stream(AuthenticationScheme.values())
+        .filter(scheme -> scheme.name().equalsIgnoreCase(d.getClientAuthMethod()))
+        .findFirst()
+        .ifPresent(details::setClientAuthenticationScheme);
+    details.setClientId(d.getClientId());
+    details.setClientSecret(d.getClientSecret());
+    details.setScope(new ArrayList<>(d.getScopes()));
+    return details;
+  };
 
   private static BaseOAuth2ProtectedResourceDetails getOauth2ProtectedResourceDetails(
       OAuthRegistrationResource oAuthRegistrationResource) {

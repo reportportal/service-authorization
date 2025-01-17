@@ -20,6 +20,9 @@ import com.epam.reportportal.auth.OAuthSuccessHandler;
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.basic.DatabaseUserDetailsService;
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.dao.ServerSettingsRepository;
+import com.epam.reportportal.auth.entity.ServerSettings;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
@@ -28,11 +31,8 @@ import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.ServerSettingsRepository;
-import com.epam.ta.reportportal.entity.ServerSettings;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +53,7 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -238,19 +239,19 @@ public class SecurityConfiguration {
       authCompositeFilter.setFilters(additionalFilters);
 
       http
-        .antMatcher("/**")
-        .authorizeRequests()
-        .antMatchers(SSO_LOGIN_PATH
-            + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
-        .permitAll()
-        .anyRequest()
-        .authenticated()
-        .and()
-        .csrf().disable()
-        .formLogin().disable()
-        .sessionManagement()
-                  .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
+          .antMatcher("/**")
+          .authorizeRequests()
+          .antMatchers(SSO_LOGIN_PATH
+              + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
+          .permitAll()
+          .anyRequest()
+          .authenticated()
+          .and()
+          .csrf().disable()
+          .formLogin().disable()
+          .sessionManagement()
+          .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+          .and()
           .addFilterAfter(authCompositeFilter, BasicAuthenticationFilter.class);
     }
 
@@ -278,7 +279,6 @@ public class SecurityConfiguration {
         ApplicationEventPublisher applicationEventPublisher) {
       return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
     }
-
 
 
     @Bean
@@ -420,6 +420,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    @Profile("!unittest")
     public JwtAccessTokenConverter accessTokenConverter(AccessTokenConverter accessTokenConverter) {
       JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
       jwtConverter.setSigningKey(getSecret());

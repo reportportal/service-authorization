@@ -19,10 +19,10 @@ package com.epam.reportportal.auth.integration.ldap;
 import static com.epam.reportportal.auth.integration.ldap.LdapAuthProvider.LDAP_TIMEOUT;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
 import java.util.Collections;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;

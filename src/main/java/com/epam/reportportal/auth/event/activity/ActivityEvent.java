@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.event.activity;
 
-import com.epam.ta.reportportal.entity.activity.Activity;
+import com.epam.reportportal.auth.entity.activity.Activity;
 
 public interface ActivityEvent {
 

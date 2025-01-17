@@ -16,14 +16,14 @@
 
 package com.epam.reportportal.auth.integration.parameter;
 
-import static com.epam.reportportal.rules.commons.validation.Suppliers.formattedSupplier;
+import static com.epam.reportportal.auth.rules.commons.validation.Suppliers.formattedSupplier;
 import static java.util.Optional.ofNullable;
 
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationParams;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationParams;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -35,17 +35,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum SamlParameter {
 
-	BASE_PATH("callbackUrl", false),
-	IDP_NAME("identityProviderName", true),
-	IDP_METADATA_URL("identityProviderMetadataUrl", true),
-	EMAIL_ATTRIBUTE("emailAttribute", true),
-	IDP_NAME_ID("identityProviderNameId", false),
-	IDP_ALIAS("identityProviderAlias", false),
-	IDP_URL("identityProviderUrl", false),
-	FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
-	FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
-	LAST_NAME_ATTRIBUTE("lastNameAttribute", false),
-	ROLES_ATTRIBUTE("rolesAttribute", false);
+  BASE_PATH("callbackUrl", false),
+  IDP_NAME("identityProviderName", true),
+  IDP_METADATA_URL("identityProviderMetadataUrl", true),
+  EMAIL_ATTRIBUTE("emailAttribute", true),
+  IDP_NAME_ID("identityProviderNameId", false),
+  IDP_ALIAS("identityProviderAlias", false),
+  IDP_URL("identityProviderUrl", false),
+  FULL_NAME_ATTRIBUTE("fullNameAttribute", false),
+  FIRST_NAME_ATTRIBUTE("firstNameAttribute", false),
+  LAST_NAME_ATTRIBUTE("lastNameAttribute", false),
+  ROLES_ATTRIBUTE("rolesAttribute", false);
 
   private String parameterName;
 
