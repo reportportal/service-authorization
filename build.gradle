@@ -132,7 +132,6 @@ dependencies {
 
 }
 
-
 tasks.register('updateSubmodule', Exec) {
     commandLine 'git', 'submodule', 'update', '--init'
 }
@@ -168,7 +167,6 @@ test {
     }
 }
 
-compileJava.dependsOn updateSubmodule
 publish.dependsOn build
 publish.mustRunAfter build
 
