@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.config.saml;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.epam.reportportal.auth.AuthFailureHandler;
+import com.epam.reportportal.auth.config.CustomValidator;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthenticationManager;
 import com.epam.reportportal.auth.integration.saml.SamlAuthSuccessHandler;
 import com.epam.reportportal.auth.integration.saml.SamlUserReplicator;
@@ -60,6 +61,7 @@ public class SamlServiceProviderBeanConfiguration extends
     SamlServiceProviderServerBeanConfiguration {
 
   private final Integer maxSessionLive;
+  private final Boolean tokenAgeCheck;
 
   private final SamlAuthSuccessHandler samlSuccessHandler;
   private final AuthFailureHandler authFailureHandler;
@@ -68,9 +70,11 @@ public class SamlServiceProviderBeanConfiguration extends
 
   public SamlServiceProviderBeanConfiguration(
       @Value("${rp.auth.saml.session-live}") Integer maxSessionLive,
+      @Value("${rp.auth.saml.token-age-check}") Boolean tokenAgeCheck,
       SamlAuthSuccessHandler samlSuccessHandler, AuthFailureHandler authFailureHandler,
       SamlUserReplicator samlUserReplicator, SamlServerConfiguration spConfiguration) {
     this.maxSessionLive = maxSessionLive;
+    this.tokenAgeCheck = tokenAgeCheck;
     this.samlSuccessHandler = samlSuccessHandler;
     this.authFailureHandler = authFailureHandler;
     this.samlUserReplicator = samlUserReplicator;
@@ -113,10 +117,15 @@ public class SamlServiceProviderBeanConfiguration extends
 
   @Override
   public SamlValidator samlValidator() {
-    final DefaultValidator defaultValidator = new DefaultValidator(samlImplementation());
-    defaultValidator.setMaxAuthenticationAgeMillis(
-        Math.toIntExact(Duration.ofMinutes(maxSessionLive).toMillis()));
-    return defaultValidator;
+    SamlValidator validator;
+    if (tokenAgeCheck) {
+      validator = new DefaultValidator(samlImplementation());
+      ((DefaultValidator) validator).setMaxAuthenticationAgeMillis(
+              Math.toIntExact(Duration.ofMinutes(maxSessionLive).toMillis()));
+    } else {
+      validator = new CustomValidator(samlImplementation());
+    }
+    return validator;
   }
 
   private SamlKeyStoreProvider samlKeyStoreProvider() {

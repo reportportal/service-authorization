@@ -22,3 +22,6 @@ hs_err_pid*
 build/
 .gradle/
 .vscode/
+
+# Local testing tools
+.mirrord/
