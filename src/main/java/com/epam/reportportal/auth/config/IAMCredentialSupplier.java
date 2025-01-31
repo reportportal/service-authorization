@@ -78,11 +78,8 @@ public class IAMCredentialSupplier implements Supplier<Credentials> {
   }
 
   private AwsSessionCredentials obtainAwsSessionCredentials() {
-    StsAssumeRoleWithWebIdentityCredentialsProvider provider =
-        StsAssumeRoleWithWebIdentityCredentialsProvider.builder()
-            .stsClient(StsClient.create())
-            .build();
-    AwsCredentials awsCredentials = provider.resolveCredentials();
+    DefaultCredentialsProvider defaultCredentialsProvider = DefaultCredentialsProvider.create();
+    AwsCredentials awsCredentials = defaultCredentialsProvider.resolveCredentials();
     if (awsCredentials instanceof AwsSessionCredentials sessionCredentials) {
       LOGGER.error("accessKeyId" + sessionCredentials.accessKeyId());
       LOGGER.error("expirationTime " + sessionCredentials.expirationTime());
