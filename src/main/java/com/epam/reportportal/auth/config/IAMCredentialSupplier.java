@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.auth.StsAssumeRoleWithWebIdentityCredentialsProvider;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
@@ -67,13 +69,20 @@ public class IAMCredentialSupplier implements Supplier<Credentials> {
           .sessionToken(awsCredentials.sessionToken())
           .build();
 
-      expirationTime = Instant.now().plusSeconds(3600);
+      if (awsCredentials.expirationTime().isPresent()) {
+        expirationTime = awsCredentials.expirationTime().get();
+      } else {
+        expirationTime = Instant.now().plusSeconds(3600);
+      }
     }
   }
 
   private AwsSessionCredentials obtainAwsSessionCredentials() {
-    DefaultCredentialsProvider defaultCredentialsProvider = DefaultCredentialsProvider.create();
-    AwsCredentials awsCredentials = defaultCredentialsProvider.resolveCredentials();
+    StsAssumeRoleWithWebIdentityCredentialsProvider provider =
+        StsAssumeRoleWithWebIdentityCredentialsProvider.builder()
+            .stsClient(StsClient.create())
+            .build();
+    AwsCredentials awsCredentials = provider.resolveCredentials();
     if (awsCredentials instanceof AwsSessionCredentials sessionCredentials) {
       return sessionCredentials;
     }
