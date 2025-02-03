@@ -16,26 +16,26 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import static com.epam.ta.reportportal.commons.EntityUtils.normalizeId;
+import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.binary.UserBinaryDataService;
+import com.epam.reportportal.auth.commons.ContentTypeResolver;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.dao.ProjectRepository;
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.Metadata;
+import com.epam.reportportal.auth.entity.attachment.BinaryData;
+import com.epam.reportportal.auth.entity.project.Project;
+import com.epam.reportportal.auth.entity.user.User;
+import com.epam.reportportal.auth.entity.user.UserRole;
+import com.epam.reportportal.auth.entity.user.UserType;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.commons.ContentTypeResolver;
-import com.epam.reportportal.rules.commons.validation.BusinessRule;
-import com.epam.ta.reportportal.binary.UserBinaryDataService;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.dao.ProjectRepository;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.Metadata;
-import com.epam.ta.reportportal.entity.attachment.BinaryData;
-import com.epam.ta.reportportal.entity.project.Project;
-import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.entity.user.UserRole;
-import com.epam.ta.reportportal.entity.user.UserType;
-import com.epam.ta.reportportal.util.PersonalProjectService;
-import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.commons.validation.BusinessRule;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.util.PersonalProjectService;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import java.io.IOException;

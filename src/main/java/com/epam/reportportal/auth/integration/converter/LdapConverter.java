@@ -18,13 +18,13 @@ package com.epam.reportportal.auth.integration.converter;
 
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.reportportal.model.integration.auth.LdapAttributes;
-import com.epam.reportportal.model.integration.auth.LdapResource;
-import com.epam.reportportal.model.integration.auth.SynchronizationAttributesResource;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.integration.auth.LdapAttributes;
+import com.epam.reportportal.auth.model.integration.auth.LdapResource;
+import com.epam.reportportal.auth.model.integration.auth.SynchronizationAttributesResource;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;

@@ -20,15 +20,15 @@ import static com.epam.reportportal.auth.config.SecurityConfiguration.GlobalWebS
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
+import com.epam.reportportal.auth.dao.OAuthRegistrationRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
-import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;

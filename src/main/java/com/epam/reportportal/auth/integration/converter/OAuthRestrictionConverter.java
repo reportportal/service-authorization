@@ -18,9 +18,9 @@ package com.epam.reportportal.auth.integration.converter;
 
 import static java.util.Optional.ofNullable;
 
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistrationRestriction;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import java.util.HashMap;

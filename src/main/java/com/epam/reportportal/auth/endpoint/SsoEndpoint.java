@@ -19,7 +19,7 @@ package com.epam.reportportal.auth.endpoint;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import com.epam.ta.reportportal.commons.ReportPortalUser;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

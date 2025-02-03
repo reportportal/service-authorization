@@ -17,13 +17,13 @@
 package com.epam.reportportal.auth.config;
 
 
-import com.epam.reportportal.rules.commons.ExceptionMappings;
-import com.epam.reportportal.rules.commons.exception.message.DefaultExceptionMessageBuilder;
-import com.epam.reportportal.rules.commons.exception.rest.DefaultErrorResolver;
-import com.epam.reportportal.rules.commons.exception.rest.ReportPortalExceptionResolver;
-import com.epam.reportportal.rules.commons.exception.rest.RestErrorDefinition;
-import com.epam.reportportal.rules.commons.exception.rest.RestExceptionHandler;
-import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.commons.ExceptionMappings;
+import com.epam.reportportal.auth.rules.commons.exception.message.DefaultExceptionMessageBuilder;
+import com.epam.reportportal.auth.rules.commons.exception.rest.DefaultErrorResolver;
+import com.epam.reportportal.auth.rules.commons.exception.rest.ReportPortalExceptionResolver;
+import com.epam.reportportal.auth.rules.commons.exception.rest.RestErrorDefinition;
+import com.epam.reportportal.auth.rules.commons.exception.rest.RestExceptionHandler;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;

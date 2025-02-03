@@ -61,10 +61,10 @@ public class SamlServiceProviderBeanConfiguration extends
 
   private final Integer maxSessionLive;
 
-  private SamlAuthSuccessHandler samlSuccessHandler;
-  private AuthFailureHandler authFailureHandler;
-  private SamlUserReplicator samlUserReplicator;
-  private SamlServerConfiguration serviceProviderConfiguration;
+  private final SamlAuthSuccessHandler samlSuccessHandler;
+  private final AuthFailureHandler authFailureHandler;
+  private final SamlUserReplicator samlUserReplicator;
+  private final SamlServerConfiguration serviceProviderConfiguration;
 
   public SamlServiceProviderBeanConfiguration(
       @Value("${rp.auth.saml.session-live}") Integer maxSessionLive,

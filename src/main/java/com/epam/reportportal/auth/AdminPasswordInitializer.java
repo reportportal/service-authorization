@@ -18,9 +18,9 @@ package com.epam.reportportal.auth;
 
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.exception.EnvironmentVariablesNotProvidedException;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.user.User;
 import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
 import org.apache.commons.lang3.StringUtils;

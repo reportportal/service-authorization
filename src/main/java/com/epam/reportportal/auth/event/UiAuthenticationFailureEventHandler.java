@@ -27,7 +27,6 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
-import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 import org.springframework.stereotype.Component;
 
 /**

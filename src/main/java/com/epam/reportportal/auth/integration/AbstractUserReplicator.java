@@ -18,15 +18,16 @@ package com.epam.reportportal.auth.integration;
 
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.binary.UserBinaryDataService;
+import com.epam.reportportal.auth.commons.ContentTypeResolver;
+import com.epam.reportportal.auth.dao.ProjectRepository;
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.Metadata;
+import com.epam.reportportal.auth.entity.attachment.BinaryData;
+import com.epam.reportportal.auth.entity.project.Project;
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.commons.ContentTypeResolver;
-import com.epam.ta.reportportal.binary.UserBinaryDataService;
-import com.epam.ta.reportportal.dao.ProjectRepository;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.attachment.BinaryData;
-import com.epam.ta.reportportal.entity.project.Project;
-import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.epam.reportportal.auth.util.PersonalProjectService;
 import com.google.common.collect.Maps;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
@@ -75,12 +76,12 @@ public class AbstractUserReplicator {
    *
    * @return Default meta info
    */
-  protected com.epam.ta.reportportal.entity.Metadata defaultMetaData() {
+  protected Metadata defaultMetaData() {
     Map<String, Object> metaDataMap = new HashMap<>();
     long nowInMillis = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
     metaDataMap.put("last_login", nowInMillis);
     metaDataMap.put("synchronizationDate", nowInMillis);
-    return new com.epam.ta.reportportal.entity.Metadata(metaDataMap);
+    return new Metadata(metaDataMap);
   }
 
   /**
@@ -89,8 +90,8 @@ public class AbstractUserReplicator {
    * @param user User to be synchronized
    */
   protected void updateSynchronizationDate(User user) {
-    com.epam.ta.reportportal.entity.Metadata metadata = ofNullable(user.getMetadata()).orElse(
-        new com.epam.ta.reportportal.entity.Metadata(
+    Metadata metadata = ofNullable(user.getMetadata()).orElse(
+        new Metadata(
             Maps.newHashMap()));
     metadata.getMetadata()
         .put("synchronizationDate", LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli());
