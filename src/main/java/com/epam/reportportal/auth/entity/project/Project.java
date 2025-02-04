@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.entity.project;
 
 import com.epam.reportportal.auth.dao.converters.JpaInstantConverter;
 import com.epam.reportportal.auth.entity.Metadata;
-import com.epam.reportportal.auth.entity.enums.ProjectType;
 import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.entity.user.ProjectUser;
 import com.google.common.collect.Sets;
@@ -30,8 +29,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -68,10 +65,6 @@ public class Project implements Serializable {
   @Column(name = "name")
   private String name;
 
-  @Column(name = "project_type")
-  @Enumerated(EnumType.STRING)
-  private ProjectType projectType;
-
   @OneToMany(mappedBy = "project", cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY)
   @OrderBy("creationDate desc")
   private Set<Integration> integrations = Sets.newHashSet();
@@ -84,22 +77,30 @@ public class Project implements Serializable {
   @OrderBy(value = "issue_type_id")
   private Set<ProjectIssueType> projectIssueTypes = Sets.newHashSet();
 
-  /* Not required in service-authorization
-  @OneToMany(mappedBy = "project", cascade = {
-      CascadeType.PERSIST}, fetch = FetchType.EAGER, orphanRemoval = true)
-  private Set<SenderCase> senderCases = Sets.newHashSet();
-  */
-
-  @Column(name = "creation_date")
+  @Column(name = "created_at")
   @Convert(converter = JpaInstantConverter.class)
   private Instant creationDate;
+
+  @Column(name = "updated_at")
+  @Convert(converter = JpaInstantConverter.class)
+  private Instant updatedAt;
 
   @Type(type = "json")
   @Column(name = "metadata")
   private Metadata metadata;
 
+  // TODO: rename to meaningful variable. eg. orgSlug, orgKey or else
   @Column(name = "organization")
-  private String organization;
+  private String org;
+
+  @Column(name = "organization_id", nullable = false)
+  private Long organizationId;
+
+  @Column(name = "key")
+  private String key;
+
+  @Column(name = "slug")
+  private String slug;
 
   @Column(name = "allocated_storage", updatable = false)
   private long allocatedStorage;
@@ -122,11 +123,12 @@ public class Project implements Serializable {
       return false;
     }
     Project project = (Project) o;
-    return Objects.equals(name, project.name) && Objects.equals(allocatedStorage,
-        project.allocatedStorage) && Objects.equals(
-        creationDate,
-        project.creationDate
-    ) && Objects.equals(metadata, project.metadata);
+    return Objects.equals(name, project.name)
+        && Objects.equals(key, project.key)
+        && Objects.equals(organizationId, project.organizationId)
+        && Objects.equals(allocatedStorage, project.allocatedStorage)
+        && Objects.equals(creationDate, project.creationDate)
+        && Objects.equals(metadata, project.metadata);
   }
 
   @Override

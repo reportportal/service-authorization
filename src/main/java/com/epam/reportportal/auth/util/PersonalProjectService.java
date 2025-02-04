@@ -25,7 +25,6 @@ import com.epam.reportportal.auth.dao.IssueTypeRepository;
 import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.entity.Metadata;
 import com.epam.reportportal.auth.entity.enums.ProjectAttributeEnum;
-import com.epam.reportportal.auth.entity.enums.ProjectType;
 import com.epam.reportportal.auth.entity.enums.TestItemIssueGroup;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.project.ProjectRole;
@@ -91,11 +90,10 @@ public final class PersonalProjectService {
     Project project = new Project();
     project.setName(generatePersonalProjectName(user.getLogin()));
     project.setCreationDate(Instant.now());
-    project.setProjectType(ProjectType.PERSONAL);
 
     ProjectUser projectUser = new ProjectUser()
         .withUser(user)
-        .withProjectRole(ProjectRole.PROJECT_MANAGER)
+        .withProjectRole(ProjectRole.EDITOR)
         .withProject(project);
     project.setUsers(Sets.newHashSet(projectUser));
 

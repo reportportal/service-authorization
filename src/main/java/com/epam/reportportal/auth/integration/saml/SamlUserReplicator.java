@@ -117,15 +117,18 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setUserType(UserType.SAML);
     user.setExpired(false);
 
+    /* TODO: skip generation until we have requirements
     Project project = generatePersonalProject(user);
     //TODO BUG IF PROJECT HAS NO USERS BECAUSE OF iterator().next() on empty collection
     user.getProjects().add(project.getUsers().iterator().next());
+    */
 
     user.setMetadata(defaultMetaData());
 
     userRepository.save(user);
 
-    publishActivityEvents(user, project);
+    // TODO: waiting for requirements
+    // publishActivityEvents(user, project);
 
     return user;
   }
@@ -133,9 +136,12 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   private void publishActivityEvents(User user, Project project) {
     publishUserCreatedEvent(user);
 
+    /* TODO: skip until we have requirements
+
     publishProjectCreatedEvent(project);
 
     publishUserAssignToProjectEvent(user, project);
+    */
   }
 
   private void publishUserCreatedEvent(User user) {

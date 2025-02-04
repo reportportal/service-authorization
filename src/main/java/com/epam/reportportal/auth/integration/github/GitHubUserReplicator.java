@@ -152,8 +152,10 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     user.setUserType(UserType.GITHUB);
     user.setRole(UserRole.USER);
     user.setExpired(false);
+    /* TODO: skip generation until we have requirements
     final Project project = generatePersonalProject(user);
     user.getProjects().addAll(project.getUsers());
+    */
     return user;
   }
 

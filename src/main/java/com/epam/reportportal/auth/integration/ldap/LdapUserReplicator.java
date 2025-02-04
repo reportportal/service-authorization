@@ -117,9 +117,10 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     user.setRole(UserRole.USER);
     user.setExpired(false);
 
+    /* TODO: skip generation until we have new requirements
     final Project project = generatePersonalProject(user);
     user.getProjects().add(project.getUsers().iterator().next());
-
+    */
     return userRepository.save(user);
   }
 

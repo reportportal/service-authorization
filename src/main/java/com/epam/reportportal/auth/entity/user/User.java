@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.entity.user;
 import com.epam.reportportal.auth.entity.Metadata;
 import com.google.common.collect.Sets;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -36,9 +37,11 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * @author Andrei Varabyeu
@@ -84,6 +87,14 @@ public class User implements Serializable {
   @Column(name = "full_name")
   private String fullName;
 
+  @CreationTimestamp
+  @Column(name = "created_at")
+  private Instant createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  private Instant updatedAt;
+
   @Column(name = "expired")
   private boolean isExpired;
 
@@ -105,6 +116,10 @@ public class User implements Serializable {
       CascadeType.MERGE, CascadeType.REFRESH})
   private Set<ProjectUser> projects = Sets.newHashSet();
 
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = {CascadeType.PERSIST,
+      CascadeType.MERGE, CascadeType.REFRESH})
+  private Set<OrganizationUser> organizationUsers = Sets.newHashSet();
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -114,8 +129,10 @@ public class User implements Serializable {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(id, user.id) && Objects.equals(uuid, user.uuid)
-        && Objects.equals(login, user.login) && Objects.equals(email, user.email);
+    return Objects.equals(id, user.id)
+        && Objects.equals(uuid, user.uuid)
+        && Objects.equals(login, user.login)
+        && Objects.equals(email, user.email);
   }
 
   @Override
