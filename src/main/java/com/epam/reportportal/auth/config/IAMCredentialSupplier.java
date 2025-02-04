@@ -81,10 +81,6 @@ public class IAMCredentialSupplier implements Supplier<Credentials> {
     DefaultCredentialsProvider defaultCredentialsProvider = DefaultCredentialsProvider.create();
     AwsCredentials awsCredentials = defaultCredentialsProvider.resolveCredentials();
     if (awsCredentials instanceof AwsSessionCredentials sessionCredentials) {
-      LOGGER.error("accessKeyId" + sessionCredentials.accessKeyId());
-      LOGGER.error("expirationTime " + sessionCredentials.expirationTime());
-      LOGGER.error("providerName" + sessionCredentials.providerName());
-      LOGGER.error("accountId" + sessionCredentials.accountId());
       return sessionCredentials;
     }
     return null;
