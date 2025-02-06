@@ -242,7 +242,7 @@ public class SecurityConfiguration {
           .antMatcher("/**")
           .authorizeRequests()
           .antMatchers(SSO_LOGIN_PATH
-              + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml/**", "/templates/**")
+              + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml2/**", "/templates/**", "/login/**")
           .permitAll()
           .anyRequest()
           .authenticated()

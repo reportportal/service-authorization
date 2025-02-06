@@ -20,16 +20,22 @@ import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
-import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
+import com.epam.reportportal.auth.integration.saml.SamlAuthSuccessHandler;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
+import java.util.Collections;
 import org.apache.commons.collections4.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 public class UiAuthenticationSuccessEventHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(UiAuthenticationSuccessEventHandler.class);
 
   private UserRepository userRepository;
 
@@ -79,14 +87,20 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   private ReportPortalUser acquireUser(Authentication authentication) {
-    if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      userRepository.findByLogin(rpAuth.getPrincipal())
+    LOGGER.error("authentication is:" + authentication.getClass());
+    LOGGER.error("authentication Principal:" + authentication.getPrincipal());
+    LOGGER.error("authentication Principal getName:" + authentication.getName());
+    LOGGER.error("authentication Credential:" + authentication.getCredentials());
+    LOGGER.error("authentication Credential:" + authentication.getCredentials().getClass());
+    LOGGER.error("authentication details:" + authentication.getDetails());
+    if (authentication instanceof Saml2Authentication rpAuth) {
+      userRepository.findByLogin(rpAuth.getName())
           .filter(user -> !user.getActive())
           .ifPresent(user -> {
             user.setActive(true);
             userRepository.save(user);
           });
-      return userRepository.findByLogin(rpAuth.getPrincipal())
+      return userRepository.findByLogin(rpAuth.getName())
           .map(user -> ReportPortalUser.userBuilder().fromUser(user))
           .orElseThrow(() -> new ReportPortalException(
               ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()

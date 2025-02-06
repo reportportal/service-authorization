@@ -90,8 +90,7 @@ dependencies {
     //Fix CVE-2020-15522 in org.springframework.security:spring-security-jwt:1.1.1.RELEASE
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
     implementation 'org.springframework.security:spring-security-ldap'
-    // TODO: consider migration to spring-security-saml2-service-provider
-    implementation 'org.springframework.security.extensions:spring-security-saml2-core:2.0.0.M31'
+    implementation 'org.springframework.security:spring-security-saml2-service-provider:5.8.16'
     implementation 'commons-collections:commons-collections:3.2.2'
     //Temporary fix of https://nvd.nist.gov/vuln/detail/CVE-2019-12400
     implementation 'org.apache.santuario:xmlsec:3.0.3'

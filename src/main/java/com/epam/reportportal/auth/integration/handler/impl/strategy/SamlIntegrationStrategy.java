@@ -36,17 +36,14 @@ import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.saml.provider.provisioning.SamlProviderProvisioning;
-import org.springframework.security.saml.provider.service.ServiceProviderService;
-import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
-import org.springframework.security.saml.saml2.metadata.IdentityProvider;
-import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
-import org.springframework.security.saml.saml2.metadata.NameId;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.stereotype.Service;
 
 /**
@@ -54,8 +51,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
-
-  private final SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning;
   private final ApplicationEventPublisher eventPublisher;
 
   @Autowired
@@ -63,10 +58,8 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
       @Qualifier("samlUpdateAuthRequestValidator")
       AuthRequestValidator<UpdateAuthRQ> updateAuthRequestValidator,
       IntegrationDuplicateValidator integrationDuplicateValidator,
-      SamlProviderProvisioning<ServiceProviderService> serviceProviderProvisioning,
       ApplicationEventPublisher eventPublisher) {
     super(integrationRepository, updateAuthRequestValidator, integrationDuplicateValidator);
-    this.serviceProviderProvisioning = serviceProviderProvisioning;
     this.eventPublisher = eventPublisher;
   }
 
@@ -113,23 +106,14 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
   private void populateProviderDetails(Integration samlIntegration) {
     Map<String, Object> params = samlIntegration.getParams().getParams();
-    ExternalIdentityProviderConfiguration externalConfiguration =
-        new ExternalIdentityProviderConfiguration()
-            .setMetadata(SamlParameter.IDP_METADATA_URL.getRequiredParameter(samlIntegration));
-    IdentityProviderMetadata remoteProvider = serviceProviderProvisioning.getHostedProvider()
-        .getRemoteProvider(externalConfiguration);
-    params.put(IDP_URL.getParameterName(), remoteProvider.getEntityId());
-    params.put(IDP_ALIAS.getParameterName(), remoteProvider.getEntityAlias());
+    String metadataUrl = SamlParameter.IDP_METADATA_URL.getRequiredParameter(samlIntegration);
 
-    NameId nameId = ofNullable(remoteProvider.getDefaultNameId()).orElseGet(
-        () -> remoteProvider.getProviders()
-            .stream()
-            .filter(IdentityProvider.class::isInstance)
-            .map(IdentityProvider.class::cast)
-            .flatMap(v -> v.getNameIds().stream())
-            .filter(Objects::nonNull)
-            .findFirst().orElse(NameId.UNSPECIFIED));
+    RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
+        .fromMetadataLocation(metadataUrl)
+        .build();
 
-    params.put(IDP_NAME_ID.getParameterName(), nameId.toString());
+    params.put(IDP_URL.getParameterName(), relyingPartyRegistration.getRegistrationId());
+    params.put(IDP_ALIAS.getParameterName(), relyingPartyRegistration.getAssertingPartyDetails().getEntityId());
+    params.put(IDP_NAME_ID.getParameterName(), StringUtils.isNotEmpty(relyingPartyRegistration.getNameIdFormat()) ? relyingPartyRegistration.getNameIdFormat() : NameID.UNSPECIFIED);
   }
 }
