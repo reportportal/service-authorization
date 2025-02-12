@@ -208,7 +208,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
     LOGGER.error("idpFullNameOptional: " + idpFullNameOptional);
-    LOGGER.error("idpFullNameOptional: " + idpFullNameOptional.get());
 
     if (idpFullNameOptional.isEmpty()) {
       String firstName = details.get(SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
