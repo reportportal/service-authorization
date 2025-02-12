@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
@@ -88,8 +89,8 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    String userName = CROP_DOMAIN.apply(samlResponse.getNameId().value());
-    Optional<User> userOptional = userRepository.findByLogin(userName);
+    String userEmail = samlResponse.getNameId().value();
+    Optional<User> userOptional = userRepository.findByEmail(userEmail);
 
     if (userOptional.isPresent()) {
       return userOptional.get();
@@ -108,6 +109,10 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       return idpUrlOptional.isPresent() && idpUrlOptional.get()
           .equalsIgnoreCase(samlResponse.getIssuer());
     }).findFirst();
+
+    String userName = checkUserName(CROP_DOMAIN.apply(samlResponse.getNameId().value()));
+
+    LOGGER.error("userName: " + userName);
 
     User user = new User();
     user.setLogin(userName);
@@ -134,6 +139,29 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     publishActivityEvents(user, project);
 
     return user;
+  }
+
+  private String checkUserName(String userName) {
+    String regex = "^" + userName + "(_[0-9]+)?$";
+    List<String> existingLogins = userRepository.findByLoginRegex(regex);
+
+    if (existingLogins.isEmpty()) {
+      return userName;
+    }
+
+    int maxPostfix = 0;
+    for (String login : existingLogins) {
+      if (login.equals(userName)) {
+        continue;
+      }
+      String suffix = login.substring(userName.length() + 1);
+      try {
+        int num = Integer.parseInt(suffix);
+        maxPostfix = Math.max(maxPostfix, num);
+      } catch (NumberFormatException ignored) {
+      }
+    }
+    return userName + "_" + (maxPostfix + 1);
   }
 
   private void publishActivityEvents(User user, Project project) {
@@ -179,12 +207,16 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     Optional<String> idpFullNameOptional =
         SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
+    LOGGER.error("idpFullNameOptional: " + idpFullNameOptional);
+    LOGGER.error("idpFullNameOptional: " + idpFullNameOptional.get());
+
     if (idpFullNameOptional.isEmpty()) {
       String firstName = details.get(SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
       String lastName = details.get(SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
       user.setFullName(String.join(" ", firstName, lastName));
     } else {
       String fullName = details.get(idpFullNameOptional.get());
+      LOGGER.error("fullName: " + idpFullNameOptional);
       user.setFullName(fullName);
     }
 

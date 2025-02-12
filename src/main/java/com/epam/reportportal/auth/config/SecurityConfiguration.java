@@ -242,7 +242,7 @@ public class SecurityConfiguration {
           .antMatcher("/**")
           .authorizeRequests()
           .antMatchers(SSO_LOGIN_PATH
-              + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/templates/**")
+              + "/**", "/epam/**", "/info", "/health", "/api-docs/**", "/saml2/**", "/templates/**", "/login/**")
           .permitAll()
           .anyRequest()
           .authenticated()
@@ -458,13 +458,13 @@ public class SecurityConfiguration {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-      http.securityMatchers()
-          .requestMatchers("/sso/me/**", "/sso/internal/**", "/settings/**")
+      http.requestMatchers()
+          .antMatchers("/sso/me/**", "/sso/internal/**", "/settings/**")
           .and()
-          .authorizeHttpRequests()
-          .requestMatchers("/settings/**")
+          .authorizeRequests()
+          .antMatchers("/settings/**")
           .hasRole("ADMINISTRATOR")
-          .requestMatchers("/sso/internal/**")
+          .antMatchers("/sso/internal/**")
           .hasRole("INTERNAL")
           .anyRequest()
           .authenticated()

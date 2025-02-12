@@ -17,6 +17,7 @@
 package com.epam.reportportal.auth.dao;
 
 import com.epam.reportportal.auth.entity.user.User;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -34,6 +35,16 @@ public interface UserRepository extends ReportPortalRepository<User, Long> {
    * @return {@link Optional} of {@link User}
    */
   Optional<User> findByLogin(String login);
+
+
+  /**
+   * Find users by userName regex pattern
+   *
+   * @param regex username regex
+   * @return list of usernames matching pattern
+   */
+  @Query(value = "SELECT login FROM users WHERE login ~ ?1", nativeQuery = true)
+  List<String> findByLoginRegex(String regex);
 
   /**
    * Updates user's last login value
