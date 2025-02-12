@@ -104,9 +104,11 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
+    LOGGER.error("saml Issuer: " + samlResponse.getIssuer());
+
     Optional<Integration> samlProvider = providers.stream().filter(provider -> {
-      Optional<String> idpUrlOptional = SamlParameter.IDP_URL.getParameter(provider);
-      return idpUrlOptional.isPresent() && idpUrlOptional.get()
+      Optional<String> idpAliesOptional = SamlParameter.IDP_ALIAS.getParameter(provider);
+      return idpAliesOptional.isPresent() && idpAliesOptional.get()
           .equalsIgnoreCase(samlResponse.getIssuer());
     }).findFirst();
 
