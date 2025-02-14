@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.config.saml;
 
 import java.util.Arrays;
@@ -26,6 +27,8 @@ import org.springframework.security.saml2.provider.service.registration.RelyingP
 import org.springframework.util.Assert;
 
 /**
+ * Runtime reloadable RelyingPartyRegistrationRepository
+ *
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 public class ReloadableRelyingPartyRegistrationRepository implements
@@ -55,7 +58,8 @@ public class ReloadableRelyingPartyRegistrationRepository implements
       Assert.notNull(rp, "relying party collection cannot contain null values");
       String key = rp.getRegistrationId();
       Assert.notNull(key, "relying party identifier cannot be null");
-      Assert.isNull(result.get(key), () -> "relying party duplicate identifier '" + key + "' detected.");
+      Assert.isNull(result.get(key),
+          () -> "relying party duplicate identifier '" + key + "' detected.");
       result.put(key, rp);
     }
     return Collections.synchronizedMap(result);

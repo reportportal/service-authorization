@@ -80,21 +80,6 @@ public class SamlConverter {
     return resource;
   };
 
-//  public static final Function<List<Integration>, List<ExternalIdentityProviderConfiguration>> TO_EXTERNAL_PROVIDER_CONFIG = integrations -> {
-//    List<ExternalIdentityProviderConfiguration> externalProviders = integrations.stream()
-//        .map(integration -> new ExternalIdentityProviderConfiguration().setAlias(
-//                IDP_ALIAS.getParameter(integration).get())
-//            .setMetadata(IDP_METADATA_URL.getRequiredParameter(integration))
-//            .setLinktext(integration.getName())
-//            .setAuthenticationRequestBinding(BindingType.POST.toUri())
-//            .setNameId(IDP_NAME_ID.getParameter(integration).map(NameId::fromUrn)
-//                .orElse(NameId.UNSPECIFIED)))
-//        .collect(Collectors.toList());
-//    IntStream.range(0, externalProviders.size())
-//        .forEach(value -> externalProviders.get(value).setAssertionConsumerServiceIndex(value));
-//    return externalProviders;
-//  };
-
   public static final Function<List<Integration>, SamlProvidersResource> TO_PROVIDERS_RESOURCE =
       integrations -> {
         if (CollectionUtils.isEmpty(integrations)) {

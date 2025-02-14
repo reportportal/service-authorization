@@ -117,7 +117,8 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setActive(Boolean.TRUE);
 
     if (samlProvider.isPresent()) {
-      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(), samlResponse.getAttributes());
+      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(),
+          samlResponse.getAttributes());
     } else {
       populateUserDetails(user, samlResponse.getAttributes());
     }
@@ -182,7 +183,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         new AssignUserEvent(user.getId(), user.getLogin(), project.getId()));
   }
 
-  private void populateUserDetails(User user, Map<String,String> details) {
+  private void populateUserDetails(User user, Map<String, String> details) {
     String email = NORMALIZE_STRING.apply(details.get(UserAttribute.EMAIL.toString()));
     checkEmail(email);
     user.setEmail(email);
@@ -194,9 +195,10 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   }
 
   private void populateUserDetailsIfSettingsArePresent(User user, Integration integration,
-      Map<String,String> details) {
+      Map<String, String> details) {
 
-    String email = NORMALIZE_STRING.apply(details.get(SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null)));
+    String email = NORMALIZE_STRING.apply(
+        details.get(SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null)));
     checkEmail(email);
     user.setEmail(email);
 
@@ -204,15 +206,18 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
     if (idpFullNameOptional.isEmpty()) {
-      String firstName = details.get(SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
-      String lastName = details.get(SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
+      String firstName = details.get(
+          SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
+      String lastName = details.get(
+          SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
       user.setFullName(String.join(" ", firstName, lastName));
     } else {
       String fullName = details.get(idpFullNameOptional.get());
       user.setFullName(fullName);
     }
 
-    String roles = details.get(SamlParameter.ROLES_ATTRIBUTE.getParameter(integration).orElse(null));
+    String roles = details.get(
+        SamlParameter.ROLES_ATTRIBUTE.getParameter(integration).orElse(null));
     if (Objects.nonNull(roles) && roles.toLowerCase().contains("admin")) {
       user.setRole(UserRole.ADMINISTRATOR);
     } else {

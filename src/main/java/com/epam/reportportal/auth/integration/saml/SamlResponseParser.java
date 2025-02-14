@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.integration.saml;
 
 
@@ -33,7 +34,10 @@ import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Subject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 /**
+ * Parse saml xml response
+ *
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 public class SamlResponseParser {

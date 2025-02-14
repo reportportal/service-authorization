@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.config.saml;
 
 import com.epam.reportportal.auth.AuthFailureHandler;
@@ -67,9 +68,10 @@ public class Saml2AuthenticationConfiguration extends
 
     http
         .securityMatchers()
-        .requestMatchers("/saml2/**","/login/**")
+        .requestMatchers("/saml2/**", "/login/**")
         .and()
-        .authorizeHttpRequests(auth -> auth.requestMatchers( "/saml2/**").permitAll().anyRequest().authenticated())
+        .authorizeHttpRequests(
+            auth -> auth.requestMatchers("/saml2/**").permitAll().anyRequest().authenticated())
         .saml2Login(Customizer.withDefaults())
         .addFilterBefore(saml2Filter, Saml2WebSsoAuthenticationFilter.class)
         .csrf().disable();
