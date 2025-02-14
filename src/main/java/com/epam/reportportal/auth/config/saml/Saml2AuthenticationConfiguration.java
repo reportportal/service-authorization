@@ -43,6 +43,8 @@ public class Saml2AuthenticationConfiguration extends
 
   private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
 
+  private static final String SAML_PROCESSING_URL = "/login/saml2/sso/{registrationId}";
+
   public Saml2AuthenticationConfiguration(SamlAuthSuccessHandler successHandler,
       AuthFailureHandler failureHandler, SamlUserReplicator samlUserReplicator,
       RelyingPartyRegistrationRepository relyingPartyRegistrationRepository) {
@@ -55,11 +57,9 @@ public class Saml2AuthenticationConfiguration extends
   @Override
   public void configure(HttpSecurity http) throws Exception {
 
-    String samlProcessingUrl = "/login/saml2/sso/{registrationId}";
-
     Saml2WebSsoAuthenticationFilter saml2Filter = new Saml2WebSsoAuthenticationFilter(
         relyingPartyRegistrationRepository,
-        samlProcessingUrl
+        SAML_PROCESSING_URL
     );
     saml2Filter.setAuthenticationManager(new ReportPortalSamlAuthenticationManager(samlUserReplicator));
     saml2Filter.setAuthenticationSuccessHandler(successHandler);

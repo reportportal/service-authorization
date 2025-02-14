@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
@@ -104,8 +103,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
-    LOGGER.error("saml Issuer: " + samlResponse.getIssuer());
-
     Optional<Integration> samlProvider = providers.stream().filter(provider -> {
       Optional<String> idpAliesOptional = SamlParameter.IDP_ALIAS.getParameter(provider);
       return idpAliesOptional.isPresent() && idpAliesOptional.get()
@@ -113,8 +110,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     }).findFirst();
 
     String userName = checkUserName(CROP_DOMAIN.apply(samlResponse.getNameId().value()));
-
-    LOGGER.error("userName: " + userName);
 
     User user = new User();
     user.setLogin(userName);
@@ -131,7 +126,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setExpired(false);
 
     Project project = generatePersonalProject(user);
-    //TODO BUG IF PROJECT HAS NO USERS BECAUSE OF iterator().next() on empty collection
     user.getProjects().add(project.getUsers().iterator().next());
 
     user.setMetadata(defaultMetaData());
@@ -209,15 +203,12 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     Optional<String> idpFullNameOptional =
         SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
-    LOGGER.error("idpFullNameOptional: " + idpFullNameOptional);
-
     if (idpFullNameOptional.isEmpty()) {
       String firstName = details.get(SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
       String lastName = details.get(SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
       user.setFullName(String.join(" ", firstName, lastName));
     } else {
       String fullName = details.get(idpFullNameOptional.get());
-      LOGGER.error("fullName: " + idpFullNameOptional);
       user.setFullName(fullName);
     }
 

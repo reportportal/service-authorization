@@ -17,11 +17,7 @@
 package com.epam.reportportal.auth.event;
 
 import com.epam.reportportal.auth.config.saml.ReloadableRelyingPartyRegistrationRepository;
-import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.integration.saml.RelyingPartyBuilder;
-import com.epam.reportportal.auth.integration.saml.SamlAuthSuccessHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.stereotype.Component;
@@ -36,18 +32,12 @@ import org.springframework.stereotype.Component;
 public class SamlProvidersReloadEventHandler implements
     ApplicationListener<SamlProvidersReloadEvent> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SamlAuthSuccessHandler.class);
-
-  private final IntegrationRepository integrationRepository;
-
   private final RelyingPartyBuilder relyingPartyBuilder;
   private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
 
 
-  public SamlProvidersReloadEventHandler(IntegrationRepository integrationRepository,
-      RelyingPartyBuilder relyingPartyBuilder,
+  public SamlProvidersReloadEventHandler(RelyingPartyBuilder relyingPartyBuilder,
       RelyingPartyRegistrationRepository relyingPartyRegistrationRepository) {
-    this.integrationRepository = integrationRepository;
     this.relyingPartyBuilder = relyingPartyBuilder;
     this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
   }
@@ -57,8 +47,6 @@ public class SamlProvidersReloadEventHandler implements
     if (relyingPartyRegistrationRepository instanceof ReloadableRelyingPartyRegistrationRepository reloadable) {
       reloadable.reloadRelyingParty(
           relyingPartyBuilder.createRelyingPartyRegistrations());
-    } else {
-      LOGGER.error("not instanceof ReloadableRelyingPartyRegistrationRepository");
     }
   }
 }
