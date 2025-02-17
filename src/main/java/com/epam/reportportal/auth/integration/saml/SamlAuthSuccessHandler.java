@@ -28,12 +28,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
 import org.springframework.stereotype.Component;
 
 /**
  * Used for handling successful authentication in SAML process.
  *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 @Component
 public class SamlAuthSuccessHandler extends AuthSuccessHandler {
@@ -53,8 +54,9 @@ public class SamlAuthSuccessHandler extends AuthSuccessHandler {
 
   @Override
   protected OAuth2AccessToken getToken(Authentication authentication) {
-    ReportPortalSamlAuthentication samlAuthentication =
-        (ReportPortalSamlAuthentication) authentication;
+    Saml2Authentication samlAuthentication =
+        (Saml2Authentication) authentication;
+
     return tokenServicesFacade.get()
         .createToken(ReportPortalClient.ui, samlAuthentication.getName(), samlAuthentication,
             Collections.emptyMap());

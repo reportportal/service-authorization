@@ -16,14 +16,10 @@
 
 package com.epam.reportportal.auth.event;
 
-import com.epam.reportportal.auth.dao.IntegrationRepository;
-import com.epam.reportportal.auth.entity.integration.Integration;
-import com.epam.reportportal.auth.entity.integration.IntegrationType;
-import com.epam.reportportal.auth.integration.converter.SamlConverter;
-import java.util.List;
+import com.epam.reportportal.auth.config.saml.ReloadableRelyingPartyRegistrationRepository;
+import com.epam.reportportal.auth.integration.saml.RelyingPartyBuilder;
 import org.springframework.context.ApplicationListener;
-import org.springframework.security.saml.provider.SamlServerConfiguration;
-import org.springframework.security.saml.provider.service.config.LocalServiceProviderConfiguration;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,25 +32,21 @@ import org.springframework.stereotype.Component;
 public class SamlProvidersReloadEventHandler implements
     ApplicationListener<SamlProvidersReloadEvent> {
 
-  private final IntegrationRepository integrationRepository;
-  private final SamlServerConfiguration samlConfiguration;
+  private final RelyingPartyBuilder relyingPartyBuilder;
+  private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
 
-  public SamlProvidersReloadEventHandler(IntegrationRepository integrationRepository,
-      SamlServerConfiguration spConfiguration) {
-    this.integrationRepository = integrationRepository;
-    this.samlConfiguration = spConfiguration;
+
+  public SamlProvidersReloadEventHandler(RelyingPartyBuilder relyingPartyBuilder,
+      RelyingPartyRegistrationRepository relyingPartyRegistrationRepository) {
+    this.relyingPartyBuilder = relyingPartyBuilder;
+    this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
   }
 
   @Override
   public void onApplicationEvent(SamlProvidersReloadEvent event) {
-    final IntegrationType integrationType = event.getIntegrationType();
-    final List<Integration> integrations = integrationRepository.findAllGlobalByType(
-        integrationType);
-
-    LocalServiceProviderConfiguration serviceProvider = samlConfiguration.getServiceProvider();
-
-    serviceProvider.getProviders().clear();
-    serviceProvider.getProviders()
-        .addAll(SamlConverter.TO_EXTERNAL_PROVIDER_CONFIG.apply(integrations));
+    if (relyingPartyRegistrationRepository instanceof ReloadableRelyingPartyRegistrationRepository reloadable) {
+      reloadable.reloadRelyingParty(
+          relyingPartyBuilder.createRelyingPartyRegistrations());
+    }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2025 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.integration.saml;
+package com.epam.reportportal.auth.model.saml;
 
-import java.io.Serializable;
+import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Represents information about subject of authentication stored in SAML response.
- *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
-public class Subject implements Serializable {
+@Getter
+@Setter
+public class SamlResponse {
 
-  private static final long serialVersionUID = 2390092323L;
+  private String issuer;
 
-  private SamlPrincipal samlPrincipal;
+  private NameId nameId;
 
-  public SamlPrincipal getSamlPrincipal() {
-    return samlPrincipal;
-  }
+  Map<String, String> attributes;
 
-  public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
-    this.samlPrincipal = samlPrincipal;
-    return this;
-  }
 }

@@ -95,9 +95,8 @@ public class AuthProvidersInfoContributor implements InfoContributor {
           .filter(it -> SamlParameter.IDP_URL.getParameter(it).isPresent())
           .collect(Collectors.toMap(
               Integration::getName,
-              it -> fromCurrentContextPath().path(String.format("/%s/discovery?idp=%s",
-                  samlPrefix,
-                  UriUtils.encode(SamlParameter.IDP_URL.getParameter(it).get(), UTF_8.toString())
+              it -> fromCurrentContextPath().path(String.format("/saml2/authenticate/%s",
+                  SamlParameter.IDP_NAME.getParameter(it).get()
               )).build().getPath()
           ));
     }
