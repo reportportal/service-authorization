@@ -42,7 +42,6 @@ public class ReloadableRelyingPartyRegistrationRepository implements
 
   public ReloadableRelyingPartyRegistrationRepository(
       Collection<RelyingPartyRegistration> registrations) {
-    Assert.notEmpty(registrations, "registrations cannot be empty");
     this.byRegistrationId = createMappingToIdentityProvider(registrations);
   }
 
