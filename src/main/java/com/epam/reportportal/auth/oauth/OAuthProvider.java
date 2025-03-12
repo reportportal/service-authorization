@@ -17,12 +17,10 @@
 package com.epam.reportportal.auth.oauth;
 
 import com.google.common.base.Preconditions;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.inject.Named;
 import lombok.Getter;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 /**
  * @author Andrei Varabyeu
@@ -54,9 +52,4 @@ public abstract class OAuthProvider {
   public String buildPath(String basePath) {
     return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
   }
-
-  public abstract OAuth2RestOperations getOAuthRestOperations(
-      OAuth2ClientContext oauth2ClientContext);
-
-  public abstract ResourceServerTokenServices getTokenServices();
 }

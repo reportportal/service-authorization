@@ -20,27 +20,24 @@ import com.epam.reportportal.auth.commons.JsonbUserType;
 import com.google.common.collect.Lists;
 import java.io.Serializable;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
  * @author Ihar Kahadouski
  */
-@Setter
 @Getter
-public class ActivityDetails extends JsonbUserType implements Serializable {
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ActivityDetails extends JsonbUserType<ActivityDetails> implements Serializable {
 
   private List<HistoryField> history = Lists.newArrayList();
 
-  public ActivityDetails() {
-  }
-
-  public ActivityDetails(List<HistoryField> history) {
-    this.history = history;
-  }
-
   @Override
-  public Class<?> returnedClass() {
+  public Class<ActivityDetails> returnedClass() {
     return ActivityDetails.class;
   }
 

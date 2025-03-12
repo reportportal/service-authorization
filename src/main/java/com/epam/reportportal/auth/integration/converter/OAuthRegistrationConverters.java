@@ -86,7 +86,7 @@ public class OAuthRegistrationConverters {
           .clientAuthenticationMethod(
               new ClientAuthenticationMethod(registration.getClientAuthMethod()))
           .authorizationGrantType(new AuthorizationGrantType(registration.getAuthGrantType()))
-          .redirectUriTemplate(registration.getRedirectUrlTemplate())
+          .redirectUri(registration.getRedirectUrlTemplate())
           .authorizationUri(registration.getAuthorizationUri())
           .tokenUri(registration.getTokenUri())
           .userInfoUri(registration.getUserInfoEndpointUri())
@@ -114,7 +114,7 @@ public class OAuthRegistrationConverters {
             .getValue()));
     registration.setRedirectUrlTemplate(
         ofNullable(registrationResource.getRedirectUrlTemplate()).orElseGet(
-            clientResource::getRedirectUriTemplate));
+            clientResource::getRedirectUri));
     registration.setScopes(
         ofNullable(registrationResource.getScopes()).map(scopes -> scopes.stream()
                 .map(SCOPE_FROM_RESOURCE)

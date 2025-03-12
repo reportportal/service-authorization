@@ -33,10 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import org.apache.commons.lang3.StringUtils;
-import org.springdoc.core.SpringDocUtils;
-import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.utils.SpringDocUtils;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -95,7 +95,7 @@ public class SpringDocConfiguration {
   }
 
   @Bean
-  public OpenApiCustomiser sortSchemasAlphabetically() {
+  public OpenApiCustomizer sortSchemasAlphabetically() {
     return openApi -> {
       Map<String, Schema> schemas = openApi.getComponents().getSchemas();
       openApi.getComponents().setSchemas(new TreeMap<>(schemas));
@@ -103,7 +103,7 @@ public class SpringDocConfiguration {
   }
 
   @Bean
-  public OpenApiCustomiser sortTagsAlphabetically() {
+  public OpenApiCustomizer sortTagsAlphabetically() {
     return openApi -> {
       List<Tag> sortedTags = openApi.getTags().stream()
           .sorted(Comparator.comparing(Tag::getName))

@@ -16,12 +16,8 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import com.epam.reportportal.auth.AuthConfigService;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import javax.inject.Named;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import jakarta.inject.Named;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,23 +35,9 @@ public class GithubOauthProvider extends OAuthProvider {
       <span>Login with GitHub</span>""";
 
   private final GitHubUserReplicator gitHubUserReplicator;
-  private final AuthConfigService authConfigService;
 
-  public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator,
-      AuthConfigService authConfigService) {
+  public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator) {
     super("github", BUTTON, true);
     this.gitHubUserReplicator = gitHubUserReplicator;
-    this.authConfigService = authConfigService;
-  }
-
-  @Override
-  public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext oauth2ClientContext) {
-    return authConfigService.getRestTemplate(getName(), oauth2ClientContext);
-  }
-
-  @Override
-  public ResourceServerTokenServices getTokenServices() {
-    return new GitHubTokenServices(gitHubUserReplicator,
-        authConfigService.getLoginDetailsSupplier(getName()));
   }
 }

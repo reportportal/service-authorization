@@ -19,8 +19,8 @@ package com.epam.reportportal.auth.config;
 import com.epam.reportportal.auth.dao.ReportPortalRepositoryImpl;
 import java.io.Serializable;
 import java.util.Properties;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -70,11 +70,6 @@ public class DatabaseConfiguration {
     factory.setPackagesToScan("com.epam.reportportal.auth.commons",
         "com.epam.reportportal.auth.entity");
     factory.setDataSource(dataSource);
-
-    Properties jpaProperties = new Properties();
-    jpaProperties.setProperty("hibernate.dialect",
-        "com.epam.reportportal.auth.commons.JsonbAwarePostgresDialect");
-    factory.setJpaProperties(jpaProperties);
 
     factory.afterPropertiesSet();
 

@@ -22,7 +22,7 @@ import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.exception.EnvironmentVariablesNotProvidedException;
 import java.util.Optional;
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

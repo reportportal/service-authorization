@@ -18,10 +18,13 @@ package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
+import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Provider;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -35,6 +38,8 @@ import org.springframework.security.core.AuthenticationException;
  */
 public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvider {
 
+  protected static final Logger LOGGER = LoggerFactory.getLogger(BasicPasswordAuthenticationProvider.class);
+
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
@@ -46,6 +51,7 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    LOGGER.error("authenticate: " + authentication);
     boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
     if (!accountNonLocked) {
       throw new ReportPortalException(ErrorType.ADDRESS_LOCKED);

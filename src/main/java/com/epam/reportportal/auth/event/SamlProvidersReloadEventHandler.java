@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.event;
 
-import com.epam.reportportal.auth.config.saml.ReloadableRelyingPartyRegistrationRepository;
+import com.epam.reportportal.auth.integration.saml.ReloadableRelyingPartyRegistrationRepository;
 import com.epam.reportportal.auth.integration.saml.RelyingPartyBuilder;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;

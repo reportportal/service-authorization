@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.config.saml;
+package com.epam.reportportal.auth.integration.saml;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -24,32 +24,35 @@ import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.springframework.data.annotation.CreatedDate;
 
 /**
  * @author Yauheni_Martynau
  */
-@Setter
-@Getter
 @Entity
-@TypeDef(name = "details", typeClass = IntegrationTypeDetails.class)
-@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
 @Table(name = "integration_type", schema = "public")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class IntegrationType implements Serializable {
 
   @Id
@@ -61,7 +64,7 @@ public class IntegrationType implements Serializable {
   private String name;
 
   @Enumerated(EnumType.STRING)
-  @Type(type = "pqsql_enum")
+  @JdbcType(PostgreSQLEnumJdbcType.class)
   @Column(name = "auth_flow")
   private IntegrationAuthFlowEnum authFlow;
 
@@ -71,14 +74,14 @@ public class IntegrationType implements Serializable {
   private Instant creationDate;
 
   @Enumerated(EnumType.STRING)
-  @Type(type = "pqsql_enum")
+  @JdbcType(PostgreSQLEnumJdbcType.class)
   @Column(name = "group_type", nullable = false)
   private IntegrationGroupEnum integrationGroup;
 
   @Column(name = "enabled")
   private boolean enabled;
 
-  @Type(type = "details")
+  @Type(IntegrationTypeDetails.class)
   @Column(name = "details")
   private IntegrationTypeDetails details;
 

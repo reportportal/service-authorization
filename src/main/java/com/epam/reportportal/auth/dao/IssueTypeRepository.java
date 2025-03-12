@@ -34,7 +34,7 @@ import org.springframework.data.repository.query.Param;
 public interface IssueTypeRepository extends ReportPortalRepository<IssueType, Long> {
 
   @Query(value = """
-              SELECT * from issue_type it 
+              SELECT it.* from issue_type it 
                   join public.issue_group ig on it.issue_group_id = ig.issue_group_id 
                   where it.locator in (:locators)
       """,

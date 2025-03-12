@@ -16,17 +16,14 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import static com.epam.reportportal.auth.integration.github.ExternalOauth2TokenConverter.UPSTREAM_TOKEN;
-
 import com.epam.reportportal.auth.OperationCompletionRS;
 import com.epam.reportportal.auth.rules.commons.validation.BusinessRule;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.io.Serializable;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,8 +46,8 @@ public class GithubEndpoint {
 
   @Operation(summary = "Synchronizes logged-in GitHub user")
   @RequestMapping(value = {"/sso/me/github/synchronize"}, method = RequestMethod.POST)
-  public OperationCompletionRS synchronize(OAuth2Authentication user) {
-    Serializable upstreamToken = user.getOAuth2Request().getExtensions().get(UPSTREAM_TOKEN);
+  public OperationCompletionRS synchronize(OAuth2AuthenticationToken user) {
+    String upstreamToken = user.getPrincipal().getAttribute("upstream_token");
     BusinessRule.expect(upstreamToken, Objects::nonNull)
         .verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "Cannot synchronize GitHub User");
     this.replicator.synchronizeUser(upstreamToken.toString());

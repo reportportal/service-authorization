@@ -59,7 +59,7 @@ public class RelyingPartyBuilder {
   @Value("${rp.auth.saml.signed-requests}")
   private Boolean signedRequests;
 
-  private static final String CALL_BACK_URL = "{baseUrl}/login/saml2/sso/{registrationId}";
+  private static final String CALL_BACK_URL = "{baseUrl}/uat/login/saml2/sso/{registrationId}";
 
   private static final String SAML_TYPE = "saml";
 

@@ -20,21 +20,24 @@ import com.epam.reportportal.auth.AuthFailureHandler;
 import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthenticationManager;
 import com.epam.reportportal.auth.integration.saml.SamlAuthSuccessHandler;
 import com.epam.reportportal.auth.integration.saml.SamlUserReplicator;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 @Configuration
-@Order(4)
-public class Saml2AuthenticationConfiguration extends
-    WebSecurityConfigurerAdapter {
+public class Saml2AuthenticationConfiguration {
+
+  private static final String SAML_PROCESSING_URL = "/login/saml2/sso/{registrationId}";
 
   private final SamlAuthSuccessHandler successHandler;
 
@@ -43,8 +46,6 @@ public class Saml2AuthenticationConfiguration extends
   private final SamlUserReplicator samlUserReplicator;
 
   private final RelyingPartyRegistrationRepository relyingPartyRegistrationRepository;
-
-  private static final String SAML_PROCESSING_URL = "/login/saml2/sso/{registrationId}";
 
   public Saml2AuthenticationConfiguration(SamlAuthSuccessHandler successHandler,
       AuthFailureHandler failureHandler, SamlUserReplicator samlUserReplicator,
@@ -55,9 +56,9 @@ public class Saml2AuthenticationConfiguration extends
     this.relyingPartyRegistrationRepository = relyingPartyRegistrationRepository;
   }
 
-  @Override
-  public void configure(HttpSecurity http) throws Exception {
-
+  @Bean
+  @Order(4)
+  public SecurityFilterChain samlSecurityFilterChain(HttpSecurity http) throws Exception {
     Saml2WebSsoAuthenticationFilter saml2Filter = new Saml2WebSsoAuthenticationFilter(
         relyingPartyRegistrationRepository,
         SAML_PROCESSING_URL
@@ -67,13 +68,15 @@ public class Saml2AuthenticationConfiguration extends
     saml2Filter.setAuthenticationFailureHandler(failureHandler);
 
     http
-        .securityMatchers()
-        .requestMatchers("/saml2/**", "/login/**")
-        .and()
-        .authorizeHttpRequests(
-            auth -> auth.requestMatchers("/saml2/**").permitAll().anyRequest().authenticated())
+        .securityMatcher("/saml2/**", "/login/**")
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/saml2/**").permitAll()
+            .anyRequest().authenticated()
+        )
         .saml2Login(Customizer.withDefaults())
         .addFilterBefore(saml2Filter, Saml2WebSsoAuthenticationFilter.class)
-        .csrf().disable();
+        .csrf(AbstractHttpConfigurer::disable);
+
+    return http.build();
   }
 }

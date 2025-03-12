@@ -15,6 +15,7 @@
  */
 package com.epam.reportportal.auth.config.saml;
 
+import com.epam.reportportal.auth.integration.saml.ReloadableRelyingPartyRegistrationRepository;
 import com.epam.reportportal.auth.integration.saml.RelyingPartyBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
