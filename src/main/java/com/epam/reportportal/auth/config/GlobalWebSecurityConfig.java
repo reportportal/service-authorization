@@ -160,7 +160,7 @@ public class GlobalWebSecurityConfig {
         )
         .oauth2Login(oauth2 -> oauth2
             .userInfoEndpoint(userInfo -> userInfo.userService(gitHubOAuth2UserService(gitHubUserReplicator, new OAuthRegistrationResource())))
-            .clientRegistrationRepository(new InMemoryClientRegistrationRepository(githubClientRegistration()))
+            .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authorization -> authorization
                 .baseUri("/oauth/login")
                 .authorizationRequestResolver(authorizationRequestResolver)
@@ -195,10 +195,6 @@ public class GlobalWebSecurityConfig {
       OAuthRegistrationResource registration) {
 
     return new GitHubOAuth2UserService(replicator, () -> registration);
-  }
-
-  private ClientRegistration githubClientRegistration() {
-    return clientRegistrationRepository.findByRegistrationId("github");
   }
 
   @Bean
