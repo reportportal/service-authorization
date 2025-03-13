@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
@@ -45,9 +46,14 @@ public class JwtReportPortalUserConverter implements Converter<Jwt, AbstractAuth
     Collection<GrantedAuthority> authorities = this.jwtGrantedAuthoritiesConverter.convert(jwt);
 
     String username = jwt.getClaimAsString(PRINCIPAL_CLAIM_NAME);
+    String upstreamToken = jwt.getClaimAsString("upstream_token");
     var principal = userDetailsService.loadUserByUsername(username);
 
-    return new UsernamePasswordAuthenticationToken(principal, null, authorities);
+    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+        principal, null, authorities);
+    usernamePasswordAuthenticationToken.setDetails(upstreamToken);
+
+    return usernamePasswordAuthenticationToken;
   }
 
 

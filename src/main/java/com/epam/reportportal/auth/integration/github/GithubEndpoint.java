@@ -23,6 +23,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -46,8 +48,8 @@ public class GithubEndpoint {
 
   @Operation(summary = "Synchronizes logged-in GitHub user")
   @RequestMapping(value = {"/sso/me/github/synchronize"}, method = RequestMethod.POST)
-  public OperationCompletionRS synchronize(OAuth2AuthenticationToken user) {
-    String upstreamToken = user.getPrincipal().getAttribute("upstream_token");
+  public OperationCompletionRS synchronize(UsernamePasswordAuthenticationToken user) {
+    String upstreamToken = (String) user.getDetails();
     BusinessRule.expect(upstreamToken, Objects::nonNull)
         .verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE, "Cannot synchronize GitHub User");
     this.replicator.synchronizeUser(upstreamToken.toString());
