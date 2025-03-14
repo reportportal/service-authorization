@@ -100,13 +100,13 @@ public class GlobalWebSecurityConfig {
   private ServerSettingsRepository serverSettingsRepository;
 
 
-  @Autowired
-  @Qualifier("activeDirectoryDetailsContextMapper")
-  DetailsContextMapper activeDirectoryContextMapper;
-
-  @Autowired
-  @Qualifier("ldapDetailsContextMapper")
-  DetailsContextMapper ldapContextMapper;
+//  @Autowired
+//  @Qualifier("activeDirectoryDetailsContextMapper")
+//  DetailsContextMapper activeDirectoryContextMapper;
+//
+//  @Autowired
+//  @Qualifier("ldapDetailsContextMapper")
+//  DetailsContextMapper ldapContextMapper;
 
   @Autowired
   public GlobalWebSecurityConfig(
@@ -239,69 +239,69 @@ public class GlobalWebSecurityConfig {
     return new DatabaseUserDetailsService();
   }
 
-  @Bean
-  public AuthenticationProvider basicPasswordAuthProvider() {
-    BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService());
-    provider.setPasswordEncoder(passwordEncoder());
-    return provider;
-  }
+//  @Bean
+//  public AuthenticationProvider basicPasswordAuthProvider() {
+//    BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
+//    provider.setUserDetailsService(userDetailsService());
+//    provider.setPasswordEncoder(passwordEncoder());
+//    return provider;
+//  }
 
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
-  public AuthenticationProvider activeDirectoryAuthProvider() {
-    return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
-        activeDirectoryContextMapper);
-  }
+//  @Bean
+//  public AuthenticationProvider activeDirectoryAuthProvider() {
+//    return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
+//        activeDirectoryContextMapper);
+//  }
+//
+//  @Bean
+//  public AuthenticationProvider ldapAuthProvider() {
+//    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapContextMapper);
+//  }
+//
+//  @Bean("activeDirectoryDetailsContextMapper")
+//  public DetailsContextMapper activeDirectoryDetailsContextMapper() {
+//    return new DetailsContextMapper(
+//        ldapUserReplicator,
+//        () -> ParameterUtils.getLdapSyncAttributes(
+//            authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+//                .stream().findFirst()
+//                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
+//    );
+//  }
+//
+//  @Bean("ldapDetailsContextMapper")
+//  public DetailsContextMapper ldapDetailsContextMapper() {
+//    return new DetailsContextMapper(
+//        ldapUserReplicator,
+//        () -> ParameterUtils.getLdapSyncAttributes(
+//            authConfigRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream()
+//                .findFirst()
+//                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+//
+//        )
+//    );
+//  }
 
-  @Bean
-  public AuthenticationProvider ldapAuthProvider() {
-    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapContextMapper);
-  }
+//  @Bean
+//  public AuthenticationEventPublisher authenticationEventPublisher(
+//      ApplicationEventPublisher applicationEventPublisher) {
+//    return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+//  }
 
-  @Bean("activeDirectoryDetailsContextMapper")
-  public DetailsContextMapper activeDirectoryDetailsContextMapper() {
-    return new DetailsContextMapper(
-        ldapUserReplicator,
-        () -> ParameterUtils.getLdapSyncAttributes(
-            authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
-                .stream().findFirst()
-                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
-    );
-  }
-
-  @Bean("ldapDetailsContextMapper")
-  public DetailsContextMapper ldapDetailsContextMapper() {
-    return new DetailsContextMapper(
-        ldapUserReplicator,
-        () -> ParameterUtils.getLdapSyncAttributes(
-            authConfigRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream()
-                .findFirst()
-                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
-
-        )
-    );
-  }
-
-  @Bean
-  public AuthenticationEventPublisher authenticationEventPublisher(
-      ApplicationEventPublisher applicationEventPublisher) {
-    return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
-  }
-
-  @Bean
-  @Primary
-  public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-    return http.getSharedObject(AuthenticationManagerBuilder.class)
-        .authenticationProvider(basicPasswordAuthProvider())
-        .authenticationEventPublisher(authenticationEventPublisher(eventPublisher))
-        .authenticationProvider(ldapAuthProvider())
-        .authenticationProvider(activeDirectoryAuthProvider())
-        .build();
-  }
+//  @Bean
+//  @Primary
+//  public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+//    return http.getSharedObject(AuthenticationManagerBuilder.class)
+//        .authenticationProvider(basicPasswordAuthProvider())
+//        .authenticationEventPublisher(authenticationEventPublisher(eventPublisher))
+////        .authenticationProvider(ldapAuthProvider())
+////        .authenticationProvider(activeDirectoryAuthProvider())
+//        .build();
+//  }
 
   @Bean
   public Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {

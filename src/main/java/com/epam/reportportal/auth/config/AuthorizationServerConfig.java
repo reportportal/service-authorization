@@ -17,25 +17,40 @@ package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.TokenServicesFacade;
+import com.epam.reportportal.auth.basic.BasicPasswordAuthenticationProvider;
 import com.epam.reportportal.auth.config.password.CustomCodeGrantAuthenticationConverter;
 import com.epam.reportportal.auth.config.password.CustomCodeGrantAuthenticationProvider;
 import com.epam.reportportal.auth.config.password.OAuth2ErrorResponseHandler;
 import com.epam.reportportal.auth.config.password.PasswordGrantTokenGenerator;
+import com.epam.reportportal.auth.config.utils.JwtReportPortalUserConverter;
+import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.ServerSettingsRepository;
 import com.epam.reportportal.auth.entity.ServerSettings;
+import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
+import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
+import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
+import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.time.Duration;
 import java.util.Optional;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -58,6 +73,7 @@ import org.springframework.security.oauth2.server.authorization.settings.ClientS
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.util.StringUtils;
 
 /**
@@ -75,14 +91,23 @@ public class AuthorizationServerConfig {
   @Value("${rp.jwt.token.validity-period}")
   private Integer tokenValidity;
 
-  @Autowired
-  private AuthenticationManager authenticationManager;
+//  @Autowired
+//  private AuthenticationManager authenticationManager;
 
   @Autowired
   private ServerSettingsRepository serverSettingsRepository;
 
   @Autowired
   private UserDetailsService userDetailsService;
+
+  @Autowired
+  private IntegrationRepository authConfigRepository;
+
+  @Autowired
+  private LdapUserReplicator ldapUserReplicator;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   @Bean
   public RegisteredClientRepository registeredClientRepository() {
@@ -165,26 +190,56 @@ public class AuthorizationServerConfig {
             tokenEndpoint ->
                 tokenEndpoint
                     .accessTokenRequestConverter(new CustomCodeGrantAuthenticationConverter())
-
-                    .authenticationProvider(
-                        new CustomCodeGrantAuthenticationProvider(oAuth2AuthorizationService(),
-                            tokenGenerator(new TokenServicesFacade(jwtEncoder())),
-                            userDetailsService,
-                            passwordEncoder()
-                        ))
+                    .authenticationProvider(basicPasswordAuthProvider())
+                    .authenticationProvider(ldapAuthProvider())
+                    .authenticationProvider(activeDirectoryAuthProvider())
         );
 
     return http.build();
   }
 
   @Bean
-  OAuth2AuthorizationService oAuth2AuthorizationService() {
-    return new InMemoryOAuth2AuthorizationService();
+  public AuthenticationProvider basicPasswordAuthProvider() {
+    BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
   }
 
   @Bean
-  public OAuth2TokenGenerator<?> tokenGenerator(TokenServicesFacade tokenService) {
-    return new PasswordGrantTokenGenerator(tokenService);
+  public AuthenticationProvider ldapAuthProvider() {
+    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder()));
+  }
+
+  @Bean("ldapDetailsContextMapper")
+  public DetailsContextMapper ldapDetailsContextMapper() {
+    return new DetailsContextMapper(
+        ldapUserReplicator,
+        () -> ParameterUtils.getLdapSyncAttributes(
+            authConfigRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream()
+                .findFirst()
+                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
+
+        )
+    );
+  }
+
+
+  @Bean
+  public AuthenticationProvider activeDirectoryAuthProvider() {
+    return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
+        activeDirectoryDetailsContextMapper(), new TokenServicesFacade(jwtEncoder()));
+  }
+
+  @Bean("activeDirectoryDetailsContextMapper")
+  public DetailsContextMapper activeDirectoryDetailsContextMapper() {
+    return new DetailsContextMapper(
+        ldapUserReplicator,
+        () -> ParameterUtils.getLdapSyncAttributes(
+            authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
+                .stream().findFirst()
+                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
+    );
   }
 
   private String getSecret() {

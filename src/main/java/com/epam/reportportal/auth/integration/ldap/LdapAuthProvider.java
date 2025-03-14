@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.integration.ldap;
 import static java.util.Collections.singletonList;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.TokenServicesFacade;
 import com.epam.reportportal.auth.commons.accessible.Accessible;
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.entity.enums.FeatureFlag;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.ldap.LdapAuthenticationProviderConfigurer;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -59,8 +61,8 @@ public class LdapAuthProvider extends EnableableAuthProvider {
 
   public LdapAuthProvider(IntegrationRepository integrationRepository,
       ApplicationEventPublisher eventPublisher,
-      DetailsContextMapper detailsContextMapper) {
-    super(integrationRepository, eventPublisher);
+      DetailsContextMapper detailsContextMapper, TokenServicesFacade tokenService) {
+    super(integrationRepository, eventPublisher, tokenService);
     this.detailsContextMapper = detailsContextMapper;
   }
 

@@ -16,20 +16,30 @@
 
 package com.epam.reportportal.auth.basic;
 
+import com.epam.reportportal.auth.TokenServicesFacade;
+import com.epam.reportportal.auth.config.password.ClientToken;
+import com.epam.reportportal.auth.config.password.PasswordGrantTokenGenerator;
+import com.epam.reportportal.auth.config.utils.ConvertToOauthToken;
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import jakarta.inject.Provider;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.time.Instant;
+import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2Token;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
+import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
 
 /**
  * Checks whether client have more auth errors than defined and throws exception if so.
@@ -37,8 +47,6 @@ import org.springframework.security.core.AuthenticationException;
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
 public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvider {
-
-  protected static final Logger LOGGER = LoggerFactory.getLogger(BasicPasswordAuthenticationProvider.class);
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
@@ -49,15 +57,21 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
   @Autowired
   private Provider<HttpServletRequest> request;
 
+  @Autowired
+  private TokenServicesFacade tokenService;
+
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    LOGGER.error("authenticate: " + authentication);
     boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
     if (!accountNonLocked) {
       throw new ReportPortalException(ErrorType.ADDRESS_LOCKED);
     }
     Authentication auth = super.authenticate(authentication);
     eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
-    return auth;
+
+    ConvertToOauthToken convertToOauthToken = new ConvertToOauthToken(tokenService);
+
+    ClientToken clientToken = (ClientToken) authentication;
+    return convertToOauthToken.convert(clientToken, auth);
   }
 }

@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -39,17 +40,13 @@ public class CustomCodeGrantAuthenticationConverter implements AuthenticationCon
       return null;
     }
     Authentication clientPrincipal = SecurityContextHolder.getContext().getAuthentication();
-    MultiValueMap<String, String> parameters = getParameters(request);
-    Map<String, Object> additionalParameters = new HashMap<>();
-    parameters.forEach((key, value) -> {
-      if (!key.equals(OAuth2ParameterNames.GRANT_TYPE) &&
-          !key.equals(OAuth2ParameterNames.CLIENT_ID)
-      ) {
-        additionalParameters.put(key, value.get(0));
-      }
-    });
 
-    return new CustomCodeGrantAuthenticationToken(grantType, clientPrincipal, additionalParameters);
+    ClientToken usernamePasswordAuthenticationToken = new ClientToken(
+        request.getParameter(OAuth2ParameterNames.USERNAME), request.getParameter(OAuth2ParameterNames.PASSWORD),
+        clientPrincipal.getAuthorities());
+    usernamePasswordAuthenticationToken.setClientPrincipal(clientPrincipal);
+
+    return usernamePasswordAuthenticationToken;
   }
 
   private static MultiValueMap<String, String> getParameters(HttpServletRequest request) {
