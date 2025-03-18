@@ -26,7 +26,9 @@ import com.epam.reportportal.auth.config.utils.JwtReportPortalUserConverter;
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.ServerSettingsRepository;
 import com.epam.reportportal.auth.entity.ServerSettings;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
+import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.github.GitHubOAuth2UserService;
 import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
@@ -295,7 +297,7 @@ public class AuthorizationServerConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(gitHubOAuth2UserService(gitHubUserReplicator, new OAuthRegistrationResource())))
+            .userInfoEndpoint(userInfo -> userInfo.userService(gitHubOAuth2UserService(gitHubUserReplicator, getOAuthRegistrationResource())))
             .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authorization -> authorization
                 .baseUri("/oauth/login")
@@ -317,6 +319,11 @@ public class AuthorizationServerConfig {
       OAuthRegistrationResource registration) {
 
     return new GitHubOAuth2UserService(replicator, () -> registration);
+  }
+
+  private OAuthRegistrationResource getOAuthRegistrationResource() {
+    return clientRegistrationRepository.findOAuthRegistrationById(
+        "github").map(OAuthRegistrationConverters.TO_RESOURCE).orElse(new OAuthRegistrationResource());
   }
 
   @Bean

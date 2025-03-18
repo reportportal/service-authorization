@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.basic;
 
 import com.epam.reportportal.auth.TokenServicesFacade;
 import com.epam.reportportal.auth.config.password.ClientToken;
-import com.epam.reportportal.auth.config.password.PasswordGrantTokenGenerator;
 import com.epam.reportportal.auth.config.utils.ConvertToOauthToken;
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
@@ -26,20 +25,11 @@ import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import jakarta.inject.Provider;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2Token;
-import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
-import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
 
 /**
  * Checks whether client have more auth errors than defined and throws exception if so.

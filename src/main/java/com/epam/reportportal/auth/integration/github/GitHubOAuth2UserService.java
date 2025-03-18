@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -31,6 +33,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GitHubOAuth2UserService.class);
 
   private final GitHubUserReplicator replicator;
   private final Supplier<OAuthRegistrationResource> oAuthRegistrationSupplier;
@@ -43,9 +47,11 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+    LOGGER.error("Load github user");
     String accessToken = userRequest.getAccessToken().getTokenValue();
 
     GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
+    LOGGER.error("GitHubClient created with: " + accessToken);
     UserResource gitHubUser = gitHubClient.getUser();
 
     OAuthRegistrationResource registration = oAuthRegistrationSupplier.get();
@@ -55,7 +61,6 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     ReportPortalUser user = replicator.replicateUser(gitHubUser, gitHubClient);
-
 
     return new GitHubOAuth2User(user, accessToken);
   }

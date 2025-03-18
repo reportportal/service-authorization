@@ -15,9 +15,9 @@
  */
 package com.epam.reportportal.auth.config.utils;
 
+import com.epam.reportportal.auth.ReportPortalClient;
 import com.epam.reportportal.auth.TokenServicesFacade;
 import com.epam.reportportal.auth.config.password.ClientToken;
-import com.epam.reportportal.auth.config.password.PasswordGrantTokenGenerator;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -69,9 +69,8 @@ public class ConvertToOauthToken {
     // ----- Access Token -----
     OAuth2TokenContext tokenContext = tokenContextBuilder.tokenType(OAuth2TokenType.ACCESS_TOKEN)
         .principal(authentication).build();
-    PasswordGrantTokenGenerator passwordGrantTokenGenerator = new PasswordGrantTokenGenerator(
-        tokenService);
-    OAuth2Token generatedAccessToken = passwordGrantTokenGenerator.generate(tokenContext);
+    OAuth2Token generatedAccessToken = tokenService.createToken(ReportPortalClient.ui.name(), tokenContext.getPrincipal().getName(),
+        tokenContext.getPrincipal().getAuthorities(), Collections.emptyMap());
     if (generatedAccessToken == null) {
       OAuth2Error error = new OAuth2Error(OAuth2ErrorCodes.SERVER_ERROR,
           "The token generator failed to generate the access token.", null);
@@ -84,13 +83,9 @@ public class ConvertToOauthToken {
     OAuth2Authorization.Builder authorizationBuilder = OAuth2Authorization.withRegisteredClient(registeredClient)
         .principalName(clientPrincipal.getName())
         .authorizationGrantType(AuthorizationGrantType.PASSWORD);
-    if (generatedAccessToken instanceof ClaimAccessor) {
-      authorizationBuilder.token(accessToken,
-          (metadata) -> metadata.put(OAuth2Authorization.Token.CLAIMS_METADATA_NAME,
-              ((ClaimAccessor) generatedAccessToken).getClaims()));
-    } else {
-      authorizationBuilder.accessToken(accessToken);
-    }
+    authorizationBuilder.token(accessToken,
+        (metadata) -> metadata.put(OAuth2Authorization.Token.CLAIMS_METADATA_NAME,
+            ((ClaimAccessor) generatedAccessToken).getClaims()));
 
     // ----- Refresh Token -----
     OAuth2RefreshToken refreshToken = null;

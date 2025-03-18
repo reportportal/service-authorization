@@ -33,7 +33,7 @@ public class JwtReportPortalUserConverter implements Converter<Jwt, AbstractAuth
 
   private final UserDetailsService userDetailsService;
 
-  private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+  private final Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
   private final static String PRINCIPAL_CLAIM_NAME = "user_name";
 
@@ -55,11 +55,4 @@ public class JwtReportPortalUserConverter implements Converter<Jwt, AbstractAuth
 
     return usernamePasswordAuthenticationToken;
   }
-
-
-  public void setJwtGrantedAuthoritiesConverter(@NotNull
-  Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter) {
-    this.jwtGrantedAuthoritiesConverter = jwtGrantedAuthoritiesConverter;
-  }
-
 }

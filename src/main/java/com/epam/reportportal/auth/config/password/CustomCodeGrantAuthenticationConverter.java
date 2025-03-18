@@ -16,16 +16,11 @@
 package com.epam.reportportal.auth.config.password;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.lang.Nullable;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.authentication.AuthenticationConverter;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
@@ -47,16 +42,5 @@ public class CustomCodeGrantAuthenticationConverter implements AuthenticationCon
     usernamePasswordAuthenticationToken.setClientPrincipal(clientPrincipal);
 
     return usernamePasswordAuthenticationToken;
-  }
-
-  private static MultiValueMap<String, String> getParameters(HttpServletRequest request) {
-    Map<String, String[]> parameterMap = request.getParameterMap();
-    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>(parameterMap.size());
-    parameterMap.forEach((key, values) -> {
-      for (String value : values) {
-        parameters.add(key, value);
-      }
-    });
-    return parameters;
   }
 }
