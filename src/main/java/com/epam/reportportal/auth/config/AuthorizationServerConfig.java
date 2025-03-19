@@ -26,7 +26,6 @@ import com.epam.reportportal.auth.config.utils.JwtReportPortalUserConverter;
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.ServerSettingsRepository;
 import com.epam.reportportal.auth.entity.ServerSettings;
-import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
 import com.epam.reportportal.auth.integration.github.GitHubOAuth2UserService;
@@ -313,6 +312,7 @@ public class AuthorizationServerConfig {
 
     return http.build();
   }
+
   @Bean
   public GitHubOAuth2UserService gitHubOAuth2UserService(
       GitHubUserReplicator replicator,
