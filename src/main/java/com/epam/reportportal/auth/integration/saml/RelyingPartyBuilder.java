@@ -20,23 +20,29 @@ import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
 import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.entity.integration.IntegrationType;
+import com.epam.reportportal.auth.integration.github.GitHubClient;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 @Component
 public class RelyingPartyBuilder {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RelyingPartyBuilder.class);
 
   @Value("${rp.auth.saml.entity-id}")
   private String entityId;
@@ -59,13 +65,16 @@ public class RelyingPartyBuilder {
   @Value("${rp.auth.saml.signed-requests}")
   private Boolean signedRequests;
 
-  private static final String CALL_BACK_URL = "{baseUrl}/uat/login/saml2/sso/{registrationId}";
+  private static final String CALL_BACK_URL = "{baseUrl}/login/saml2/sso/{registrationId}";
 
   private static final String SAML_TYPE = "saml";
 
   private final IntegrationRepository integrationRepository;
 
   private final IntegrationTypeRepository integrationTypeRepository;
+
+  @Value("${server.servlet.context-path}")
+  private String pathValue;
 
 
   public RelyingPartyBuilder(IntegrationRepository integrationRepository,
@@ -78,6 +87,8 @@ public class RelyingPartyBuilder {
   public List<RelyingPartyRegistration> createRelyingPartyRegistrations() {
     IntegrationType samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
         .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
+
+    LOGGER.error("pathValue: " + pathValue);
 
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
