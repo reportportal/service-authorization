@@ -46,7 +46,7 @@ public class OAuthProviderFactory {
     return CommonOAuth2Provider.GITHUB.getBuilder(oauthProviderId)
         .clientId(registrationResource.getClientId())
         .clientSecret(registrationResource.getClientSecret())
-        .redirectUri("{baseUrl}/uat/sso/login/{registrationId}")
+        .redirectUri("{baseUrl}/sso/login/{registrationId}")
         .scope("read:user", "user:email", "read:org")
         .clientName(oauthProviderId)
         .build();

@@ -20,12 +20,12 @@ import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
 import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.entity.integration.IntegrationType;
-import com.epam.reportportal.auth.integration.github.GitHubClient;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +34,6 @@ import org.springframework.security.saml2.provider.service.registration.RelyingP
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
@@ -96,7 +95,7 @@ public class RelyingPartyBuilder {
       RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
           .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
           .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
-          .assertionConsumerServiceLocation(CALL_BACK_URL)
+          .assertionConsumerServiceLocation(getCallBackUrl())
           .entityId(entityId)
           .signingX509Credentials((c) -> {
             if (signedRequests) {
@@ -107,6 +106,7 @@ public class RelyingPartyBuilder {
               .wantAuthnRequestsSigned(false)
               .singleSignOnServiceBinding(Saml2MessageBinding.POST))
           .build();
+      LOGGER.error("CALLBACK URL: " + relyingPartyRegistration.getAssertionConsumerServiceLocation());
       return relyingPartyRegistration;
 
     }).toList();
@@ -117,6 +117,10 @@ public class RelyingPartyBuilder {
     X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore, keyStorePassword);
     PrivateKey privateKey = CertificationUtil.getPrivateKey(keyAlias, keyPassword, keyStore, keyStorePassword);
     return new Saml2X509Credential(privateKey, certificate, Saml2X509Credential.Saml2X509CredentialType.SIGNING);
+  }
+
+  private String getCallBackUrl() {
+    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat" ) : CALL_BACK_URL;
   }
 
 }
