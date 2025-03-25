@@ -52,6 +52,7 @@ dependencies {
     api 'commons-validator:commons-validator:1.9.0'
     api 'org.apache.commons:commons-compress:1.26.0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
+    api 'jakarta.servlet:jakarta.servlet-api:6.1.0'
     api 'org.apache.tika:tika-core:3.0.0'
 
     // Cloud & Storage
@@ -85,7 +86,8 @@ dependencies {
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.apache.santuario:xmlsec:3.0.3'
     implementation 'org.cryptacular:cryptacular:1.1.4'
-    implementation "com.rabbitmq:http-client:5.3.0"
+    implementation 'com.rabbitmq:http-client:5.3.0'
+    api 'org.apache.httpcomponents:httpclient:4.5.14'
 
 
     // Lombok
