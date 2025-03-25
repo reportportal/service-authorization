@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.dao;
 
 import com.epam.reportportal.auth.entity.user.User;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Modifying;
@@ -37,6 +38,7 @@ public interface UserRepository extends ReportPortalRepository<User, Long> {
    */
   Optional<User> findByLogin(String login);
 
+  List<User> findAllByEmailIn(Collection<String> mails);
 
   /**
    * Find users by userName regex pattern

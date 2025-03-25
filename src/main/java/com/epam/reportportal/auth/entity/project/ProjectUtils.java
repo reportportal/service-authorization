@@ -22,6 +22,7 @@ import com.epam.reportportal.auth.entity.attribute.Attribute;
 import com.epam.reportportal.auth.entity.enums.ProjectAttributeEnum;
 import com.epam.reportportal.auth.entity.enums.TestItemIssueGroup;
 import com.epam.reportportal.auth.entity.item.issue.IssueType;
+import com.epam.reportportal.auth.entity.user.ProjectUser;
 import com.epam.reportportal.auth.rules.commons.validation.Suppliers;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * Project related utility methods
@@ -96,6 +98,18 @@ public class ProjectUtils {
           projectIssueTypes.add(projectIssueType);
         }));
     return projectIssueTypes;
+  }
+
+  /**
+   * Finds UserConfig for specified login. Returns null if it doesn't exists.
+   *
+   * @param user Login for search
+   * @return UserConfig for specified login
+   */
+  @Nullable
+  public static ProjectUser findUserConfigByLogin(Project project, String user) {
+    return project.getUsers().stream().filter(it -> user.equalsIgnoreCase(it.getUser().getLogin()))
+        .findAny().orElse(null);
   }
 
 }
