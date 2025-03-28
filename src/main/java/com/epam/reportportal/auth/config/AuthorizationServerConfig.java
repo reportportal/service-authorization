@@ -54,6 +54,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -170,6 +171,7 @@ public class AuthorizationServerConfig {
         .build();
   }
   @Bean
+  @Profile("!unittest")
   public JwtEncoder jwtEncoder() {
     SecretKey key = new SecretKeySpec(getSecret().getBytes(),
         "HmacSHA256");
@@ -177,6 +179,7 @@ public class AuthorizationServerConfig {
   }
 
   @Bean
+  @Profile("!unittest")
   public JwtDecoder jwtDecoder() {
     return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(getSecret().getBytes(), "HmacSHA256")).build();
   }

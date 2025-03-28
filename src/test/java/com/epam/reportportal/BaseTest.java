@@ -16,6 +16,7 @@
 
 package com.epam.reportportal;
 
+import com.epam.reportportal.auth.config.TestConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,7 +44,7 @@ import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
  */
 @Testcontainers
 @Log4j2
-@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = TestConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 @ActiveProfiles({"unittest"})
 public abstract class BaseTest {
 
