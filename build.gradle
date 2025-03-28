@@ -82,12 +82,10 @@ dependencies {
     implementation 'org.jasypt:jasypt:1.9.3'
     implementation 'net.minidev:json-smart:2.4.10'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
-    implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.apache.santuario:xmlsec:3.0.3'
     implementation 'org.cryptacular:cryptacular:1.1.4'
     implementation 'com.rabbitmq:http-client:5.3.0'
-    api 'org.apache.httpcomponents:httpclient:4.5.14'
-
+    api 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
