@@ -345,7 +345,6 @@ public class AuthorizationServerConfig {
 
   @Bean
   public OAuth2AuthorizationRequestResolver authorizationRequestResolver() {
-
     return new DefaultOAuth2AuthorizationRequestResolver(
         clientRegistrationRepository,
         "/oauth/login"

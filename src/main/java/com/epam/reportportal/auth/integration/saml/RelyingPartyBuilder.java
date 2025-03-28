@@ -26,8 +26,6 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
@@ -40,8 +38,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RelyingPartyBuilder {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(RelyingPartyBuilder.class);
 
   @Value("${rp.auth.saml.entity-id}")
   private String entityId;
@@ -87,11 +83,9 @@ public class RelyingPartyBuilder {
     IntegrationType samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
         .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
 
-    LOGGER.error("pathValue: " + pathValue);
-
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
-    List<RelyingPartyRegistration> registrations = providers.stream().map(provider -> {
+    return providers.stream().map(provider -> {
       RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
           .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
           .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
@@ -106,11 +100,9 @@ public class RelyingPartyBuilder {
               .wantAuthnRequestsSigned(false)
               .singleSignOnServiceBinding(Saml2MessageBinding.POST))
           .build();
-      LOGGER.error("CALLBACK URL: " + relyingPartyRegistration.getAssertionConsumerServiceLocation());
       return relyingPartyRegistration;
 
     }).toList();
-    return registrations;
   }
 
   private Saml2X509Credential getSigningCredential() {
@@ -122,5 +114,4 @@ public class RelyingPartyBuilder {
   private String getCallBackUrl() {
     return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat" ) : CALL_BACK_URL;
   }
-
 }

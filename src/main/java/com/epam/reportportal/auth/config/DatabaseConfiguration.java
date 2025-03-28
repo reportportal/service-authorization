@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.dao.ReportPortalRepositoryImpl;
 import java.io.Serializable;
-import java.util.Properties;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
