@@ -16,15 +16,15 @@
 
 package com.epam.reportportal.auth.integration.github;
 
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import jakarta.inject.Named;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:pavel_bortnik@epam.com">Pavel Bortnik</a>
  */
-@Component
-@Named("github")
+@Component("github")
 public class GithubOauthProvider extends OAuthProvider {
 
   private static final String BUTTON = """
@@ -39,5 +39,10 @@ public class GithubOauthProvider extends OAuthProvider {
   public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator) {
     super("github", BUTTON, true);
     this.gitHubUserReplicator = gitHubUserReplicator;
+  }
+
+  @Override
+  public OAuth2UserService getUserService(OAuthRegistrationResource registrationResource) {
+    return new GitHubOAuth2UserService(gitHubUserReplicator, () -> registrationResource);
   }
 }

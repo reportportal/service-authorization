@@ -28,8 +28,6 @@ import com.epam.reportportal.auth.dao.ServerSettingsRepository;
 import com.epam.reportportal.auth.entity.ServerSettings;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
-import com.epam.reportportal.auth.integration.github.GitHubOAuth2UserService;
-import com.epam.reportportal.auth.integration.github.GitHubUserReplicator;
 import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
@@ -43,7 +41,6 @@ import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
@@ -66,12 +63,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -117,7 +118,7 @@ public class AuthorizationServerConfig {
 
   private final  AuthenticationFailureHandler authenticationFailureHandler;
 
-  private final  GitHubUserReplicator gitHubUserReplicator;
+  private final List<OAuthProvider> authProviders;
 
   @Bean
   public RegisteredClientRepository registeredClientRepository() {
@@ -299,7 +300,7 @@ public class AuthorizationServerConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(gitHubOAuth2UserService(gitHubUserReplicator, getOAuthRegistrationResource())))
+            .userInfoEndpoint(userInfo -> userInfo.userService(new DelegatingOAuth2UserService<>(getUserServices(authProviders))))
             .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authorization -> authorization
                 .baseUri("/oauth/login")
@@ -314,19 +315,6 @@ public class AuthorizationServerConfig {
         .oauth2Client(Customizer.withDefaults());
 
     return http.build();
-  }
-
-  @Bean
-  public GitHubOAuth2UserService gitHubOAuth2UserService(
-      GitHubUserReplicator replicator,
-      OAuthRegistrationResource registration) {
-
-    return new GitHubOAuth2UserService(replicator, () -> registration);
-  }
-
-  private OAuthRegistrationResource getOAuthRegistrationResource() {
-    return clientRegistrationRepository.findOAuthRegistrationById(
-        "github").map(OAuthRegistrationConverters.TO_RESOURCE).orElse(new OAuthRegistrationResource());
   }
 
   @Bean
@@ -370,8 +358,8 @@ public class AuthorizationServerConfig {
     return new DatabaseUserDetailsService();
   }
 
-  @Bean
-  public Map<String, OAuthProvider> oauthProviders(List<OAuthProvider> providers) {
-    return providers.stream().collect(Collectors.toMap(OAuthProvider::getName, p -> p));
+  public List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> getUserServices(List<OAuthProvider> providers) {
+    return providers.stream().map(provider -> provider.getUserService(clientRegistrationRepository.findOAuthRegistrationById(
+        provider.getName()).map(OAuthRegistrationConverters.TO_RESOURCE).orElse(new OAuthRegistrationResource()))).collect(Collectors.toList());
   }
 }
