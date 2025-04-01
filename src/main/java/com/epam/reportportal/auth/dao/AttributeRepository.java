@@ -20,6 +20,8 @@ package com.epam.reportportal.auth.dao;
 import com.epam.reportportal.auth.entity.attribute.Attribute;
 import java.util.Collection;
 import java.util.Set;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * @author Andrey Plisunov
@@ -27,5 +29,13 @@ import java.util.Set;
 public interface AttributeRepository extends ReportPortalRepository<Attribute, Long> {
 
   Set<Attribute> findAllByNameIn(Collection<String> names);
+
+  @Query(value = """
+    SELECT a.*
+    FROM attribute a
+    WHERE a.name IN :names
+    """,
+      nativeQuery = true)
+  Set<Attribute> findProjectAttributes(@Param("names") Set<String> attributeNames);
 
 }

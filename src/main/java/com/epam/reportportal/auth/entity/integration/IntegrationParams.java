@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.entity.integration;
 import com.epam.reportportal.auth.commons.JsonbUserType;
 import java.io.Serializable;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,16 +30,13 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class IntegrationParams extends JsonbUserType implements Serializable {
+@AllArgsConstructor
+public class IntegrationParams extends JsonbUserType<IntegrationParams> implements Serializable {
 
   private Map<String, Object> params;
 
-  public IntegrationParams(Map<String, Object> params) {
-    this.params = params;
-  }
-
   @Override
-  public Class<?> returnedClass() {
+  public Class<IntegrationParams> returnedClass() {
     return IntegrationParams.class;
   }
 

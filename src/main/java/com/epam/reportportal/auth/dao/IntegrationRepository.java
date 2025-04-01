@@ -54,6 +54,6 @@ public interface IntegrationRepository extends ReportPortalRepository<Integratio
   List<Integration> findAllGlobalByType(@Param("integrationType") IntegrationType integrationType);
 
 
-  @Query(value = "SELECT * FROM integration i LEFT OUTER JOIN integration_type it ON i.type = it.id WHERE it.name IN (:types) order by i.creation_date desc", nativeQuery = true)
+  @Query(value = "SELECT i.* FROM integration i LEFT OUTER JOIN integration_type it ON i.type = it.id WHERE it.name IN (:types) order by i.creation_date desc", nativeQuery = true)
   List<Integration> findAllByTypeIn(@Param("types") String... types);
 }

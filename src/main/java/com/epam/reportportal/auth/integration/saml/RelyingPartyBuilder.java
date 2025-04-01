@@ -25,6 +25,7 @@ import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
@@ -67,6 +68,9 @@ public class RelyingPartyBuilder {
 
   private final IntegrationTypeRepository integrationTypeRepository;
 
+  @Value("${server.servlet.context-path}")
+  private String pathValue;
+
 
   public RelyingPartyBuilder(IntegrationRepository integrationRepository,
       IntegrationTypeRepository integrationTypeRepository) {
@@ -81,11 +85,11 @@ public class RelyingPartyBuilder {
 
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
-    List<RelyingPartyRegistration> registrations = providers.stream().map(provider -> {
+    return providers.stream().map(provider -> {
       RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
           .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
           .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
-          .assertionConsumerServiceLocation(CALL_BACK_URL)
+          .assertionConsumerServiceLocation(getCallBackUrl())
           .entityId(entityId)
           .signingX509Credentials((c) -> {
             if (signedRequests) {
@@ -99,7 +103,6 @@ public class RelyingPartyBuilder {
       return relyingPartyRegistration;
 
     }).toList();
-    return registrations;
   }
 
   private Saml2X509Credential getSigningCredential() {
@@ -108,4 +111,7 @@ public class RelyingPartyBuilder {
     return new Saml2X509Credential(privateKey, certificate, Saml2X509Credential.Saml2X509CredentialType.SIGNING);
   }
 
+  private String getCallBackUrl() {
+    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat" ) : CALL_BACK_URL;
+  }
 }

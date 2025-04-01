@@ -29,4 +29,6 @@ public interface UserBinaryDataService {
 
   void saveUserPhoto(User user, InputStream inputStream, String contentType);
 
+  void deleteUserPhoto(User user);
+
 }

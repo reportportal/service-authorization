@@ -19,16 +19,16 @@ package com.epam.reportportal.auth;
 import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.integration.github.GitHubOAuth2User;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import jakarta.inject.Provider;
 import java.util.Collections;
-import javax.inject.Provider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,18 +47,17 @@ public class OAuthSuccessHandler extends AuthSuccessHandler {
   }
 
   @Override
-  protected OAuth2AccessToken getToken(Authentication authentication) {
-    OAuth2Authentication oAuth2Authentication = ofNullable(
-        (OAuth2Authentication) authentication).orElseThrow(() -> new ReportPortalException(
+  protected Jwt getToken(Authentication authentication) {
+    OAuth2AuthenticationToken oAuth2Authentication = ofNullable(
+        (OAuth2AuthenticationToken) authentication).orElseThrow(() -> new ReportPortalException(
         ErrorType.ACCESS_DENIED));
-    String login = String.valueOf(oAuth2Authentication.getPrincipal());
+    GitHubOAuth2User principal = (GitHubOAuth2User) oAuth2Authentication.getPrincipal();
     return tokenServicesFacade.get().createToken(
         ReportPortalClient.ui,
-        normalizeId(login),
+        normalizeId(principal.getName()),
         authentication,
-        ofNullable(oAuth2Authentication.getOAuth2Request())
-            .map(OAuth2Request::getExtensions)
-            .orElseGet(Collections::emptyMap)
+        Collections.singletonMap("upstream_token",
+            principal.getAccessToken())
     );
   }
 }
