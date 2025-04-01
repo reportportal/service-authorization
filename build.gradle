@@ -48,9 +48,9 @@ dependencies {
     }
 
     //Fix CVE-2021-41079, CVE-2022-23181, CVE-2021-33037, CVE-2021-30640, CVE-2022-42252, CVE-2023-46589, CVE-2024-24549
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:9.0.86'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-el:9.0.86'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.86'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:9.0.99'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-el:9.0.99'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.99'
     //Fix CVE-2015-7501, CVE-2015-4852
     implementation 'org.apache.commons:commons-collections4:4.4'
     //Fix CVE-2018-10237
