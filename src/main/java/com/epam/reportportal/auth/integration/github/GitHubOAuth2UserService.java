@@ -15,6 +15,8 @@
  */
 package com.epam.reportportal.auth.integration.github;
 
+import static com.epam.reportportal.auth.integration.github.GithubOauthProvider.PROVIDER_NAME;
+
 import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Splitter;
@@ -43,7 +45,7 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-    if (!userRequest.getClientRegistration().getRegistrationId().equals("github")) {
+    if (!userRequest.getClientRegistration().getRegistrationId().equals(PROVIDER_NAME)) {
       return null;
     }
     String accessToken = userRequest.getAccessToken().getTokenValue();
