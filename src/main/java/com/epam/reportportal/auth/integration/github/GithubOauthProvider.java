@@ -39,7 +39,7 @@ public class GithubOauthProvider extends OAuthProvider {
   private final GitHubUserReplicator gitHubUserReplicator;
 
   public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator) {
-    super("github", BUTTON, true);
+    super(PROVIDER_NAME, BUTTON, true);
     this.gitHubUserReplicator = gitHubUserReplicator;
   }
 
