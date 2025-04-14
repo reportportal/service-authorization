@@ -19,7 +19,7 @@ package com.epam.reportportal.auth;
 import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 import static java.util.Optional.ofNullable;
 
-import com.epam.reportportal.auth.integration.github.GitHubOAuth2User;
+import com.epam.reportportal.auth.integration.github.RPOAuth2User;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import jakarta.inject.Provider;
@@ -51,7 +51,7 @@ public class OAuthSuccessHandler extends AuthSuccessHandler {
     OAuth2AuthenticationToken oAuth2Authentication = ofNullable(
         (OAuth2AuthenticationToken) authentication).orElseThrow(() -> new ReportPortalException(
         ErrorType.ACCESS_DENIED));
-    GitHubOAuth2User principal = (GitHubOAuth2User) oAuth2Authentication.getPrincipal();
+    RPOAuth2User principal = (RPOAuth2User) oAuth2Authentication.getPrincipal();
     return tokenServicesFacade.get().createToken(
         ReportPortalClient.ui,
         normalizeId(principal.getName()),

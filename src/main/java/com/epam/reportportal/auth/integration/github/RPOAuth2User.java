@@ -17,17 +17,16 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.commons.ReportPortalUser;
 import java.util.Collections;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
-public class GitHubOAuth2User extends DefaultOAuth2User {
+public class RPOAuth2User extends DefaultOAuth2User {
   private final ReportPortalUser reportPortalUser;
   private final String accessToken;
 
-  public GitHubOAuth2User(ReportPortalUser reportPortalUser, String accessToken) {
+  public RPOAuth2User(ReportPortalUser reportPortalUser, String accessToken) {
     super(reportPortalUser.getAuthorities(),
         Collections.singletonMap("login", reportPortalUser.getUsername()),
         "login");

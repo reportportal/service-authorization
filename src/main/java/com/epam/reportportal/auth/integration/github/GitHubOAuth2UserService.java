@@ -43,6 +43,9 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+    if (!userRequest.getClientRegistration().getRegistrationId().equals("github")) {
+      return null;
+    }
     String accessToken = userRequest.getAccessToken().getTokenValue();
 
     GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
@@ -56,7 +59,7 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     ReportPortalUser user = replicator.replicateUser(gitHubUser, gitHubClient);
 
-    return new GitHubOAuth2User(user, accessToken);
+    return new RPOAuth2User(user, accessToken);
   }
 
   private List<String> parseAllowedOrganizations(OAuthRegistrationResource registration) {
