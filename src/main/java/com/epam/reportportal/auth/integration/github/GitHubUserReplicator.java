@@ -18,14 +18,12 @@ package com.epam.reportportal.auth.integration.github;
 
 import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.binary.UserBinaryDataService;
 import com.epam.reportportal.auth.commons.ContentTypeResolver;
 import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.dao.UserRepository;
-import com.epam.reportportal.auth.entity.Metadata;
 import com.epam.reportportal.auth.entity.attachment.BinaryData;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
@@ -33,16 +31,11 @@ import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.auth.rules.commons.validation.BusinessRule;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -60,6 +53,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class GitHubUserReplicator extends AbstractUserReplicator {
 
+  /**
+   * GitHub user replicator constructor.
+   */
   public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
       ContentTypeResolver contentTypeResolver) {
@@ -67,37 +63,29 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
         contentTypeResolver);
   }
 
-  public User synchronizeUser(String accessToken) {
+  /**
+   * Synchronizes user with GitHub account.
+   *
+   * @param accessToken GitHub access token
+   */
+  public void synchronizeUser(String accessToken) {
     GitHubClient gitHubClient = GitHubClient.withAccessToken(accessToken);
     UserResource userResource = gitHubClient.getUser();
-    Optional<User> userOptional = userRepository.findByLogin(normalizeId(userResource.getLogin()));
-    BusinessRule.expect(userOptional, Optional::isPresent)
-        .verify(ErrorType.USER_NOT_FOUND, userResource.getLogin());
-    User user = userOptional.get();
-    BusinessRule.expect(user.getUserType(), userType -> Objects.equals(userType, UserType.GITHUB))
-        .verify(ErrorType.INCORRECT_AUTHENTICATION_TYPE,
-            "User '" + userResource.getLogin() + "' is not GitHUB user");
-    if (StringUtils.isNotBlank(userResource.getName())) {
-      user.setFullName(userResource.getName());
-    }
-    String email = userResource.getEmail();
-    if (Strings.isNullOrEmpty(email)) {
-      email = retrieveEmail(gitHubClient).orElseThrow(
-          () -> new UserSynchronizationException("User 'email' has not been provided"));
-    }
-    email = normalizeId(email);
-    if (!user.getEmail().equals(email)) {
-      checkEmail(email);
-      user.setEmail(email);
-    }
-    Metadata metadata = ofNullable(user.getMetadata()).orElse(new Metadata(Maps.newHashMap()));
-    metadata.getMetadata()
-        .put("synchronizationDate", Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant()));
-    user.setMetadata(metadata);
 
-    uploadAvatar(gitHubClient, user, userResource.getAvatarUrl());
+    var email = resolveEmail(userResource, gitHubClient);
+    var user = userRepository.findByEmail(email)
+        .orElseThrow(
+            () -> new ReportPortalException(ErrorType.USER_NOT_FOUND, userResource.getEmail()));
+
+    if (!user.getUserType().equals(UserType.GITHUB)) {
+      throw new ReportPortalException(
+          ErrorType.INCORRECT_AUTHENTICATION_TYPE,
+          "User '" + userResource.getEmail() + "' is not GitHUB user");
+    }
+
+    updateUser(user, userResource, gitHubClient);
+
     userRepository.save(user);
-    return user;
   }
 
   /**
@@ -105,17 +93,17 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
    * personal project for that user
    *
    * @param userResource GitHub user to be replicated
-   * @param gitHubClient Configured github client
+   * @param gitHubClient Configured GitHub client
    * @return Internal User representation
    */
   @Transactional
   public ReportPortalUser replicateUser(UserResource userResource, GitHubClient gitHubClient) {
-    String login = normalizeId(userResource.getLogin());
-    User user = userRepository.findByLogin(login).map(u -> {
+    String email = resolveEmail(userResource, gitHubClient);
+
+    User user = userRepository.findByEmail(email).map(u -> {
       if (UserType.GITHUB.equals(u.getUserType())) {
         updateUser(u, userResource, gitHubClient);
       } else {
-        //if user with such login exists, but it's not GitHub user than throw an exception
         throw new UserSynchronizationException(
             "User with login '" + u.getLogin() + "' already exists");
       }
@@ -126,16 +114,6 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
   }
 
   private void updateUser(User user, UserResource userResource, GitHubClient gitHubClient) {
-    String email = userResource.getEmail();
-    if (Strings.isNullOrEmpty(email)) {
-      email = retrieveEmail(gitHubClient).orElseThrow(
-          () -> new UserSynchronizationException("User 'email' has not been provided"));
-    }
-    email = normalizeId(email);
-    if (StringUtils.isBlank(user.getEmail()) || !user.getEmail().equals(email)) {
-      checkEmail(email);
-      user.setEmail(email);
-    }
     user.setFullName(
         isNullOrEmpty(userResource.getName()) ? user.getLogin() : userResource.getName());
     user.setMetadata(defaultMetaData());
@@ -144,7 +122,9 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 
   private User createUser(UserResource userResource, GitHubClient gitHubClient) {
     User user = new User();
-    user.setLogin(normalizeId(userResource.getLogin()));
+    var email = resolveEmail(userResource, gitHubClient);
+    user.setLogin(email);
+    user.setEmail(email);
     user.setUuid(UUID.randomUUID());
     user.setActive(Boolean.TRUE);
 
@@ -160,8 +140,9 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
   private void uploadAvatar(GitHubClient gitHubClient, User user, String avatarUrl) {
     if (null != avatarUrl) {
       ResponseEntity<Resource> photoRs = gitHubClient.downloadResource(avatarUrl);
-      try (InputStream photoStream = photoRs.getBody().getInputStream()) {
-        BinaryData photo = new BinaryData(photoRs.getHeaders().getContentType().toString(),
+      try (InputStream photoStream = Objects.requireNonNull(photoRs.getBody()).getInputStream()) {
+        BinaryData photo = new BinaryData(
+            Objects.requireNonNull(photoRs.getHeaders().getContentType()).toString(),
             photoRs.getBody().contentLength(),
             photoStream
         );
@@ -172,6 +153,13 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     }
   }
 
+  /**
+   * Retrieves all emails from GitHub API including non-public ones.
+   * It is assumed that the user has only one verified email address.
+   *
+   * @param gitHubClient GitHub client
+   * @return Optional email address
+   */
   private Optional<String> retrieveEmail(GitHubClient gitHubClient) {
     return gitHubClient.getUserEmails()
         .stream()
@@ -179,5 +167,16 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
         .filter(EmailResource::isPrimary)
         .findFirst()
         .map(EmailResource::getEmail);
+  }
+
+  private String resolveEmail(UserResource user, GitHubClient client) {
+    return normalizeId(Optional.ofNullable(user.getEmail())
+        .filter(StringUtils::isNotBlank)
+        .orElseGet(() -> retrieveEmail(client)
+            .filter(StringUtils::isNotBlank)
+            .orElseThrow(
+                () -> new UserSynchronizationException("User 'email' has not been provided"))
+        )
+    );
   }
 }
