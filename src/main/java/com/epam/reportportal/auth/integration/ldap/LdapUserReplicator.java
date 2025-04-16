@@ -16,7 +16,6 @@
 
 package com.epam.reportportal.auth.integration.ldap;
 
-import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
@@ -78,12 +77,11 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
     String emailFromContext = (String) ctx.getObjectAttribute(emailAttribute);
     String email = validateEmail(emailFromContext);
-    String login = CROP_DOMAIN.apply(name);
 
-    Optional<User> userOptional = userRepository.findByLogin(login);
+    Optional<User> userOptional = userRepository.findByEmail(email);
 
     if (userOptional.isEmpty()) {
-      return createNewUser(ctx, syncAttrs, email, login);
+      return createNewUser(ctx, syncAttrs, email);
     }
 
     User user = userOptional.get();
@@ -100,18 +98,21 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     return email.toLowerCase();
   }
 
-  private User createNewUser(DirContextOperations ctx, Map<String, String> syncAttributes,
-      String email, String login) {
+  private User createNewUser(
+      DirContextOperations ctx,
+      Map<String, String> syncAttributes,
+      String email
+  ) {
+    checkEmail(email);
+
     User user = new User();
-    user.setLogin(login);
+    user.setLogin(email);
+    user.setEmail(email);
     user.setUuid(UUID.randomUUID());
     user.setActive(Boolean.TRUE);
 
     String fullName = getFullName(ctx, syncAttributes);
     user.setFullName(fullName);
-
-    checkEmail(email);
-    user.setEmail(email);
     user.setMetadata(defaultMetaData());
     user.setUserType(UserType.LDAP);
     user.setRole(UserRole.USER);
