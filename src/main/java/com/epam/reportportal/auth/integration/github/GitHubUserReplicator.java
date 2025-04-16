@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
+import static com.epam.reportportal.auth.util.AuthUtils.NORMALIZE_STRING;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.epam.reportportal.auth.binary.UserBinaryDataService;
@@ -170,13 +170,12 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
   }
 
   private String resolveEmail(UserResource user, GitHubClient client) {
-    return normalizeId(Optional.ofNullable(user.getEmail())
+    return Optional.ofNullable(user.getEmail())
         .filter(StringUtils::isNotBlank)
+        .map(NORMALIZE_STRING)
         .orElseGet(() -> retrieveEmail(client)
             .filter(StringUtils::isNotBlank)
             .orElseThrow(
-                () -> new UserSynchronizationException("User 'email' has not been provided"))
-        )
-    );
+                () -> new UserSynchronizationException("User 'email' has not been provided")));
   }
 }
