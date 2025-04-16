@@ -87,6 +87,11 @@ public enum ErrorType {
   BAD_REQUEST_ERROR(40016, "Error in handled Request. Please, check specified parameters: '{}'"),
 
   /**
+   * If specified attribute not found
+   */
+  ATTRIBUTE_NOT_FOUND(40017, "Attribute '{}' not found."),
+
+  /**
    * Base ReportPortal Exception. Try to avoid this type and create more custom
    */
   UNCLASSIFIED_REPORT_PORTAL_ERROR(5001, "Unclassified Report Portal Error"),
