@@ -154,8 +154,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     var project = generatePersonalProject(user);
 
-    user.getProjects().add(project.getUsers().iterator().next());
-
     userRepository.save(user);
 
     publishActivityEvents(user, project);
