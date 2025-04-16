@@ -27,7 +27,7 @@ public enum UserAttribute {
   EMAIL("Email"),
   ROLES("Roles");
 
-  private String value;
+  private final String value;
 
   UserAttribute(String value) {
     this.value = value;
