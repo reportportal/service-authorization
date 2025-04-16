@@ -25,7 +25,6 @@ import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
 import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.integration.Integration;
-import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
@@ -113,31 +112,26 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         );
 
     return userRepository.findByEmail(email)
-        .orElseGet(() -> {
-          IntegrationType samlIntegrationType =
-              integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
-                  .orElseThrow(() -> new ReportPortalException(
-                      ErrorType.AUTH_INTEGRATION_NOT_FOUND,
-                      AuthIntegrationType.SAML.getName()
-                  ));
-
-          Integration provider = integrationRepository.findAllGlobalByType(samlIntegrationType)
-              .stream()
-              .filter(integration -> {
-                var alias = SamlParameter.IDP_ALIAS.getParameter(integration);
-                return alias.isPresent() && alias.get().equalsIgnoreCase(samlResponse.getIssuer());
-              })
-              .findFirst()
-              .orElseThrow(() -> new ReportPortalException(
-                  ErrorType.AUTH_INTEGRATION_NOT_FOUND,
-                  samlResponse.getIssuer()
-              ));
-
-          return createSamlUser(samlResponse.getAttributes(), provider);
-        });
+        .orElseGet(() -> createUser(samlResponse.getAttributes(), findProvider(samlResponse)));
   }
 
-  private User createSamlUser(Map<String, String> details, Integration integration) {
+  private Integration findProvider(SamlResponse samlResponse) {
+    var integrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
+        .orElseThrow(() -> new ReportPortalException(
+            ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.SAML.getName()));
+
+    return integrationRepository.findAllGlobalByType(integrationType)
+        .stream()
+        .filter(integration -> {
+          var alias = SamlParameter.IDP_ALIAS.getParameter(integration);
+          return alias.isPresent() && alias.get().equalsIgnoreCase(samlResponse.getIssuer());
+        })
+        .findFirst()
+        .orElseThrow(() -> new ReportPortalException(
+            ErrorType.AUTH_INTEGRATION_NOT_FOUND, samlResponse.getIssuer()));
+  }
+
+  private User createUser(Map<String, String> details, Integration integration) {
     var email = resolveEmail(details, integration);
     checkEmail(email);
 
