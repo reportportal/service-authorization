@@ -64,13 +64,12 @@ public class LdapUserReplicator extends AbstractUserReplicator {
    * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for
    * that user
    *
-   * @param name      Username
    * @param ctx       LDAP context
    * @param syncAttrs Synchronization Attributes
    * @return Internal User representation
    */
   @Transactional
-  public User replicateUser(String name, DirContextOperations ctx, Map<String, String> syncAttrs) {
+  public User replicateUser(DirContextOperations ctx, Map<String, String> syncAttrs) {
     String emailAttribute = ofNullable(
         syncAttrs.get(LdapParameter.EMAIL_ATTRIBUTE.getParameterName()))
         .orElseThrow(() -> new UserSynchronizationException(EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG));
