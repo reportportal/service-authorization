@@ -20,6 +20,7 @@ import com.epam.reportportal.auth.entity.project.Project;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,6 +37,7 @@ public interface ProjectRepository extends ReportPortalRepository<Project, Long>
   List<Project> findUserProjects(@Param("login") String login,
       @Param("projectType") String projectType);
 
+  @Modifying
   @Query(value = """
           DELETE FROM project 
           WHERE id IN (
@@ -48,7 +50,7 @@ public interface ProjectRepository extends ReportPortalRepository<Project, Long>
               LIMIT :limit
           )
       """, nativeQuery = true)
-  int deleteByTypeAndLastLaunchRunBefore(
+  void deleteByTypeAndLastLaunchRunBefore(
       @Param("projectType") String projectType,
       @Param("bound") Instant bound,
       @Param("limit") int limit
