@@ -24,6 +24,7 @@ import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import jakarta.inject.Provider;
 import java.util.Collections;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -56,8 +57,8 @@ public class OAuthSuccessHandler extends AuthSuccessHandler {
         ReportPortalClient.ui,
         normalizeId(principal.getName()),
         authentication,
-        Collections.singletonMap("upstream_token",
-            principal.getAccessToken())
+        principal.getAccessToken() != null ? Collections.singletonMap("upstream_token",
+            principal.getAccessToken()) : Collections.EMPTY_MAP
     );
   }
 }
