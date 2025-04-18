@@ -19,11 +19,12 @@ package com.epam.reportportal.auth;
 import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 import static java.util.Optional.ofNullable;
 
-import com.epam.reportportal.auth.integration.github.GitHubOAuth2User;
+import com.epam.reportportal.auth.integration.github.RPOAuth2User;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import jakarta.inject.Provider;
 import java.util.Collections;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -51,13 +52,13 @@ public class OAuthSuccessHandler extends AuthSuccessHandler {
     OAuth2AuthenticationToken oAuth2Authentication = ofNullable(
         (OAuth2AuthenticationToken) authentication).orElseThrow(() -> new ReportPortalException(
         ErrorType.ACCESS_DENIED));
-    GitHubOAuth2User principal = (GitHubOAuth2User) oAuth2Authentication.getPrincipal();
+    RPOAuth2User principal = (RPOAuth2User) oAuth2Authentication.getPrincipal();
     return tokenServicesFacade.get().createToken(
         ReportPortalClient.ui,
         normalizeId(principal.getName()),
         authentication,
-        Collections.singletonMap("upstream_token",
-            principal.getAccessToken())
+        principal.getAccessToken() != null ? Collections.singletonMap("upstream_token",
+            principal.getAccessToken()) : Collections.EMPTY_MAP
     );
   }
 }

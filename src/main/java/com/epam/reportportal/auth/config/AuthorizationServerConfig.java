@@ -171,6 +171,7 @@ public class AuthorizationServerConfig {
         .authorizationEndpoint("/sso/oauth/authorize")
         .build();
   }
+
   @Bean
   @Profile("!unittest")
   public JwtEncoder jwtEncoder() {

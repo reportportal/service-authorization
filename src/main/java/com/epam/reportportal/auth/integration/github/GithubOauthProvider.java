@@ -34,10 +34,12 @@ public class GithubOauthProvider extends OAuthProvider {
       </svg>
       <span>Login with GitHub</span>""";
 
+  public static final String PROVIDER_NAME = "github";
+
   private final GitHubUserReplicator gitHubUserReplicator;
 
   public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator) {
-    super("github", BUTTON, true);
+    super(PROVIDER_NAME, BUTTON, true);
     this.gitHubUserReplicator = gitHubUserReplicator;
   }
 

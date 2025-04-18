@@ -17,10 +17,10 @@
 package com.epam.reportportal.auth.dao;
 
 import com.epam.reportportal.auth.entity.project.Project;
-import com.epam.reportportal.auth.entity.user.User;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,5 +36,24 @@ public interface ProjectRepository extends ReportPortalRepository<Project, Long>
   @Query(value = "SELECT p.* FROM project p JOIN project_user pu on p.id = pu.project_id JOIN users u on pu.user_id = u.id WHERE u.login = :login AND p.project_type = :projectType", nativeQuery = true)
   List<Project> findUserProjects(@Param("login") String login,
       @Param("projectType") String projectType);
+
+  @Modifying
+  @Query(value = """
+          DELETE FROM project 
+          WHERE id IN (
+              SELECT p.id 
+              FROM project p
+              JOIN launch l ON p.id = l.project_id
+              WHERE p.project_type = :projectType
+              GROUP BY p.id
+              HAVING MAX(l.start_time) <= :bound
+              LIMIT :limit
+          )
+      """, nativeQuery = true)
+  void deleteByTypeAndLastLaunchRunBefore(
+      @Param("projectType") String projectType,
+      @Param("bound") Instant bound,
+      @Param("limit") int limit
+  );
 
 }
