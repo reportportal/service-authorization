@@ -1,6 +1,6 @@
 plugins {
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.springframework.boot' version '3.4.2'
+    id 'org.springframework.boot' version '3.4.4'
     id 'java'
     id 'java-library'
     id "org.owasp.dependencycheck" version "11.1.1"
@@ -19,7 +19,7 @@ repositories {
     }
 }
 
-ext['spring-boot.version'] = '3.4.2'
+ext['spring-boot.version'] = '3.4.4'
 ext['hibernate-validator.version'] = '8.0.2.Final'
 //ext['postgresql.version'] = '42.2.13'
 
@@ -57,10 +57,11 @@ dependencies {
     api 'org.apache.commons:commons-compress:1.26.0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     api 'jakarta.servlet:jakarta.servlet-api:6.1.0'
-    api 'org.apache.tika:tika-core:3.0.0'
+    api 'org.apache.tika:tika-core:3.1.0'
 
     // Cloud & Storage
     implementation "software.amazon.awssdk:aws-core:${aws}"
+    implementation "io.netty:netty-handler:4.1.119.Final"
     implementation "software.amazon.awssdk:sts:${aws}"
     api "org.apache.jclouds.api:s3:${jclouds}"
     implementation "org.apache.jclouds.provider:aws-s3:${jclouds}"
@@ -86,9 +87,10 @@ dependencies {
     //Others dependencies
     implementation 'org.jasypt:jasypt:1.9.3'
     implementation 'net.minidev:json-smart:2.4.10'
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
     implementation 'org.apache.santuario:xmlsec:3.0.3'
     implementation 'org.cryptacular:cryptacular:1.1.4'
+    implementation 'org.apache.velocity:velocity-engine-core:2.4.1'
     implementation 'com.rabbitmq:http-client:5.3.0'
     api 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
 

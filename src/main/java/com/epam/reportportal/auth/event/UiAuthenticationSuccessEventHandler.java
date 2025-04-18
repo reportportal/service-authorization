@@ -20,7 +20,7 @@ import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
-import com.epam.reportportal.auth.integration.github.GitHubOAuth2User;
+import com.epam.reportportal.auth.integration.github.RPOAuth2User;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
@@ -92,7 +92,7 @@ public class UiAuthenticationSuccessEventHandler {
           .orElseThrow(() -> new ReportPortalException(
               ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
           ));
-    } else if (authentication.getPrincipal() instanceof GitHubOAuth2User ghUser) {
+    } else if (authentication.getPrincipal() instanceof RPOAuth2User ghUser) {
       if (!(ghUser.getReportPortalUser()).isEnabled()) {
         SecurityContextHolder.clearContext();
         throw new LockedException("User account is locked");
