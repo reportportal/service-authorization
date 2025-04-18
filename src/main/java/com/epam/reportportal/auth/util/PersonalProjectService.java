@@ -126,7 +126,7 @@ public final class PersonalProjectService {
    * @return Prefix
    */
   public String getProjectPrefix(String username) {
-    String projectName = username.replaceAll("[.@\\-+]", "_");
+    String projectName = username.replaceAll("[.@\\-+_%!#$&'*/=?^`{|}~]", "_");
     return (projectName + PERSONAL_PROJECT_POSTFIX).toLowerCase();
   }
 }
