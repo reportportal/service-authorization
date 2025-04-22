@@ -26,11 +26,6 @@ ext['hibernate-validator.version'] = '8.0.2.Final'
 
 dependencies {
 
-    //Fix CVE-2025-24813
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.35'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.35'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.35'
-
     // Spring Boot Starters
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
     api 'org.springframework.boot:spring-boot-starter-web'

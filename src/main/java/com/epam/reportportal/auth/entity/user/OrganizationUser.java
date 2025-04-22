@@ -16,28 +16,26 @@
 
 package com.epam.reportportal.auth.entity.user;
 
-import com.epam.reportportal.auth.entity.enums.PostgreSQLEnumType;
 import com.epam.reportportal.auth.entity.organization.Organization;
 import com.epam.reportportal.auth.entity.organization.OrganizationRole;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
-import javax.persistence.Table;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 /**
  * @author Siarhei Hrabko
  */
 @Entity
-@TypeDef(name = "pqsql_enum", typeClass = PostgreSQLEnumType.class)
 @Table(name = "organization_user", schema = "public")
 public class OrganizationUser implements Serializable {
 
@@ -54,7 +52,7 @@ public class OrganizationUser implements Serializable {
 
   @Column(name = "organization_role")
   @Enumerated(EnumType.STRING)
-  @Type(type = "pqsql_enum")
+  @JdbcType(PostgreSQLEnumJdbcType.class)
   private OrganizationRole organizationRole;
 
 
