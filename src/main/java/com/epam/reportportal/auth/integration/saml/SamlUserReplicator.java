@@ -37,24 +37,25 @@ import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
+import com.epam.reportportal.auth.model.saml.SamlResponse;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Replicates user from SAML response into database if it is not exist.
  *
- * @author Yevgeniy Svalukhin
+ * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
@@ -79,9 +80,16 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   }
 
   @Transactional
-  public User replicateUser(ReportPortalSamlAuthentication samlAuthentication) {
-    String userName = CROP_DOMAIN.apply(samlAuthentication.getPrincipal());
-    Optional<User> userOptional = userRepository.findByLogin(userName);
+  public User replicateUser(Saml2AuthenticationToken samlAuthentication) {
+    SamlResponse samlResponse;
+    try {
+      samlResponse = SamlResponseParser.parseSamlResponse(
+          samlAuthentication.getSaml2Response());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    String userEmail = samlResponse.getNameId().value();
+    Optional<User> userOptional = userRepository.findByEmail(userEmail);
 
     if (userOptional.isPresent()) {
       return userOptional.get();
@@ -96,22 +104,23 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
     Optional<Integration> samlProvider = providers.stream().filter(provider -> {
-      Optional<String> idpUrlOptional = SamlParameter.IDP_URL.getParameter(provider);
-      return idpUrlOptional.isPresent() && idpUrlOptional.get()
-          .equalsIgnoreCase(samlAuthentication.getIssuer());
+      Optional<String> idpAliesOptional = SamlParameter.IDP_ALIAS.getParameter(provider);
+      return idpAliesOptional.isPresent() && idpAliesOptional.get()
+          .equalsIgnoreCase(samlResponse.getIssuer());
     }).findFirst();
+
+    String userName = checkUserName(CROP_DOMAIN.apply(samlResponse.getNameId().value()));
 
     User user = new User();
     user.setLogin(userName);
     user.setUuid(UUID.randomUUID());
     user.setActive(Boolean.TRUE);
 
-    List<Attribute> details = samlAuthentication.getDetails();
-
     if (samlProvider.isPresent()) {
-      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(), details);
+      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(),
+          samlResponse.getAttributes());
     } else {
-      populateUserDetails(user, details);
+      populateUserDetails(user, samlResponse.getAttributes());
     }
 
     user.setUserType(UserType.SAML);
@@ -119,7 +128,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     /* TODO: skip generation until we have requirements
     Project project = generatePersonalProject(user);
-    //TODO BUG IF PROJECT HAS NO USERS BECAUSE OF iterator().next() on empty collection
     user.getProjects().add(project.getUsers().iterator().next());
     */
 
@@ -131,6 +139,29 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     // publishActivityEvents(user, project);
 
     return user;
+  }
+
+  private String checkUserName(String userName) {
+    String regex = "^" + userName + "(_[0-9]+)?$";
+    List<String> existingLogins = userRepository.findByLoginRegex(regex);
+
+    if (existingLogins.isEmpty()) {
+      return userName;
+    }
+
+    int maxPostfix = 0;
+    for (String login : existingLogins) {
+      if (login.equals(userName)) {
+        continue;
+      }
+      String suffix = login.substring(userName.length() + 1);
+      try {
+        int num = Integer.parseInt(suffix);
+        maxPostfix = Math.max(maxPostfix, num);
+      } catch (NumberFormatException ignored) {
+      }
+    }
+    return userName + "_" + (maxPostfix + 1);
   }
 
   private void publishActivityEvents(User user, Project project) {
@@ -158,25 +189,22 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         new AssignUserEvent(user.getId(), user.getLogin(), project.getId()));
   }
 
-  private void populateUserDetails(User user, List<Attribute> details) {
-    String email = NORMALIZE_STRING.apply(
-        findAttributeValue(details, UserAttribute.EMAIL.toString(), String.class));
+  private void populateUserDetails(User user, Map<String, String> details) {
+    String email = NORMALIZE_STRING.apply(details.get(UserAttribute.EMAIL.toString()));
     checkEmail(email);
     user.setEmail(email);
-
-    String firstName =
-        findAttributeValue(details, UserAttribute.FIRST_NAME.toString(), String.class);
-    String lastName = findAttributeValue(details, UserAttribute.LAST_NAME.toString(), String.class);
+    String firstName = details.get(UserAttribute.FIRST_NAME.toString());
+    String lastName = details.get(UserAttribute.LAST_NAME.toString());
     user.setFullName(String.join(" ", firstName, lastName));
 
     user.setRole(UserRole.USER);
   }
 
   private void populateUserDetailsIfSettingsArePresent(User user, Integration integration,
-      List<Attribute> details) {
-    String email = NORMALIZE_STRING.apply(findAttributeValue(details,
-        SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null), String.class
-    ));
+      Map<String, String> details) {
+
+    String email = NORMALIZE_STRING.apply(
+        details.get(SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null)));
     checkEmail(email);
     user.setEmail(email);
 
@@ -184,46 +212,22 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
     if (idpFullNameOptional.isEmpty()) {
-      String firstName = findAttributeValue(details,
-          SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null), String.class
-      );
-      String lastName = findAttributeValue(details,
-          SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null), String.class
-      );
+      String firstName = details.get(
+          SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
+      String lastName = details.get(
+          SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration).orElse(null));
       user.setFullName(String.join(" ", firstName, lastName));
     } else {
-      String fullName = findAttributeValue(details, idpFullNameOptional.get(), String.class);
+      String fullName = details.get(idpFullNameOptional.get());
       user.setFullName(fullName);
     }
 
-    String roles = findAttributeValue(details,
-        SamlParameter.ROLES_ATTRIBUTE.getParameter(integration).orElse(null), String.class
-    );
+    String roles = details.get(
+        SamlParameter.ROLES_ATTRIBUTE.getParameter(integration).orElse(null));
     if (Objects.nonNull(roles) && roles.toLowerCase().contains("admin")) {
       user.setRole(UserRole.ADMINISTRATOR);
     } else {
       user.setRole(UserRole.USER);
     }
-  }
-
-  private <T> T findAttributeValue(List<Attribute> attributes, String lookingFor, Class<T> castTo) {
-    if (Objects.isNull(lookingFor) || CollectionUtils.isEmpty(attributes)) {
-      return null;
-    }
-
-    Optional<Attribute> attribute =
-        attributes.stream().filter(it -> it.getName().equalsIgnoreCase(lookingFor)).findFirst();
-
-    if (attribute.isPresent()) {
-      List<Object> values = attribute.get().getValues();
-      if (!CollectionUtils.isEmpty(values)) {
-        List<T> resultList = values.stream().filter(castTo::isInstance).map(castTo::cast)
-            .collect(Collectors.toList());
-        if (!resultList.isEmpty()) {
-          return resultList.get(0);
-        }
-      }
-    }
-    return null;
   }
 }

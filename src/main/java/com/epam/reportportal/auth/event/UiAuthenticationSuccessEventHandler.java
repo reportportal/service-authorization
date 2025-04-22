@@ -20,7 +20,7 @@ import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
-import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
+import com.epam.reportportal.auth.integration.github.RPOAuth2User;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
@@ -30,6 +30,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,19 +82,26 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   private ReportPortalUser acquireUser(Authentication authentication) {
-    if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      userRepository.findByLogin(rpAuth.getPrincipal())
+    if (authentication instanceof Saml2Authentication rpAuth) {
+      userRepository.findByLogin(rpAuth.getName())
           .filter(user -> !user.getActive())
           .ifPresent(user -> {
             user.setActive(true);
             userRepository.save(user);
           });
-      return userRepository.findByLogin(rpAuth.getPrincipal())
+      return userRepository.findByLogin(rpAuth.getName())
           .map(user -> ReportPortalUser.userBuilder().fromUser(user))
           .orElseThrow(() -> new ReportPortalException(
               ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
           ));
-    } else {
+    } else if (authentication.getPrincipal() instanceof RPOAuth2User ghUser) {
+      if (!(ghUser.getReportPortalUser()).isEnabled()) {
+        SecurityContextHolder.clearContext();
+        throw new LockedException("User account is locked");
+      }
+      return ghUser.getReportPortalUser();
+    }
+    else {
       if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
         SecurityContextHolder.clearContext();
         throw new LockedException("User account is locked");

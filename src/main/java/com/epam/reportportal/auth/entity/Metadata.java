@@ -28,7 +28,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class Metadata extends JsonbUserType implements Serializable {
+public class Metadata extends JsonbUserType<Metadata> implements Serializable {
 
   private Map<String, Object> metadata;
 
@@ -40,8 +40,21 @@ public class Metadata extends JsonbUserType implements Serializable {
   }
 
   @Override
-  public Class<?> returnedClass() {
+  public int getSqlType() {
+    return 0;
+  }
+
+  @Override
+  public Class<Metadata> returnedClass() {
     return Metadata.class;
+  }
+
+  public Map<String, Object> getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(Map<String, Object> metadata) {
+    this.metadata = metadata;
   }
 
   @Override

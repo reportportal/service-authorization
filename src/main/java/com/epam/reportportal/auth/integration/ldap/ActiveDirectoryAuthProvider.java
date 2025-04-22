@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.integration.ldap;
 import static com.epam.reportportal.auth.integration.ldap.LdapAuthProvider.LDAP_TIMEOUT;
 
 import com.epam.reportportal.auth.EnableableAuthProvider;
+import com.epam.reportportal.auth.TokenServicesFacade;
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
@@ -41,8 +42,8 @@ public class ActiveDirectoryAuthProvider extends EnableableAuthProvider {
 
   public ActiveDirectoryAuthProvider(IntegrationRepository integrationRepository,
       ApplicationEventPublisher eventPublisher,
-      DetailsContextMapper detailsContextMapper) {
-    super(integrationRepository, eventPublisher);
+      DetailsContextMapper detailsContextMapper, TokenServicesFacade tokenService) {
+    super(integrationRepository, eventPublisher, tokenService);
     this.detailsContextMapper = detailsContextMapper;
   }
 

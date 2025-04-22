@@ -37,6 +37,7 @@ import java.io.IOException;
 import lombok.Getter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 
 /**
@@ -49,7 +50,7 @@ public class ResponseForwardingException extends RuntimeException {
 
   private final byte[] body;
   private final HttpHeaders headers;
-  private final HttpStatus status;
+  private final HttpStatusCode status;
 
   public ResponseForwardingException(ClientHttpResponse response) throws IOException {
     this.headers = response.getHeaders();

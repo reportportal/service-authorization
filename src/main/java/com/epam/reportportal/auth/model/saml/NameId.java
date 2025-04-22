@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2025 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.commons;
-
-import java.sql.Types;
-import org.hibernate.dialect.PostgreSQL95Dialect;
+package com.epam.reportportal.auth.model.saml;
 
 /**
- * Postgres Dialect aware of JSON/JSONB types
- *
- * @author Andrei Varabyeu
+ * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
-public class JsonbAwarePostgresDialect extends PostgreSQL95Dialect {
-
-  public JsonbAwarePostgresDialect() {
-    super();
-    this.registerColumnType(Types.JAVA_OBJECT, "json");
-  }
-}
+public record NameId(String format, String value) {}

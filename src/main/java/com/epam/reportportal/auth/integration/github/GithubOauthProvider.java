@@ -16,19 +16,15 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import com.epam.reportportal.auth.AuthConfigService;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import javax.inject.Named;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:pavel_bortnik@epam.com">Pavel Bortnik</a>
  */
-@Component
-@Named("github")
+@Component("github")
 public class GithubOauthProvider extends OAuthProvider {
 
   private static final String BUTTON = """
@@ -38,24 +34,17 @@ public class GithubOauthProvider extends OAuthProvider {
       </svg>
       <span>Login with GitHub</span>""";
 
+  public static final String PROVIDER_NAME = "github";
+
   private final GitHubUserReplicator gitHubUserReplicator;
-  private final AuthConfigService authConfigService;
 
-  public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator,
-      AuthConfigService authConfigService) {
-    super("github", BUTTON, true);
+  public GithubOauthProvider(GitHubUserReplicator gitHubUserReplicator) {
+    super(PROVIDER_NAME, BUTTON, true);
     this.gitHubUserReplicator = gitHubUserReplicator;
-    this.authConfigService = authConfigService;
   }
 
   @Override
-  public OAuth2RestOperations getOAuthRestOperations(OAuth2ClientContext oauth2ClientContext) {
-    return authConfigService.getRestTemplate(getName(), oauth2ClientContext);
-  }
-
-  @Override
-  public ResourceServerTokenServices getTokenServices() {
-    return new GitHubTokenServices(gitHubUserReplicator,
-        authConfigService.getLoginDetailsSupplier(getName()));
+  public OAuth2UserService getUserService(OAuthRegistrationResource registrationResource) {
+    return new GitHubOAuth2UserService(gitHubUserReplicator, () -> registrationResource);
   }
 }

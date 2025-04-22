@@ -27,9 +27,9 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -56,7 +56,7 @@ public abstract class BaseTest {
   private static final String MINIO_CONTAINER = "minio/minio";
 
 
-  @LocalServerPort
+  @Value("${local.server.port}")
   private Integer port;
 
   static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_CONTAINER)

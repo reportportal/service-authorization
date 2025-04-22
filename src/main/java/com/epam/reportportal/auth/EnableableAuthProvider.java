@@ -16,6 +16,8 @@
 
 package com.epam.reportportal.auth;
 
+import com.epam.reportportal.auth.config.password.ClientToken;
+import com.epam.reportportal.auth.config.utils.ConvertToOauthToken;
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,11 +36,13 @@ public abstract class EnableableAuthProvider implements AuthenticationProvider {
 
   protected final IntegrationRepository integrationRepository;
   protected final ApplicationEventPublisher eventPublisher;
+  protected final TokenServicesFacade tokenService;
 
   public EnableableAuthProvider(IntegrationRepository integrationRepository,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher, TokenServicesFacade tokenService) {
     this.integrationRepository = integrationRepository;
     this.eventPublisher = eventPublisher;
+    this.tokenService = tokenService;
   }
 
   protected abstract boolean isEnabled();
@@ -50,7 +54,10 @@ public abstract class EnableableAuthProvider implements AuthenticationProvider {
     if (isEnabled()) {
       Authentication auth = getDelegate().authenticate(authentication);
       eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
-      return auth;
+      ConvertToOauthToken convertToOauthToken = new ConvertToOauthToken(tokenService);
+
+      ClientToken clientToken = (ClientToken) authentication;
+      return convertToOauthToken.convert(clientToken, auth);
     } else {
       return null;
     }

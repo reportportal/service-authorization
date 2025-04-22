@@ -17,6 +17,9 @@
 package com.epam.reportportal.auth.dao;
 
 import com.epam.reportportal.auth.entity.user.User;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -35,6 +38,17 @@ public interface UserRepository extends ReportPortalRepository<User, Long> {
    */
   Optional<User> findByLogin(String login);
 
+  List<User> findAllByEmailIn(Collection<String> mails);
+
+  /**
+   * Find users by userName regex pattern
+   *
+   * @param regex username regex
+   * @return list of usernames matching pattern
+   */
+  @Query(value = "SELECT login FROM users WHERE login ~ ?1", nativeQuery = true)
+  List<String> findByLoginRegex(String regex);
+
   /**
    * Updates user's last login value
    *
@@ -43,5 +57,46 @@ public interface UserRepository extends ReportPortalRepository<User, Long> {
   @Modifying(clearAutomatically = true)
   @Query(value = "UPDATE users SET metadata = jsonb_set(metadata, '{metadata,last_login}', to_jsonb(round(extract(EPOCH from clock_timestamp()) * 1000)), TRUE ) WHERE login = :username", nativeQuery = true)
   void updateLastLoginDate(@Param("username") String username);
+
+  @Query(value = """
+          SELECT * FROM users
+          WHERE
+              type = :type
+              AND (
+                  (metadata #>> '{metadata,synchronizationDate}') IS NOT NULL
+                  AND TO_TIMESTAMP(
+                      (metadata #>> '{metadata,synchronizationDate}')::bigint / 1000
+                  ) < :deadline
+                  OR
+                  (metadata #>> '{metadata,synchronizationDate}') IS NULL
+              )
+          ORDER BY
+              CASE
+                  WHEN metadata #>> '{metadata,synchronizationDate}' IS NULL THEN 1
+                  ELSE 0
+              END,
+              (metadata #>> '{metadata,synchronizationDate}')::bigint DESC
+          OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
+      """,
+      countQuery = """
+              SELECT COUNT(*) FROM users
+              WHERE
+                  type = :type
+                  AND (
+                      (metadata #>> '{metadata,synchronizationDate}') IS NOT NULL
+                      AND TO_TIMESTAMP(
+                          (metadata #>> '{metadata,synchronizationDate}')::bigint / 1000
+                      ) < :deadline
+                      OR
+                      (metadata #>> '{metadata,synchronizationDate}') IS NULL
+                  )
+          """,
+      nativeQuery = true)
+  List<User> findNotSynchronizedUsers(
+      @Param("type") String type,
+      @Param("deadline") LocalDateTime deadline,
+      @Param("offset") int offset,
+      @Param("pageSize") int pageSize
+  );
 
 }

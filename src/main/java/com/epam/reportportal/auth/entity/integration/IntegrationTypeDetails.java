@@ -27,13 +27,20 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class IntegrationTypeDetails extends JsonbUserType implements Serializable {
+public class IntegrationTypeDetails extends JsonbUserType<IntegrationTypeDetails> implements Serializable {
 
   private Map<String, Object> details;
 
   @Override
-  public Class<?> returnedClass() {
+  public Class<IntegrationTypeDetails> returnedClass() {
     return IntegrationTypeDetails.class;
   }
 
+  public Map<String, Object> getDetails() {
+    return details;
+  }
+
+  public void setDetails(Map<String, Object> details) {
+    this.details = details;
+  }
 }

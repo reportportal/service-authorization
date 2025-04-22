@@ -19,7 +19,7 @@ package com.epam.reportportal.auth.integration.builder;
 import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import java.time.Instant;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>

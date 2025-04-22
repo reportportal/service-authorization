@@ -34,6 +34,7 @@ import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -45,6 +46,9 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
   private final MutableClientRegistrationRepository clientRegistrationRepository;
   private final AuthIntegrationStrategyProvider strategyProvider;
   private final IntegrationTypeRepository integrationTypeRepository;
+
+  @Value("${server.servlet.context-path}")
+  private String pathValue;
 
   @Autowired
   public CreateAuthIntegrationHandlerImpl(
@@ -94,7 +98,7 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
       OAuthRegistrationResource clientRegistrationResource) {
 
     OAuthRegistration oAuthRegistration = OAuthProviderFactory.fillOAuthRegistration(
-        oauthProviderId, clientRegistrationResource);
+        oauthProviderId, clientRegistrationResource, pathValue);
 
     OAuthRegistration updatedOauthRegistration =
         clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)

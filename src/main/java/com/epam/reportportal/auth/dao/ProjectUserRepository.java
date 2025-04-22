@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.integration.saml;
+package com.epam.reportportal.auth.dao;
 
-import java.io.Serializable;
+
+import com.epam.reportportal.auth.entity.user.ProjectUser;
+import com.epam.reportportal.auth.entity.user.ProjectUserId;
 
 /**
- * Represents information about subject of authentication stored in SAML response.
- *
- * @author Yevgeniy Svalukhin
+ * @author Pavel Bortnik
  */
-public class Subject implements Serializable {
+public interface ProjectUserRepository extends ReportPortalRepository<ProjectUser, ProjectUserId> {
 
-  private static final long serialVersionUID = 2390092323L;
-
-  private SamlPrincipal samlPrincipal;
-
-  public SamlPrincipal getSamlPrincipal() {
-    return samlPrincipal;
-  }
-
-  public Subject setSamlPrincipal(SamlPrincipal samlPrincipal) {
-    this.samlPrincipal = samlPrincipal;
-    return this;
-  }
 }
