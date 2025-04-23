@@ -41,36 +41,33 @@ import org.springframework.util.ObjectUtils;
 /**
  * @author <a href="mailto:pavel_bortnik@epam.com">Pavel Bortnik</a>
  */
-public abstract class JsonbUserType implements UserType {
+public abstract class JsonbUserType<T> implements UserType<T> {
 
   private final ObjectMapper mapper;
 
-  public JsonbUserType() {
+  protected JsonbUserType() {
     mapper = new ObjectMapper();
     mapper.registerModule(new JavaTimeModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   @Override
-  public int[] sqlTypes() {
-    return new int[]{Types.JAVA_OBJECT};
+  public int getSqlType() {
+    return Types.JAVA_OBJECT;
   }
 
   @Override
-  abstract public Class<?> returnedClass();
-
-  @Override
-  public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session,
-      Object owner)
-      throws HibernateException, SQLException {
-    if (rs.getObject(names[0]) == null) {
+  public T nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session,
+      Object owner) throws SQLException {
+    if (rs.getObject(position) == null) {
       return null;
     }
-    PGobject pgObject = (PGobject) rs.getObject(names[0]);
+    PGobject pgObject = (PGobject) rs.getObject(position);
     try {
       return mapper.readValue(pgObject.getValue(), this.returnedClass());
     } catch (Exception e) {
-      throw new ReportPortalException("Failed to convert String to Invoice: " + e.getMessage(), e);
+      throw new ReportPortalException(
+          String.format("Failed to convert String to '%s' ", this.returnedClass().getName()), e);
     }
   }
 
@@ -95,7 +92,7 @@ public abstract class JsonbUserType implements UserType {
   }
 
   @Override
-  public Object deepCopy(Object value) throws HibernateException {
+  public T deepCopy(Object value) throws HibernateException {
     try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(
         bos)) {
       // use serialization to create a deep copy
@@ -104,7 +101,7 @@ public abstract class JsonbUserType implements UserType {
       oos.flush();
 
       ByteArrayInputStream bais = new ByteArrayInputStream(bos.toByteArray());
-      return new ObjectInputStream(bais).readObject();
+      return (T) new ObjectInputStream(bais).readObject();
     } catch (ClassNotFoundException | IOException ex) {
       throw new HibernateException(ex);
     }
@@ -113,8 +110,8 @@ public abstract class JsonbUserType implements UserType {
   @Override
   public Serializable disassemble(Object value) throws HibernateException {
     Object copy = deepCopy(value);
-    if (copy instanceof Serializable) {
-      return (Serializable) copy;
+    if (copy instanceof Serializable serializable) {
+      return serializable;
     }
     throw new SerializationException(
         String.format("Cannot serialize '%s', %s is not Serializable.", value, value.getClass()),
@@ -122,12 +119,12 @@ public abstract class JsonbUserType implements UserType {
   }
 
   @Override
-  public Object assemble(Serializable cached, Object owner) throws HibernateException {
+  public T assemble(Serializable cached, Object owner) throws HibernateException {
     return deepCopy(cached);
   }
 
   @Override
-  public Object replace(Object original, Object target, Object owner) throws HibernateException {
+  public T replace(Object original, Object target, Object owner) throws HibernateException {
     return deepCopy(original);
   }
 

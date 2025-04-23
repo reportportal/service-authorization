@@ -16,7 +16,7 @@
 
 package com.epam.reportportal.auth.util;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * {@link org.apache.catalina.util.RequestUtil#getRequestURL} analogue with replaced.

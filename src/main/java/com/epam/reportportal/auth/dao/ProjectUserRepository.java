@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.commons;
+package com.epam.reportportal.auth.dao;
 
-import java.sql.Types;
-import org.hibernate.dialect.PostgreSQL95Dialect;
+
+import com.epam.reportportal.auth.entity.user.ProjectUser;
+import com.epam.reportportal.auth.entity.user.ProjectUserId;
 
 /**
- * Postgres Dialect aware of JSON/JSONB types
- *
- * @author Andrei Varabyeu
+ * @author Pavel Bortnik
  */
-public class JsonbAwarePostgresDialect extends PostgreSQL95Dialect {
+public interface ProjectUserRepository extends ReportPortalRepository<ProjectUser, ProjectUserId> {
 
-  public JsonbAwarePostgresDialect() {
-    super();
-    this.registerColumnType(Types.JAVA_OBJECT, "json");
-  }
 }

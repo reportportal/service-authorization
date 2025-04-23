@@ -16,8 +16,6 @@
 
 package com.epam.reportportal.auth.endpoint;
 
-import static com.epam.reportportal.auth.config.SecurityConfiguration.GlobalWebSecurityConfig.SSO_LOGIN_PATH;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath;
 
 import com.epam.reportportal.auth.dao.IntegrationRepository;
@@ -49,6 +47,8 @@ import org.springframework.web.util.UriUtils;
  */
 @Component
 public class AuthProvidersInfoContributor implements InfoContributor {
+
+  public static final String SSO_LOGIN_PATH = "/oauth/login";
 
   private static final String SAML_BUTTON = "<span>Login with SAML</span>";
 

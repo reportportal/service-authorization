@@ -20,35 +20,33 @@ import com.epam.reportportal.auth.dao.converters.JpaInstantConverter;
 import com.epam.reportportal.auth.entity.project.Project;
 import java.io.Serializable;
 import java.time.Instant;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * @author Yauheni_Martynau
  */
-@Setter
-@Getter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@TypeDef(name = "params", typeClass = IntegrationParams.class)
 @Table(name = "integration", schema = "public")
 @Inheritance(strategy = InheritanceType.JOINED)
+@Getter
+@Setter
 public class Integration implements Serializable {
 
   @Id
@@ -67,7 +65,7 @@ public class Integration implements Serializable {
   @JoinColumn(name = "type")
   private IntegrationType type;
 
-  @Type(type = "params")
+  @Type(IntegrationParams.class)
   @Column(name = "params")
   private IntegrationParams params;
 

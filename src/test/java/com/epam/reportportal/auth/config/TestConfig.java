@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2025 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,20 @@
 
 package com.epam.reportportal.auth.config;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Profile;
-import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+
 
 /**
  * Configuration class for unit tests.
@@ -36,12 +41,15 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 public class TestConfig {
 
   @Bean
-  @Profile("unittest")
-  public JwtAccessTokenConverter accessTokenConverter(AccessTokenConverter accessTokenConverter) {
-    JwtAccessTokenConverter jwtConverter = new JwtAccessTokenConverter();
-    jwtConverter.setSigningKey("123");
-    jwtConverter.setAccessTokenConverter(accessTokenConverter);
-    return jwtConverter;
+  public JwtEncoder jwtEncoder() {
+    SecretKey key = new SecretKeySpec("123".getBytes(),
+        "HmacSHA256");
+    return new NimbusJwtEncoder(new ImmutableSecret<>(key));
+  }
+
+  @Bean
+  public JwtDecoder jwtDecoder() {
+    return NimbusJwtDecoder.withSecretKey(new SecretKeySpec("123".getBytes(), "HmacSHA256")).build();
   }
 
 

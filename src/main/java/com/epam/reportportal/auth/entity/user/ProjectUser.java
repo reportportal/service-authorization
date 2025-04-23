@@ -21,19 +21,20 @@ import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.project.ProjectRole;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 /**
  * @author Andrei Varabyeu
@@ -41,7 +42,6 @@ import org.hibernate.annotations.TypeDef;
 @Setter
 @Getter
 @Entity
-@TypeDef(name = "pqsql_enum", typeClass = PostgreSQLEnumType.class)
 @Table(name = "project_user", schema = "public")
 public class ProjectUser implements Serializable {
 
@@ -58,7 +58,7 @@ public class ProjectUser implements Serializable {
 
   @Column(name = "project_role")
   @Enumerated(EnumType.STRING)
-  @Type(type = "pqsql_enum")
+  @JdbcType(PostgreSQLEnumJdbcType.class)
   private ProjectRole projectRole;
 
   public ProjectUser withProjectUserId(ProjectUserId id) {

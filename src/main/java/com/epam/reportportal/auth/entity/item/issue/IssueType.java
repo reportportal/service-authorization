@@ -19,20 +19,19 @@ package com.epam.reportportal.auth.entity.item.issue;
 import com.epam.reportportal.auth.entity.enums.PostgreSQLEnumType;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.TypeDef;
 
 /**
  * @author Pavel Bortnik
@@ -40,7 +39,6 @@ import org.hibernate.annotations.TypeDef;
 @Setter
 @Getter
 @Entity
-@TypeDef(name = "pqsql_enum", typeClass = PostgreSQLEnumType.class)
 @Table(name = "issue_type", schema = "public", indexes = {
     @Index(name = "issue_type_pk", unique = true, columnList = "id ASC")})
 public class IssueType implements Serializable {

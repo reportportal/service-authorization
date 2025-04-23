@@ -16,9 +16,12 @@
 
 package com.epam.reportportal.auth.integration.saml;
 
+import com.epam.reportportal.auth.AdminPasswordInitializer;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.util.AuthUtils;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -36,7 +39,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReportPortalSamlAuthenticationManager implements AuthenticationManager {
 
-  private SamlUserReplicator samlUserReplicator;
+  private final SamlUserReplicator samlUserReplicator;
 
   public ReportPortalSamlAuthenticationManager(SamlUserReplicator samlUserReplicator) {
     this.samlUserReplicator = samlUserReplicator;

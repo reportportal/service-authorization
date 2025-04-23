@@ -35,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +97,20 @@ public class UserBinaryDataServiceImpl implements UserBinaryDataService {
     } catch (IOException e) {
       LOGGER.error("Unable to save user photo", e);
     }
+  }
+
+  @Override
+  public void deleteUserPhoto(User user) {
+    ofNullable(user.getAttachment()).ifPresent(fileId -> {
+      dataStoreService.delete(fileId);
+      user.setAttachment(null);
+      Optional.ofNullable(user.getAttachmentThumbnail()).ifPresent(thumbnailId -> {
+        dataStoreService.delete(thumbnailId);
+        user.setAttachmentThumbnail(null);
+      });
+      ofNullable(user.getMetadata()).ifPresent(
+          metadata -> metadata.getMetadata().remove(ATTACHMENT_CONTENT_TYPE));
+    });
   }
 
 }
