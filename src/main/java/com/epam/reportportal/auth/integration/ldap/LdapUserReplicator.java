@@ -16,7 +16,6 @@
 
 package com.epam.reportportal.auth.integration.ldap;
 
-import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
@@ -24,7 +23,6 @@ import com.epam.reportportal.auth.binary.UserBinaryDataService;
 import com.epam.reportportal.auth.commons.ContentTypeResolver;
 import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.dao.UserRepository;
-import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
@@ -65,25 +63,23 @@ public class LdapUserReplicator extends AbstractUserReplicator {
    * Replicates LDAP user to internal database (if does NOT exist). Creates personal project for
    * that user
    *
-   * @param name      Username
    * @param ctx       LDAP context
    * @param syncAttrs Synchronization Attributes
    * @return Internal User representation
    */
   @Transactional
-  public User replicateUser(String name, DirContextOperations ctx, Map<String, String> syncAttrs) {
+  public User replicateUser(DirContextOperations ctx, Map<String, String> syncAttrs) {
     String emailAttribute = ofNullable(
         syncAttrs.get(LdapParameter.EMAIL_ATTRIBUTE.getParameterName()))
         .orElseThrow(() -> new UserSynchronizationException(EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG));
 
     String emailFromContext = (String) ctx.getObjectAttribute(emailAttribute);
     String email = validateEmail(emailFromContext);
-    String login = CROP_DOMAIN.apply(name);
 
-    Optional<User> userOptional = userRepository.findByLogin(login);
+    Optional<User> userOptional = userRepository.findByEmail(email);
 
     if (userOptional.isEmpty()) {
-      return createNewUser(ctx, syncAttrs, email, login);
+      return createNewUser(ctx, syncAttrs, email);
     }
 
     User user = userOptional.get();
@@ -100,18 +96,21 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     return email.toLowerCase();
   }
 
-  private User createNewUser(DirContextOperations ctx, Map<String, String> syncAttributes,
-      String email, String login) {
+  private User createNewUser(
+      DirContextOperations ctx,
+      Map<String, String> syncAttributes,
+      String email
+  ) {
+    checkEmail(email);
+
     User user = new User();
-    user.setLogin(login);
+    user.setLogin(email);
+    user.setEmail(email);
     user.setUuid(UUID.randomUUID());
     user.setActive(Boolean.TRUE);
 
     String fullName = getFullName(ctx, syncAttributes);
     user.setFullName(fullName);
-
-    checkEmail(email);
-    user.setEmail(email);
     user.setMetadata(defaultMetaData());
     user.setUserType(UserType.LDAP);
     user.setRole(UserRole.USER);
