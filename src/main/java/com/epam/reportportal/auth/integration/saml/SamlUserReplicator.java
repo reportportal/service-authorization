@@ -25,12 +25,10 @@ import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
 import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.integration.Integration;
-import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
 import com.epam.reportportal.auth.event.activity.AssignUserEvent;
-import com.epam.reportportal.auth.event.activity.ProjectCreatedEvent;
 import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
@@ -145,15 +143,11 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setRole(resoleRole(details, integration));
     user.setExpired(false);
 
-//    TODO: skip generation until we have requirements
-//    Project project = generatePersonalProject(user);
-
     user.setMetadata(defaultMetaData());
 
     userRepository.save(user);
 
-//     TODO: waiting for requirements
-//     publishActivityEvents(user, project);
+    publishActivityEvents(user);
 
     return user;
   }
@@ -198,25 +192,11 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         .orElse(UserRole.USER);
   }
 
-  private void publishActivityEvents(User user, Project project) {
-    publishUserCreatedEvent(user);
-
-    publishProjectCreatedEvent(project);
-
-    publishUserAssignToProjectEvent(user, project);
-  }
-
-  private void publishUserCreatedEvent(User user) {
+  private void publishActivityEvents(User user) {
     UserCreatedEvent userCreatedEvent = new UserCreatedEvent(user.getId(), user.getLogin());
     eventPublisher.publishEvent(userCreatedEvent);
-  }
 
-  private void publishProjectCreatedEvent(Project project) {
-    eventPublisher.publishEvent(new ProjectCreatedEvent(project.getId(), project.getName()));
-  }
-
-  private void publishUserAssignToProjectEvent(User user, Project project) {
     eventPublisher.publishEvent(
-        new AssignUserEvent(user.getId(), user.getLogin(), project.getId()));
+        new AssignUserEvent(user.getId(), user.getLogin(), null));
   }
 }

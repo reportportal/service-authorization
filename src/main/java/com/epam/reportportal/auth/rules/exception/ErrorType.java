@@ -19,7 +19,7 @@ package com.epam.reportportal.auth.rules.exception;
 import lombok.Getter;
 
 /**
- * Report Portal's exception list
+ * Report Portal's exception list.
  *
  * @author Andrei Varabyeu
  */
@@ -27,77 +27,77 @@ import lombok.Getter;
 public enum ErrorType {
 
   /**
-   * Incorrect Report Portal WS Request
+   * Incorrect Report Portal WS Request.
    */
   INCORRECT_REQUEST(4001, "Incorrect Request. {}"),
 
   /**
-   * Access Denied
+   * Access Denied.
    */
   ACCESS_DENIED(4003, "You do not have enough permissions. {}"),
   /**
-   * Access Denied
+   * Access Denied.
    */
   ADDRESS_LOCKED(4004, "Address is locked due to several incorrect login attempts"),
 
   /**
-   * If specified by id role not found
+   * If specified by id role not found.
    */
   ROLE_NOT_FOUND(4045, "Project role '{}' not found. Did you use correct Role Name?"),
 
   /**
-   * If specified by login User not found
+   * If specified by login User not found.
    */
   USER_NOT_FOUND(4046, "User '{}' not found. {}"),
 
   /**
-   * Integration not found
+   * Integration not found.
    */
   INTEGRATION_NOT_FOUND(40413, "Integration with ID '{}' not found. Did you use correct ID?"),
 
   /**
-   * If specified Authentication extension isn't found
+   * If specified Authentication extension isn't found.
    */
   AUTH_INTEGRATION_NOT_FOUND(40419, "Auth integration '{}' not found. Did you use correct name?"),
 
   /**
-   * If binary data not found
+   * If binary data not found.
    */
   UNABLE_TO_LOAD_BINARY_DATA(40427, "Unable to load binary data by id '{}'"),
 
   /**
-   * Unable to recognize provided authentication type
+   * Unable to recognize provided authentication type.
    */
   INCORRECT_AUTHENTICATION_TYPE(40015, "Incorrect authentication type: {}"),
 
   /**
-   * Impossible to interact with integration
+   * Impossible to interact with integration.
    */
   UNABLE_INTERACT_WITH_INTEGRATION(40302, "Impossible interact with integration. {}"),
 
   /**
-   * Unable create duplicate of integration
+   * Unable create duplicate of integration.
    */
   INTEGRATION_ALREADY_EXISTS(40910,
       "Integration '{}' already exists. You couldn't create the duplicate."),
 
   /**
-   * Base Error If Request sent with incorrect parameters
+   * Base Error If Request sent with incorrect parameters.
    */
   BAD_REQUEST_ERROR(40016, "Error in handled Request. Please, check specified parameters: '{}'"),
 
   /**
-   * If specified attribute not found
+   * If specified attribute not found.
    */
   ATTRIBUTE_NOT_FOUND(40017, "Attribute '{}' not found."),
 
   /**
-   * Base ReportPortal Exception. Try to avoid this type and create more custom
+   * Base ReportPortal Exception. Try to avoid this type and create more custom.
    */
   UNCLASSIFIED_REPORT_PORTAL_ERROR(5001, "Unclassified Report Portal Error"),
 
   /**
-   * Use it If there are no any other exceptions. There should by no such exception
+   * Use it If there are no any other exceptions. There should by no such exception.
    */
   UNCLASSIFIED_ERROR(5000, "Unclassified error");
 
@@ -111,7 +111,7 @@ public enum ErrorType {
   }
 
   /**
-   * Get instance by code
+   * Get instance by code.
    *
    * @param code Error Code
    * @return ErrorType
