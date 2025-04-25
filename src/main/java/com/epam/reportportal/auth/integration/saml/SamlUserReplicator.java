@@ -89,7 +89,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       throw new RuntimeException(e);
     }
     String userEmail = samlResponse.getNameId().value();
-    Optional<User> userOptional = userRepository.findByEmail(userEmail);
+    Optional<User> userOptional = userRepository.findByEmail(NORMALIZE_STRING.apply(userEmail));
 
     if (userOptional.isPresent()) {
       return userOptional.get();
