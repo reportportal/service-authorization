@@ -28,9 +28,9 @@ class UserRepositoryCustomImplTest extends BaseTest {
 
   @Test
   void findUserDetails() {
-    var user = userRepository.findByLogin("superadmin")
+    var user = userRepository.findByLogin("superadmin@example.com")
         .orElseThrow();
-    Assertions.assertEquals("superadmin", user.getLogin());
+    Assertions.assertEquals("superadmin@example.com", user.getLogin());
   }
 
   @Test
