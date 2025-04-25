@@ -26,13 +26,13 @@ import com.epam.reportportal.auth.entity.user.ProjectUser;
 import com.epam.reportportal.auth.rules.commons.validation.Suppliers;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import jakarta.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 /**
  * Project related utility methods
