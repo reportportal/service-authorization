@@ -96,8 +96,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   public User replicateUser(Saml2AuthenticationToken samlAuthentication) {
     SamlResponse samlResponse;
     try {
-      samlResponse = SamlResponseParser.parseSamlResponse(
-          samlAuthentication.getSaml2Response());
+      samlResponse = SamlResponseParser.parseSamlResponse(samlAuthentication.getSaml2Response());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
