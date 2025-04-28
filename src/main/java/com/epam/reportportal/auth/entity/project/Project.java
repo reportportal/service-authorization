@@ -79,12 +79,10 @@ public class Project implements Serializable {
   @OrderBy(value = "issue_type_id")
   private Set<ProjectIssueType> projectIssueTypes = Sets.newHashSet();
 
-  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "created_at")
   @Convert(converter = JpaInstantConverter.class)
   private Instant creationDate;
 
-  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "updated_at")
   @Convert(converter = JpaInstantConverter.class)
   private Instant updatedAt;
