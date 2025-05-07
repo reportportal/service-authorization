@@ -26,10 +26,9 @@ ext['hibernate-validator.version'] = '8.0.2.Final'
 
 dependencies {
 
-    //Fix CVE-2025-24813
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.35'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.35'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.35'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.40'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.40'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.40'
 
     // Spring Boot Starters
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -92,7 +91,8 @@ dependencies {
     implementation 'org.cryptacular:cryptacular:1.1.4'
     implementation 'org.apache.velocity:velocity-engine-core:2.4.1'
     implementation 'com.rabbitmq:http-client:5.3.0'
-    api 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
+    api 'org.apache.httpcomponents.client5:httpclient5:5.4.3'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
