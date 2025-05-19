@@ -23,6 +23,7 @@ import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.util.AuthUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -51,7 +52,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     ReportPortalUser user = userRepository.findByLogin(normalizeId(username))
         .map(rpUser -> ReportPortalUser.userBuilder().fromUser(rpUser))
-        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        .orElseThrow(() -> new AccessDeniedException("User not found"));
 
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
         .disabled(!user.isEnabled())
