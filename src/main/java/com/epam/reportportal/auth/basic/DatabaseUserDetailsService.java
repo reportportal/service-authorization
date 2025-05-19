@@ -49,10 +49,10 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public UserDetails loadUserByUsername(String username) throws AccessDeniedException {
     ReportPortalUser user = userRepository.findByLogin(normalizeId(username))
         .map(rpUser -> ReportPortalUser.userBuilder().fromUser(rpUser))
-        .orElseThrow(() -> new AccessDeniedException("User not found"));
+        .orElseThrow(() -> new AccessDeniedException("Bad credentials"));
 
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
         .disabled(!user.isEnabled())
