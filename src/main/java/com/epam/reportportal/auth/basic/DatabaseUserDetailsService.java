@@ -23,6 +23,7 @@ import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.util.AuthUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,10 +49,10 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public UserDetails loadUserByUsername(String username) throws AccessDeniedException {
     ReportPortalUser user = userRepository.findByLogin(normalizeId(username))
         .map(rpUser -> ReportPortalUser.userBuilder().fromUser(rpUser))
-        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        .orElseThrow(() -> new AccessDeniedException("Bad credentials"));
 
     UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
         .disabled(!user.isEnabled())
