@@ -17,13 +17,13 @@
 package com.epam.reportportal.auth.config;
 
 
-import com.epam.reportportal.rules.commons.ExceptionMappings;
-import com.epam.reportportal.rules.commons.exception.message.DefaultExceptionMessageBuilder;
-import com.epam.reportportal.rules.commons.exception.rest.DefaultErrorResolver;
-import com.epam.reportportal.rules.commons.exception.rest.ReportPortalExceptionResolver;
-import com.epam.reportportal.rules.commons.exception.rest.RestErrorDefinition;
-import com.epam.reportportal.rules.commons.exception.rest.RestExceptionHandler;
-import com.epam.reportportal.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.commons.ExceptionMappings;
+import com.epam.reportportal.auth.rules.commons.exception.message.DefaultExceptionMessageBuilder;
+import com.epam.reportportal.auth.rules.commons.exception.rest.DefaultErrorResolver;
+import com.epam.reportportal.auth.rules.commons.exception.rest.ReportPortalExceptionResolver;
+import com.epam.reportportal.auth.rules.commons.exception.rest.RestErrorDefinition;
+import com.epam.reportportal.auth.rules.commons.exception.rest.RestExceptionHandler;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,7 @@ import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -65,7 +65,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     Map<Class<? extends Throwable>, RestErrorDefinition> errorMappings =
         ImmutableMap.<Class<? extends Throwable>, RestErrorDefinition>builder()
-            .put(OAuth2Exception.class, authErrorDefinition)
+            .put(OAuth2AuthorizationException.class, authErrorDefinition)
             .put(AuthenticationException.class, authErrorDefinition)
             .put(UsernameNotFoundException.class, authErrorDefinition)
             .putAll(ExceptionMappings.DEFAULT_MAPPING)

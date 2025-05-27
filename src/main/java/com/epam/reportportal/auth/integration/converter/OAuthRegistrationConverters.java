@@ -18,10 +18,10 @@ package com.epam.reportportal.auth.integration.converter;
 
 import static java.util.Optional.ofNullable;
 
-import com.epam.reportportal.model.settings.OAuthRegistrationResource;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationRestriction;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistrationScope;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistrationRestriction;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistrationScope;
+import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +86,7 @@ public class OAuthRegistrationConverters {
           .clientAuthenticationMethod(
               new ClientAuthenticationMethod(registration.getClientAuthMethod()))
           .authorizationGrantType(new AuthorizationGrantType(registration.getAuthGrantType()))
-          .redirectUriTemplate(registration.getRedirectUrlTemplate())
+          .redirectUri(registration.getRedirectUrlTemplate())
           .authorizationUri(registration.getAuthorizationUri())
           .tokenUri(registration.getTokenUri())
           .userInfoUri(registration.getUserInfoEndpointUri())
@@ -114,7 +114,7 @@ public class OAuthRegistrationConverters {
             .getValue()));
     registration.setRedirectUrlTemplate(
         ofNullable(registrationResource.getRedirectUrlTemplate()).orElseGet(
-            clientResource::getRedirectUriTemplate));
+            clientResource::getRedirectUri));
     registration.setScopes(
         ofNullable(registrationResource.getScopes()).map(scopes -> scopes.stream()
                 .map(SCOPE_FROM_RESOURCE)

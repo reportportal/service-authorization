@@ -1,0 +1,3 @@
+[submodule "migrations"]
+	path = migrations
+	url = https://github.com/reportportal/migrations

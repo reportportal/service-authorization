@@ -9,11 +9,11 @@ RUN if [ "${RELEASE_MODE}" = true ]; then \
         -Dorg.gradle.project.version=${APP_VERSION}; \
     else gradle build --no-build-cache --exclude-task test -Dorg.gradle.project.version=${APP_VERSION}; fi
 
-FROM amazoncorretto:21.0.6
+FROM amazoncorretto:21.0.7
 LABEL version=${APP_VERSION} description="EPAM ReportPortal. Auth Service" maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>, Hleb Kanonik <hleb_kanonik@epam.com>"
 ARG APP_VERSION=${APP_VERSION}
 ENV APP_DIR=/usr/app
-ENV JAVA_OPTS="-Xmx1g -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom  --add-opens=java.base/java.lang=ALL-UNNAMED"
+ENV JAVA_OPTS="-Xmx1g -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom"
 WORKDIR $APP_DIR
 COPY --from=build $APP_DIR/build/libs/service-authorization-*exec.jar .
 VOLUME ["/tmp"]

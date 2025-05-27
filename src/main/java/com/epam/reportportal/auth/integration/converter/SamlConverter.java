@@ -29,22 +29,18 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAS
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROLES_ATTRIBUTE;
 import static java.util.Optional.ofNullable;
 
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
-import com.epam.reportportal.auth.model.SamlResource;
 import com.epam.reportportal.auth.model.SamlProvidersResource;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.SamlResource;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import org.springframework.security.saml.provider.service.config.ExternalIdentityProviderConfiguration;
-import org.springframework.security.saml.saml2.metadata.BindingType;
-import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -67,35 +63,21 @@ public class SamlConverter {
     resource.setIdentityProviderName(integration.getName());
     resource.setEnabled(integration.isEnabled());
 
-		EMAIL_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
-		FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFirstNameAttribute);
-		LAST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setLastNameAttribute);
-		FULL_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFullNameAttribute);
-		IDP_ALIAS.getParameter(integration).ifPresent(resource::setIdentityProviderAlias);
-		IDP_METADATA_URL.getParameter(integration).ifPresent(resource::setIdentityProviderMetadataUrl);
-		IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
-		IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
-		ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
-		final IntegrationType integrationType = integration.getType();
-		ofNullable(integrationType.getDetails()).flatMap(typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
-				.flatMap(BASE_PATH::getParameter)
-				.ifPresent(resource::setCallbackUrl);
-		return resource;
-	};
-
-  public static final Function<List<Integration>, List<ExternalIdentityProviderConfiguration>> TO_EXTERNAL_PROVIDER_CONFIG = integrations -> {
-    List<ExternalIdentityProviderConfiguration> externalProviders = integrations.stream()
-        .map(integration -> new ExternalIdentityProviderConfiguration().setAlias(
-                IDP_ALIAS.getParameter(integration).get())
-            .setMetadata(IDP_METADATA_URL.getRequiredParameter(integration))
-            .setLinktext(integration.getName())
-            .setAuthenticationRequestBinding(BindingType.POST.toUri())
-            .setNameId(IDP_NAME_ID.getParameter(integration).map(NameId::fromUrn)
-                .orElse(NameId.UNSPECIFIED)))
-        .collect(Collectors.toList());
-    IntStream.range(0, externalProviders.size())
-        .forEach(value -> externalProviders.get(value).setAssertionConsumerServiceIndex(value));
-    return externalProviders;
+    EMAIL_ATTRIBUTE.getParameter(integration).ifPresent(resource::setEmailAttribute);
+    FIRST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFirstNameAttribute);
+    LAST_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setLastNameAttribute);
+    FULL_NAME_ATTRIBUTE.getParameter(integration).ifPresent(resource::setFullNameAttribute);
+    IDP_ALIAS.getParameter(integration).ifPresent(resource::setIdentityProviderAlias);
+    IDP_METADATA_URL.getParameter(integration).ifPresent(resource::setIdentityProviderMetadataUrl);
+    IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
+    IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
+    ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
+    final IntegrationType integrationType = integration.getType();
+    ofNullable(integrationType.getDetails()).flatMap(
+            typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
+        .flatMap(BASE_PATH::getParameter)
+        .ifPresent(resource::setCallbackUrl);
+    return resource;
   };
 
   public static final Function<List<Integration>, SamlProvidersResource> TO_PROVIDERS_RESOURCE =

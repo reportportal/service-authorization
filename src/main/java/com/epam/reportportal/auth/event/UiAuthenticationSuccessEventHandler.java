@@ -16,20 +16,21 @@
 
 package com.epam.reportportal.auth.event;
 
-import com.epam.reportportal.auth.integration.saml.ReportPortalSamlAuthentication;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.dao.UserRepository;
-import com.epam.ta.reportportal.entity.project.Project;
-import com.epam.ta.reportportal.entity.user.User;
-import com.epam.ta.reportportal.util.PersonalProjectService;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.dao.UserRepository;
+import com.epam.reportportal.auth.entity.project.Project;
+import com.epam.reportportal.auth.entity.user.User;
+import com.epam.reportportal.auth.integration.github.RPOAuth2User;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import com.epam.reportportal.auth.util.PersonalProjectService;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,11 +58,11 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   /**
-   * Handles the UI user signed-in event. Updates the last login date for the user
-   * and generates a personal project if the user has no projects.
-   * Also, if the user is inactive, it will be activated for SAML authentication.
+   * Handles the UI user signed in event. Updates the last login date for the user and generates a
+   * personal project if the user has no projects. Also, if the user is inactive, it will be
+   * activated for SAML authentication.
    *
-   * @param event the UI user signed-in event
+   * @param event the UI user signed in event
    */
   @EventListener
   @Transactional
@@ -79,18 +80,26 @@ public class UiAuthenticationSuccessEventHandler {
   }
 
   private ReportPortalUser acquireUser(Authentication authentication) {
-    if (authentication instanceof ReportPortalSamlAuthentication rpAuth) {
-      userRepository.findByLogin(rpAuth.getPrincipal())
+    if (authentication instanceof Saml2Authentication rpAuth) {
+      userRepository.findByLogin(rpAuth.getName())
           .filter(user -> !user.getActive())
           .ifPresent(user -> {
             user.setActive(true);
             userRepository.save(user);
           });
-      return userRepository.findUserDetails(rpAuth.getPrincipal())
+      return userRepository.findByLogin(rpAuth.getName())
+          .map(user -> ReportPortalUser.userBuilder().fromUser(user))
           .orElseThrow(() -> new ReportPortalException(
               ErrorType.USER_NOT_FOUND, rpAuth.getPrincipal()
           ));
-    } else {
+    } else if (authentication.getPrincipal() instanceof RPOAuth2User ghUser) {
+      if (!(ghUser.getReportPortalUser()).isEnabled()) {
+        SecurityContextHolder.clearContext();
+        throw new LockedException("User account is locked");
+      }
+      return ghUser.getReportPortalUser();
+    }
+    else {
       if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
         SecurityContextHolder.clearContext();
         throw new LockedException("User account is locked");

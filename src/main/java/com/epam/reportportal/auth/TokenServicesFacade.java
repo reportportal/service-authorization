@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2025 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,75 +13,101 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.epam.reportportal.auth;
 
-import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.ClientDetails;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.stereotype.Service;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Component;
 
 /**
- * Facade for
- * {@link org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices} to
- * simplify work with them.
- *
- * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
+ * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
-@Service
+@Component
 public class TokenServicesFacade {
 
-  private final DefaultTokenServices jwtTokenServices;
-  private final OAuth2RequestFactory oAuth2RequestFactory;
-  private final ClientDetailsService clientDetailsService;
+  private final JwtEncoder jwtEncoder;
 
-  @Autowired
-  public TokenServicesFacade(DefaultTokenServices jwtTokenServices,
-      ClientDetailsService clientDetailsService) {
-    this.jwtTokenServices = jwtTokenServices;
-    this.clientDetailsService = clientDetailsService;
-    this.oAuth2RequestFactory = new DefaultOAuth2RequestFactory(clientDetailsService);
+  public TokenServicesFacade(JwtEncoder jwtEncoder) {
+    this.jwtEncoder = jwtEncoder;
   }
 
-  public OAuth2AccessToken createToken(ReportPortalClient client, String username,
+  public Jwt createToken(ReportPortalClient client, String username,
       Authentication userAuthentication,
       Map<String, Serializable> extensionParams) {
     return createNonApiToken(client, username, userAuthentication, extensionParams);
   }
 
-  public OAuth2AccessToken createNonApiToken(ReportPortalClient client, String username,
+  public Jwt createNonApiToken(ReportPortalClient client, String username,
       Authentication userAuthentication,
       Map<String, Serializable> extensionParams) {
-    OAuth2Request oauth2Request = createOAuth2Request(client, username, extensionParams);
-    return jwtTokenServices.createAccessToken(
-        new OAuth2Authentication(oauth2Request, userAuthentication));
+    return createToken(client.name(), username, userAuthentication, extensionParams);
   }
 
-  private OAuth2Request createOAuth2Request(ReportPortalClient client, String username,
+  private Jwt createToken(String clientId, String username, Authentication authentication,
       Map<String, Serializable> extensionParams) {
-    ClientDetails clientDetails = clientDetailsService.loadClientByClientId(client.name());
-    OAuth2Request oauth2Request = oAuth2RequestFactory.createOAuth2Request(
-        clientDetails,
-        oAuth2RequestFactory.createTokenRequest(
-            ImmutableMap.<String, String>builder()
-                .put("client_id", client.name())
-                .put("username", username)
-                .put("grant", "password")
-                .build(), clientDetails)
-    );
+    Instant now = Instant.now();
 
-    oauth2Request.getExtensions().putAll(extensionParams);
+    Instant expiry = now.plus(1, ChronoUnit.DAYS);
 
-    return oauth2Request;
+    JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
+        .id(UUID.randomUUID().toString())
+        .claim("user_name", username)
+        .claim("authorities", authentication.getAuthorities())
+        .issuedAt(Instant.now())
+        .expiresAt(expiry)
+        .claim(OAuth2ParameterNames.CLIENT_ID, clientId)
+        .claim("scopes", List.of("ui"));
+
+    if (extensionParams != null) {
+      extensionParams.forEach(claimsBuilder::claim);
+    }
+
+    JwtClaimsSet jwtClaims = claimsBuilder.build();
+
+    JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
+
+    JwtEncoderParameters parameters = JwtEncoderParameters.from(jwsHeader, jwtClaims);
+    return jwtEncoder.encode(parameters);
+  }
+
+  public Jwt createToken(String clientId, String username, Collection<? extends GrantedAuthority> authorities,
+      Map<String, Serializable> extensionParams) {
+    Instant now = Instant.now();
+
+    Instant expiry = now.plus(1, ChronoUnit.DAYS);
+
+    JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
+        .id(UUID.randomUUID().toString())
+        .claim("user_name", username)
+        .claim("authorities", authorities)
+        .issuedAt(Instant.now())
+        .expiresAt(expiry)
+        .claim(OAuth2ParameterNames.CLIENT_ID, clientId)
+        .claim("scopes", List.of("ui"));
+
+    if (extensionParams != null) {
+      extensionParams.forEach(claimsBuilder::claim);
+    }
+
+    JwtClaimsSet jwtClaims = claimsBuilder.build();
+
+    JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
+
+    JwtEncoderParameters parameters = JwtEncoderParameters.from(jwsHeader, jwtClaims);
+    return jwtEncoder.encode(parameters);
   }
 }

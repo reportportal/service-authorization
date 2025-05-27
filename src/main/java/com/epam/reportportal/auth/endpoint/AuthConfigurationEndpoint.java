@@ -16,20 +16,20 @@
 
 package com.epam.reportportal.auth.endpoint;
 
+import com.epam.reportportal.auth.OperationCompletionRS;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.CreateAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.DeleteAuthIntegrationHandler;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationHandler;
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.auth.OperationCompletionRS;
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.beans.PropertyEditorSupport;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -69,10 +69,10 @@ public class AuthConfigurationEndpoint {
   /**
    * Creates or updates auth integration settings.
    *
-   * @param request Update request
+   * @param request  Update request
    * @param authType Type of Auth
-	 * @param user User
-	 * @return Successful message or an error
+   * @param user     User
+   * @return Successful message or an error
    */
   @Transactional
   @PostMapping(value = "/{authType}")
@@ -87,9 +87,9 @@ public class AuthConfigurationEndpoint {
   /**
    * Creates or updates auth integration settings
    *
-   * @param request Update request
-   * @param authType Type of Auth
-   * @param user User
+   * @param request       Update request
+   * @param authType      Type of Auth
+   * @param user          User
    * @param integrationId Integration ID
    * @return Successful message or an error
    */

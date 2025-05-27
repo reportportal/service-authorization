@@ -16,12 +16,15 @@
 
 package com.epam.reportportal.auth.basic;
 
+import com.epam.reportportal.auth.TokenServicesFacade;
+import com.epam.reportportal.auth.config.password.ClientToken;
+import com.epam.reportportal.auth.config.utils.ConvertToOauthToken;
 import com.epam.reportportal.auth.event.UiAuthenticationFailureEventHandler;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import jakarta.inject.Provider;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -44,6 +47,9 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
   @Autowired
   private Provider<HttpServletRequest> request;
 
+  @Autowired
+  private TokenServicesFacade tokenService;
+
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     boolean accountNonLocked = !failureEventHandler.isBlocked(request.get());
@@ -52,6 +58,10 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
     }
     Authentication auth = super.authenticate(authentication);
     eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
-    return auth;
+
+    ConvertToOauthToken convertToOauthToken = new ConvertToOauthToken(tokenService);
+
+    ClientToken clientToken = (ClientToken) authentication;
+    return convertToOauthToken.convert(clientToken, auth);
   }
 }

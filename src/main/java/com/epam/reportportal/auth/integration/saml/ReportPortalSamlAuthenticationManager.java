@@ -16,13 +16,17 @@
 
 package com.epam.reportportal.auth.integration.saml;
 
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.util.AuthUtils;
-import com.epam.ta.reportportal.entity.user.User;
+import java.util.Collections;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.saml.spi.DefaultSamlAuthentication;
+import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
+import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,7 +37,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReportPortalSamlAuthenticationManager implements AuthenticationManager {
 
-  private SamlUserReplicator samlUserReplicator;
+  private final SamlUserReplicator samlUserReplicator;
 
   public ReportPortalSamlAuthenticationManager(SamlUserReplicator samlUserReplicator) {
     this.samlUserReplicator = samlUserReplicator;
@@ -41,19 +45,19 @@ public class ReportPortalSamlAuthenticationManager implements AuthenticationMana
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    if (authentication instanceof DefaultSamlAuthentication defaultSamlAuthentication) {
-      ReportPortalSamlAuthentication reportPortalSamlAuthentication =
-          new ReportPortalSamlAuthentication(defaultSamlAuthentication);
-      if (reportPortalSamlAuthentication.isAuthenticated()) {
-        User user = samlUserReplicator.replicateUser(reportPortalSamlAuthentication);
+    if (authentication instanceof Saml2AuthenticationToken defaultSamlAuthentication) {
 
-        reportPortalSamlAuthentication.setAuthorities(
-            AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
+      User user = samlUserReplicator.replicateUser(defaultSamlAuthentication);
 
-        SecurityContextHolder.getContext().setAuthentication(reportPortalSamlAuthentication);
-      }
-      return reportPortalSamlAuthentication;
+      Saml2Authentication saml2Authentication = new Saml2Authentication(
+          new DefaultSaml2AuthenticatedPrincipal(user.getLogin(),
+              Collections.emptyMap()),
+          defaultSamlAuthentication.getSaml2Response(), AuthUtils.AS_AUTHORITIES.apply(user.getRole()));
+
+      SecurityContextHolder.getContext().setAuthentication(saml2Authentication);
+
+      return saml2Authentication;
     }
-    return authentication;
+    throw new AccessDeniedException("Bad credentials");
   }
 }

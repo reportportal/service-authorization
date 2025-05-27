@@ -2,16 +2,16 @@ package com.epam.reportportal.auth.integration.handler.impl;
 
 import static com.epam.reportportal.auth.integration.converter.SamlConverter.TO_PROVIDERS_RESOURCE;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.handler.GetAuthIntegrationStrategy;
 import com.epam.reportportal.auth.model.SamlProvidersResource;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.reportportal.rules.exception.ReportPortalException;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -16,9 +16,9 @@
 
 package com.epam.reportportal.auth.integration.converter;
 
+import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.reportportal.model.integration.auth.ActiveDirectoryResource;
+import com.epam.reportportal.auth.model.integration.auth.ActiveDirectoryResource;
 import java.util.function.Function;
 
 /**

@@ -16,15 +16,15 @@
 
 package com.epam.reportportal.auth.integration.validator.request;
 
+import static com.epam.reportportal.auth.commons.Predicates.equalTo;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FIRST_NAME_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FULL_NAME_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAST_NAME_ATTRIBUTE;
-import static com.epam.ta.reportportal.commons.Predicates.equalTo;
 
 import com.epam.reportportal.auth.integration.validator.request.param.provider.ParamNamesProvider;
-import com.epam.reportportal.rules.commons.validation.BusinessRule;
-import com.epam.reportportal.rules.exception.ErrorType;
-import com.epam.reportportal.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.rules.commons.validation.BusinessRule;
+import com.epam.reportportal.auth.rules.exception.ErrorType;
 import java.util.function.Predicate;
 
 public class SamlUpdateAuthRequestValidator extends UpdateAuthRequestValidator {

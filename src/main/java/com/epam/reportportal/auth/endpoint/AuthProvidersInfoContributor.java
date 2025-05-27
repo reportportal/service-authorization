@@ -16,19 +16,17 @@
 
 package com.epam.reportportal.auth.endpoint;
 
-import static com.epam.reportportal.auth.config.SecurityConfiguration.GlobalWebSecurityConfig.SSO_LOGIN_PATH;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath;
 
+import com.epam.reportportal.auth.dao.IntegrationRepository;
+import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
+import com.epam.reportportal.auth.dao.OAuthRegistrationRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
+import com.epam.reportportal.auth.entity.integration.IntegrationType;
+import com.epam.reportportal.auth.entity.oauth.OAuthRegistration;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
-import com.epam.ta.reportportal.dao.IntegrationRepository;
-import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
-import com.epam.ta.reportportal.dao.OAuthRegistrationRepository;
-import com.epam.ta.reportportal.entity.integration.Integration;
-import com.epam.ta.reportportal.entity.integration.IntegrationType;
-import com.epam.ta.reportportal.entity.oauth.OAuthRegistration;
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +47,8 @@ import org.springframework.web.util.UriUtils;
  */
 @Component
 public class AuthProvidersInfoContributor implements InfoContributor {
+
+  public static final String SSO_LOGIN_PATH = "/oauth/login";
 
   private static final String SAML_BUTTON = "<span>Login with SAML</span>";
 
@@ -95,9 +95,8 @@ public class AuthProvidersInfoContributor implements InfoContributor {
           .filter(it -> SamlParameter.IDP_URL.getParameter(it).isPresent())
           .collect(Collectors.toMap(
               Integration::getName,
-              it -> fromCurrentContextPath().path(String.format("/%s/discovery?idp=%s",
-                  samlPrefix,
-                  UriUtils.encode(SamlParameter.IDP_URL.getParameter(it).get(), UTF_8.toString())
+              it -> fromCurrentContextPath().path(String.format("/saml2/authenticate/%s",
+                  SamlParameter.IDP_NAME.getParameter(it).get()
               )).build().getPath()
           ));
     }

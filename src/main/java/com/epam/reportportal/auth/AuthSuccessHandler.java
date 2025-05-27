@@ -19,14 +19,16 @@ package com.epam.reportportal.auth;
 import com.epam.reportportal.auth.event.UiUserSignedInEvent;
 import java.io.IOException;
 import java.net.URI;
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.inject.Provider;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -56,11 +58,11 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
   @Override
   protected void handle(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException {
-    OAuth2AccessToken token = getToken(authentication);
+    Jwt token = getToken(authentication);
 
     MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
-    query.add("token", token.getValue());
-    query.add("token_type", token.getTokenType());
+    query.add("token", token.getTokenValue());
+    query.add("token_type", "bearer");
     URI rqUrl = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
         .replacePath(pathValue.replaceFirst("/uat", "") + "/ui/authSuccess")
         .replaceQueryParams(query)
@@ -73,5 +75,5 @@ public abstract class AuthSuccessHandler extends SimpleUrlAuthenticationSuccessH
         rqUrl.toString().replaceFirst("authSuccess", "#authSuccess"));
   }
 
-  protected abstract OAuth2AccessToken getToken(Authentication authentication);
+  protected abstract Jwt getToken(Authentication authentication);
 }

@@ -16,10 +16,8 @@
 
 package com.epam.reportportal.auth.config;
 
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.commons.querygen.Filter;
-import com.epam.ta.reportportal.commons.querygen.Queryable;
-import com.epam.ta.reportportal.entity.user.UserRole;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.entity.user.UserRole;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -35,10 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import org.apache.commons.lang3.StringUtils;
-import org.springdoc.core.SpringDocUtils;
-import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.utils.SpringDocUtils;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -55,8 +53,7 @@ public class SpringDocConfiguration {
 
   static {
     SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthenticationPrincipal.class);
-    SpringDocUtils.getConfig().addRequestWrapperToIgnore(Filter.class, Queryable.class,
-        ReportPortalUser.class, UserRole.class);
+    SpringDocUtils.getConfig().addRequestWrapperToIgnore(ReportPortalUser.class, UserRole.class);
     SpringDocUtils.getConfig().replaceWithClass(org.springframework.data.domain.Pageable.class,
         org.springdoc.core.converters.models.Pageable.class);
   }
@@ -82,7 +79,7 @@ public class SpringDocConfiguration {
                 .email("support@reportportal.io")
             )
             .license(new License().name("Apache 2.0")
-                .url("http://www.apache.org/licenses/LICENSE-2.0")))
+                .url("https://www.apache.org/licenses/LICENSE-2.0")))
         .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
         .components(
             new Components()
@@ -98,7 +95,7 @@ public class SpringDocConfiguration {
   }
 
   @Bean
-  public OpenApiCustomiser sortSchemasAlphabetically() {
+  public OpenApiCustomizer sortSchemasAlphabetically() {
     return openApi -> {
       Map<String, Schema> schemas = openApi.getComponents().getSchemas();
       openApi.getComponents().setSchemas(new TreeMap<>(schemas));
@@ -106,7 +103,7 @@ public class SpringDocConfiguration {
   }
 
   @Bean
-  public OpenApiCustomiser sortTagsAlphabetically() {
+  public OpenApiCustomizer sortTagsAlphabetically() {
     return openApi -> {
       List<Tag> sortedTags = openApi.getTags().stream()
           .sorted(Comparator.comparing(Tag::getName))
@@ -116,6 +113,6 @@ public class SpringDocConfiguration {
   }
 
   private String getPathValue() {
-    return StringUtils.isEmpty(pathValue) || pathValue.equals("/")  ? "/uat" : pathValue;
+    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? "/uat" : pathValue;
   }
 }

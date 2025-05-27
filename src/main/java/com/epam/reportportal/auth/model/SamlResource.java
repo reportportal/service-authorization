@@ -16,14 +16,13 @@
 
 package com.epam.reportportal.auth.model;
 
-import com.epam.reportportal.model.integration.auth.AbstractAuthResource;
+import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotEmpty;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
@@ -35,57 +34,57 @@ import javax.validation.constraints.NotEmpty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SamlResource extends AbstractAuthResource {
 
-    private Long id;
+  private Long id;
 
-    @JsonProperty(value = "callbackUrl")
-    private String callbackUrl;
+  @JsonProperty(value = "callbackUrl")
+  private String callbackUrl;
 
-    /**
-     * Provider name associated with IDP
-     */
-    @NotEmpty
-    private String identityProviderName;
-    /**
-     * Alias associated with IDP
-     */
-    private String identityProviderAlias;
-    /**
-     * IDP metadata URL
-     */
-    @NotEmpty
-    private String identityProviderMetadataUrl;
-    /**
-     * Attribute Name Format Id associated with IDP for user identification
-     */
-    private String identityProviderNameId;
-    /**
-     * IDP URL
-     */
-    private String identityProviderUrl;
-    /**
-     * Attribute name associated with full name of user in SAML response
-     */
-    private String fullNameAttribute;
-    /**
-     * Attribute name associated with first name of user in SAML response
-     */
-    private String firstNameAttribute;
-    /**
-     * Attribute name associated with last name of user in SAML response
-     */
-    private String lastNameAttribute;
-    /**
-     * Attribute name associated with email of user in SAML response
-     */
-    @NotEmpty
-    private String emailAttribute;
-    /**
-     * Attribute name associated with roles of user in SAML response
-     */
-    private  String rolesAttribute;
-    /**
-     * Indicates IDP availability for authentication
-     */
-    private boolean enabled;
+  /**
+   * Provider name associated with IDP
+   */
+  @NotEmpty
+  private String identityProviderName;
+  /**
+   * Alias associated with IDP
+   */
+  private String identityProviderAlias;
+  /**
+   * IDP metadata URL
+   */
+  @NotEmpty
+  private String identityProviderMetadataUrl;
+  /**
+   * Attribute Name Format Id associated with IDP for user identification
+   */
+  private String identityProviderNameId;
+  /**
+   * IDP URL
+   */
+  private String identityProviderUrl;
+  /**
+   * Attribute name associated with full name of user in SAML response
+   */
+  private String fullNameAttribute;
+  /**
+   * Attribute name associated with first name of user in SAML response
+   */
+  private String firstNameAttribute;
+  /**
+   * Attribute name associated with last name of user in SAML response
+   */
+  private String lastNameAttribute;
+  /**
+   * Attribute name associated with email of user in SAML response
+   */
+  @NotEmpty
+  private String emailAttribute;
+  /**
+   * Attribute name associated with roles of user in SAML response
+   */
+  private String rolesAttribute;
+  /**
+   * Indicates IDP availability for authentication
+   */
+  private boolean enabled;
 
 }

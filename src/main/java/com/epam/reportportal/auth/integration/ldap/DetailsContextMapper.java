@@ -16,8 +16,8 @@
 
 package com.epam.reportportal.auth.integration.ldap;
 
-import com.epam.ta.reportportal.commons.ReportPortalUser;
-import com.epam.ta.reportportal.entity.user.User;
+import com.epam.reportportal.auth.commons.ReportPortalUser;
+import com.epam.reportportal.auth.entity.user.User;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
