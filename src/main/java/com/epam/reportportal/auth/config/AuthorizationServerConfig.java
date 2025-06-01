@@ -57,6 +57,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -195,7 +196,7 @@ public class AuthorizationServerConfig {
     http
         .securityMatcher("/sso/oauth/token")
         .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-        .csrf().disable()
+        .csrf(AbstractHttpConfigurer::disable)
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint(new OAuth2ErrorResponseHandler())
             .accessDeniedHandler(new OAuth2ErrorResponseHandler())

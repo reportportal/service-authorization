@@ -71,12 +71,14 @@ public class UiAuthenticationSuccessEventHandler {
 
     userRepository.updateLastLoginDate(username);
 
-    if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getProjectDetails())) {
+    /* TODO: Do not generate personal project for now. Waiting for requirements
+    if (MapUtils.isEmpty(acquireUser(event.getAuthentication()).getOrganizationDetails())) {
       User user = userRepository.findByLogin(username)
           .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
       Project project = personalProjectService.generatePersonalProject(user);
       user.getProjects().addAll(project.getUsers());
     }
+    */
   }
 
   private ReportPortalUser acquireUser(Authentication authentication) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2024 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,50 +14,50 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.entity.project;
+package com.epam.reportportal.auth.entity.organization;
 
 import java.util.Arrays;
 import java.util.Optional;
+import lombok.Getter;
 
 /**
- * @author Ivan Budayeu
+ * @author Siarhei Hrabko
  */
-public enum ProjectRole implements Comparable<ProjectRole> {
+@Getter
+public enum OrganizationRole implements Comparable<OrganizationRole> {
 
-  VIEWER(0, "Viewer"),
-  EDITOR (1, "Editor");
+  MEMBER(0, "Member"),
+  MANAGER(1, "Manager");
+
 
   private final int roleLevel;
   private final String roleName;
 
-  ProjectRole(int level, String roleName) {
+  OrganizationRole(int level, String roleName) {
     this.roleLevel = level;
     this.roleName = roleName;
   }
 
-  public boolean higherThan(ProjectRole other) {
+  public boolean higherThan(OrganizationRole other) {
     return this.roleLevel > other.roleLevel;
   }
 
-  public boolean lowerThan(ProjectRole other) {
+  public boolean lowerThan(OrganizationRole other) {
     return this.roleLevel < other.roleLevel;
   }
 
-  public boolean sameOrHigherThan(ProjectRole other) {
+  public boolean sameOrHigherThan(OrganizationRole other) {
     return this.roleLevel >= other.roleLevel;
   }
 
-  public boolean sameOrLowerThan(ProjectRole other) {
+  public boolean sameOrLowerThan(OrganizationRole other) {
     return this.roleLevel <= other.roleLevel;
   }
 
-  public static Optional<ProjectRole> forName(final String name) {
-    return Arrays.stream(ProjectRole.values()).filter(role -> role.name().equalsIgnoreCase(name))
+  public static Optional<OrganizationRole> forName(final String name) {
+    return Arrays.stream(OrganizationRole.values())
+        .filter(role -> role.name().equalsIgnoreCase(name))
         .findAny();
-  }
-
-  public String getRoleName() {
-    return roleName;
   }
 
 }

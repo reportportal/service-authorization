@@ -63,8 +63,8 @@ public class CertificationUtil {
       KeyStore keyStore = KeyStore.getInstance("JKS");
       loadKeyStore(keyStore, trustStore, password);
       Key key = keyStore.getKey(keyAlias, keyPass.toCharArray());
-      if (key instanceof PrivateKey) {
-        return (PrivateKey) key;
+      if (key instanceof PrivateKey privateKey) {
+        return privateKey;
       }
       throw new Error("Unable to find private key in store: " + trustStore);
     } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException

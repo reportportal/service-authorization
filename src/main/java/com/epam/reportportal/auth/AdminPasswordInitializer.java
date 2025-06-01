@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminPasswordInitializer implements CommandLineRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdminPasswordInitializer.class);
-  private static final String SUPER_ADMIN_LOGIN = "superadmin";
+  private static final String SUPER_ADMIN_LOGIN = "admin@reportportal.internal";
   private static final String ERROR_MSG = "Password not set in environment variable";
   public static final String USER_LAST_LOGIN = "last_login";
   public static final Integer INITIAL_LAST_LOGIN = 0;

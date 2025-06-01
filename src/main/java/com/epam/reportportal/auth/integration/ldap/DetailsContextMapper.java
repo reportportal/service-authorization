@@ -45,8 +45,7 @@ public class DetailsContextMapper extends LdapUserDetailsMapper {
   @Transactional
   public UserDetails mapUserFromContext(DirContextOperations ctx, String username,
       Collection<? extends GrantedAuthority> authorities) {
-    UserDetails userDetails = super.mapUserFromContext(ctx, username, authorities);
-    User user = ldapUserReplicator.replicateUser(userDetails.getUsername(), ctx, attributes.get());
+    User user = ldapUserReplicator.replicateUser(ctx, attributes.get());
     return ReportPortalUser.userBuilder().fromUser(user);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2024 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,19 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Project Type enumeration<br> Used for supporting different project types processing
+ * Project Type enumeration<br> Used for supporting different organization types processing.
  *
- * @author Andrei_Ramanchuk
- * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
+ * @author Siarhei Hrabko
  */
-public enum ProjectType {
+public enum OrganizationType {
 
   PERSONAL,
   INTERNAL,
-  UPSA;
+  EXTERNAL;
 
-  public static Optional<ProjectType> findByName(String name) {
-    return Arrays.stream(ProjectType.values()).filter(type -> type.name().equalsIgnoreCase(name))
+  public static Optional<OrganizationType> findByName(String name) {
+    return Arrays.stream(OrganizationType.values())
+        .filter(type -> type.name().equalsIgnoreCase(name))
         .findAny();
   }
 

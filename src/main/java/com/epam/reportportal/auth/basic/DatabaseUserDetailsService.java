@@ -63,7 +63,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     return ReportPortalUser.userBuilder()
         .withUserDetails(userDetails)
-        .withProjectDetails(user.getProjectDetails())
+        .withOrganizationDetails(user.getOrganizationDetails())
         .withUserId(user.getUserId())
         .withUserRole(user.getUserRole())
         .withEmail(user.getEmail())
