@@ -112,6 +112,6 @@ public class RelyingPartyBuilder {
   }
 
   private String getCallBackUrl() {
-    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat" ) : CALL_BACK_URL;
+    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat/" ) : CALL_BACK_URL;
   }
 }
