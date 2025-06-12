@@ -26,10 +26,6 @@ ext['hibernate-validator.version'] = '8.0.2.Final'
 
 dependencies {
 
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.40'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.40'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.40'
-
     // Spring Boot Starters
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
     api 'org.springframework.boot:spring-boot-starter-web'
@@ -78,7 +74,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-core'
     implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
     implementation 'org.springframework.security:spring-security-ldap'
-    implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.2'
+    implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.4'
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.opensaml:opensaml-saml-impl:4.0.1'
     runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:9.43.4'
