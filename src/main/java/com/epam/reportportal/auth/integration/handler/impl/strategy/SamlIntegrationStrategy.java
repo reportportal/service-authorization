@@ -85,7 +85,7 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
   private void updateBasePath(Integration integration, String basePath) {
     final IntegrationType integrationType = integration.getType();
-    String idpName = IDP_NAME.getParameter(integration).orElse("");
+    String idpName = IDP_NAME.getParameter(integration).orElse("").replace(" ", "%20");
     final IntegrationTypeDetails typeDetails = ofNullable(integrationType.getDetails()).orElseGet(
         () -> {
           final IntegrationTypeDetails details = new IntegrationTypeDetails();
