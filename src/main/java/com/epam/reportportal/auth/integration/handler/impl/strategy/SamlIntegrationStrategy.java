@@ -33,14 +33,10 @@ import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
 import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
-import com.epam.reportportal.auth.rules.exception.ErrorType;
-import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -75,7 +71,7 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
     updateBasePath(integration, baseURL);
   }
 
-  public String getBaseUrl() {
+  private String getBaseUrl() {
     HttpServletRequest request =
         ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
             .getRequest();
@@ -85,7 +81,7 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
 
   private void updateBasePath(Integration integration, String basePath) {
     final IntegrationType integrationType = integration.getType();
-    String idpName = IDP_NAME.getParameter(integration).orElse("").replace(" ", "%20");
+    String idpName = IDP_NAME.getParameter(integration).orElse("").replaceAll(" ", "%20");
     final IntegrationTypeDetails typeDetails = ofNullable(integrationType.getDetails()).orElseGet(
         () -> {
           final IntegrationTypeDetails details = new IntegrationTypeDetails();
