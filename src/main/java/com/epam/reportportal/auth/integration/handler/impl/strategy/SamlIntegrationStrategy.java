@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.integration.handler.impl.strategy;
 import static com.epam.reportportal.auth.integration.converter.SamlConverter.UPDATE_FROM_REQUEST;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.BASE_PATH;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_ALIAS;
+import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_NAME;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_NAME_ID;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_URL;
 import static java.util.Optional.ofNullable;
@@ -32,12 +33,10 @@ import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.validator.duplicate.IntegrationDuplicateValidator;
 import com.epam.reportportal.auth.integration.validator.request.AuthRequestValidator;
 import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
-import com.epam.reportportal.auth.rules.exception.ErrorType;
-import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,6 +44,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
@@ -66,21 +67,21 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
   @Override
   protected void fill(Integration integration, UpdateAuthRQ updateRequest) {
     UPDATE_FROM_REQUEST.accept(updateRequest, integration);
-    BASE_PATH.getParameter(updateRequest).ifPresent(basePath -> {
-      validateBasePath(basePath);
-      updateBasePath(integration, basePath);
-    });
+    String baseURL = getBaseUrl();
+    updateBasePath(integration, baseURL);
   }
 
-  private void validateBasePath(String basePath) {
-    UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
-    if (!urlValidator.isValid(basePath)) {
-      throw new ReportPortalException(ErrorType.BAD_REQUEST_ERROR, "callbackUrl is invalid");
-    }
+  private String getBaseUrl() {
+    HttpServletRequest request =
+        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+            .getRequest();
+
+    return request.getRequestURL().toString().replace(request.getRequestURI(), "");
   }
 
   private void updateBasePath(Integration integration, String basePath) {
     final IntegrationType integrationType = integration.getType();
+    String idpName = IDP_NAME.getParameter(integration).orElse("").replaceAll(" ", "%20");
     final IntegrationTypeDetails typeDetails = ofNullable(integrationType.getDetails()).orElseGet(
         () -> {
           final IntegrationTypeDetails details = new IntegrationTypeDetails();
@@ -93,7 +94,8 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
           typeDetails.setDetails(details);
           return details;
         });
-    detailsMapping.put(BASE_PATH.getParameterName(), basePath);
+    String callbackURL = basePath + "/login/saml2/sso/" + idpName;
+    detailsMapping.put(BASE_PATH.getParameterName(), callbackURL);
   }
 
   @Override
