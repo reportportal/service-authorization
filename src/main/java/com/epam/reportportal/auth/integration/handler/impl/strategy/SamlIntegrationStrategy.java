@@ -94,7 +94,7 @@ public class SamlIntegrationStrategy extends AuthIntegrationStrategy {
           typeDetails.setDetails(details);
           return details;
         });
-    String callbackURL = basePath + "/login/saml2/sso/" + idpName;
+    String callbackURL = basePath + "/uat/login/saml2/sso/" + idpName;
     detailsMapping.put(BASE_PATH.getParameterName(), callbackURL);
   }
 
