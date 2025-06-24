@@ -68,7 +68,7 @@ public final class PersonalProjectService {
    * @return Corresponding personal project name
    */
   @VisibleForTesting
-  private String generatePersonalProjectName(String username) {
+  String generatePersonalProjectName(String username) {
     String initialName = getProjectPrefix(username);
 
     String name = initialName;
