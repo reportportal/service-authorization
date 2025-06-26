@@ -99,4 +99,11 @@ public interface UserRepository extends ReportPortalRepository<User, Long> {
       @Param("pageSize") int pageSize
   );
 
+  /**
+   * Find user by email ignoring case
+   *
+   * @param email User email
+   * @return {@link Optional} of {@link User}
+   */
+  Optional<User> findByEmailIgnoreCase(String email);
 }
