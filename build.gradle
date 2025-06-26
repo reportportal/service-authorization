@@ -20,6 +20,7 @@ repositories {
 }
 
 ext['spring-boot.version'] = '3.4.4'
+ext['spring-modulith.version'] = '1.4.1'
 ext['hibernate-validator.version'] = '8.0.2.Final'
 //ext['postgresql.version'] = '42.2.13'
 
@@ -95,6 +96,11 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    // Spring Modulith
+    implementation(platform 'org.springframework.modulith:spring-modulith-bom:1.4.1')
+    implementation 'org.springframework.modulith:spring-modulith-starter-core'
+    testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
