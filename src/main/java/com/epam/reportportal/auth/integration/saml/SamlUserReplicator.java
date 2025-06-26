@@ -117,8 +117,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setActive(Boolean.TRUE);
 
     if (samlProvider.isPresent()) {
-      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(),
-          samlResponse.getAttributes());
+      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(), samlResponse.getAttributes());
     } else {
       populateUserDetails(user, samlResponse.getAttributes());
     }
@@ -156,6 +155,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         int num = Integer.parseInt(suffix);
         maxPostfix = Math.max(maxPostfix, num);
       } catch (NumberFormatException ignored) {
+        // Ignore non-numeric suffixes
       }
     }
     return userName + "_" + (maxPostfix + 1);
