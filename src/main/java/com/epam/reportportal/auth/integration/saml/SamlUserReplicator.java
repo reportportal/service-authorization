@@ -38,6 +38,7 @@ import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.model.saml.SamlResponse;
+import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
@@ -98,8 +99,9 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       userOptional = userRepository.findByEmailIgnoreCase(userEmail);
     } catch (NonUniqueResultException e) {
       log.error("Data integrity violation: Multiple users found with email: {}", userEmail);
-      throw new ReportPortalException(ErrorType.INCORRECT_REQUEST,
-          "User lookup failed due to data inconsistency. Please contact administrator.");
+      throw new UserSynchronizationException("User with email '"
+          + userEmail
+          + "' already exists, but multiple records found. Please contact administrator to resolve this issue.");
     }
 
     if (userOptional.isPresent()) {
