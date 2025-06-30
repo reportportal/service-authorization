@@ -104,7 +104,7 @@ public class AbstractUserReplicator {
    * @param email email to check
    */
   protected void checkEmail(String email) {
-    if (userRepository.findByEmail(email).isPresent()) {
+    if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
       throw new UserSynchronizationException("User with email '" + email + "' already exists");
     }
   }
