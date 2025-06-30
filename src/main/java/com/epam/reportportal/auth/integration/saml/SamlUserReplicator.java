@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
@@ -56,9 +58,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
 
+  private static final Logger log = LoggerFactory.getLogger(SamlUserReplicator.class);
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
-
   private final ApplicationEventPublisher eventPublisher;
 
   /**
