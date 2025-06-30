@@ -38,6 +38,7 @@ import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
+import jakarta.persistence.NonUniqueResultException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -103,15 +104,24 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       throw new RuntimeException(e);
     }
 
-    var email = Optional.ofNullable(samlResponse.getNameId().value())
+    var userEmail = Optional.ofNullable(samlResponse.getNameId().value())
         .filter(StringUtils::isNotBlank)
         .map(NORMALIZE_STRING)
         .orElseThrow(() -> new UserSynchronizationException(
             "SAML response does not contain email")
         );
+    Optional<User> userOptional;
 
-    return userRepository.findByEmail(email)
-        .orElseGet(() -> createUser(samlResponse.getAttributes(), findProvider(samlResponse)));
+    try {
+      userOptional = userRepository.findByEmailIgnoreCase(userEmail);
+    } catch (NonUniqueResultException e) {
+      log.error("Data integrity violation: Multiple users found with email: {}", userEmail);
+      throw new UserSynchronizationException("User with email '"
+          + userEmail
+          + "' already exists, but multiple records found. Please contact administrator to resolve this issue.");
+    }
+
+    return userOptional.orElseGet(() -> createUser(samlResponse.getAttributes(), findProvider(samlResponse)));
   }
 
   private Integration findProvider(SamlResponse samlResponse) {
