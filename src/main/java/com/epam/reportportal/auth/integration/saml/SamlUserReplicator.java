@@ -38,14 +38,18 @@ import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.model.saml.SamlResponse;
+import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
+import jakarta.persistence.NonUniqueResultException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
@@ -60,9 +64,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
 
+  private static final Logger log = LoggerFactory.getLogger(SamlUserReplicator.class);
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
-
   private final ApplicationEventPublisher eventPublisher;
 
   @Autowired
@@ -89,7 +93,16 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       throw new RuntimeException(e);
     }
     String userEmail = samlResponse.getNameId().value();
-    Optional<User> userOptional = userRepository.findByEmail(NORMALIZE_STRING.apply(userEmail));
+    Optional<User> userOptional;
+
+    try {
+      userOptional = userRepository.findByEmailIgnoreCase(userEmail);
+    } catch (NonUniqueResultException e) {
+      log.error("Data integrity violation: Multiple users found with email: {}", userEmail);
+      throw new UserSynchronizationException("User with email '"
+          + userEmail
+          + "' already exists, but multiple records found. Please contact administrator to resolve this issue.");
+    }
 
     if (userOptional.isPresent()) {
       return userOptional.get();
@@ -117,8 +130,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setActive(Boolean.TRUE);
 
     if (samlProvider.isPresent()) {
-      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(),
-          samlResponse.getAttributes());
+      populateUserDetailsIfSettingsArePresent(user, samlProvider.get(), samlResponse.getAttributes());
     } else {
       populateUserDetails(user, samlResponse.getAttributes());
     }
@@ -156,6 +168,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         int num = Integer.parseInt(suffix);
         maxPostfix = Math.max(maxPostfix, num);
       } catch (NumberFormatException ignored) {
+        // Ignore non-numeric suffixes
       }
     }
     return userName + "_" + (maxPostfix + 1);
