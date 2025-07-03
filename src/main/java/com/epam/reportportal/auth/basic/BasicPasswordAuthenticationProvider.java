@@ -27,9 +27,11 @@ import jakarta.inject.Provider;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Checks whether client have more auth errors than defined and throws exception if so.
@@ -56,12 +58,17 @@ public class BasicPasswordAuthenticationProvider extends DaoAuthenticationProvid
     if (!accountNonLocked) {
       throw new ReportPortalException(ErrorType.ADDRESS_LOCKED);
     }
-    Authentication auth = super.authenticate(authentication);
-    eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
+    
+    try {
+      Authentication auth = super.authenticate(authentication);
+      eventPublisher.publishEvent(new UiUserSignedInEvent(auth));
 
-    ConvertToOauthToken convertToOauthToken = new ConvertToOauthToken(tokenService);
+      ConvertToOauthToken convertToOauthToken = new ConvertToOauthToken(tokenService);
 
-    ClientToken clientToken = (ClientToken) authentication;
-    return convertToOauthToken.convert(clientToken, auth);
+      ClientToken clientToken = (ClientToken) authentication;
+      return convertToOauthToken.convert(clientToken, auth);
+    } catch (UsernameNotFoundException e) {
+      throw new BadCredentialsException("Bad credentials");
+    }
   }
 }
