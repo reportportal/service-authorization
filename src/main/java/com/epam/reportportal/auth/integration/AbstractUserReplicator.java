@@ -16,6 +16,7 @@
 
 package com.epam.reportportal.auth.integration;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.binary.UserBinaryDataService;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
 public class AbstractUserReplicator {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
+  private static final String EMAIL_NOT_PROVIDED_MSG = "Email not provided";
 
   protected final UserRepository userRepository;
   protected final ProjectRepository projectRepository;
@@ -103,10 +105,17 @@ public class AbstractUserReplicator {
    *
    * @param email email to check
    */
-  protected void checkEmail(String email) {
+  protected void checkExistingEmail(String email) {
     if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
       throw new UserSynchronizationException("User with email '" + email + "' already exists");
     }
+  }
+
+  protected String validateEmail(String email) {
+    if (isNullOrEmpty(email)) {
+      throw new UserSynchronizationException(EMAIL_NOT_PROVIDED_MSG);
+    }
+    return email.toLowerCase();
   }
 
   protected void uploadPhoto(User user, BinaryData data) {
