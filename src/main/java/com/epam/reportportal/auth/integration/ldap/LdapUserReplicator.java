@@ -17,7 +17,6 @@
 package com.epam.reportportal.auth.integration.ldap;
 
 import static com.epam.reportportal.auth.util.AuthUtils.CROP_DOMAIN;
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.binary.UserBinaryDataService;
@@ -49,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class LdapUserReplicator extends AbstractUserReplicator {
 
-  private static final String EMAIL_NOT_PROVIDED_MSG = "Email not provided";
   private static final String USER_ALREADY_EXISTS_MSG = "User with login '%s' already exists";
   private static final String EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG = "Email attribute not provided";
 
@@ -93,12 +91,6 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     return user;
   }
 
-  private String validateEmail(String email) {
-    if (isNullOrEmpty(email)) {
-      throw new UserSynchronizationException(EMAIL_NOT_PROVIDED_MSG);
-    }
-    return email.toLowerCase();
-  }
 
   private User createNewUser(DirContextOperations ctx, Map<String, String> syncAttributes,
       String email, String login) {
@@ -110,7 +102,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     String fullName = getFullName(ctx, syncAttributes);
     user.setFullName(fullName);
 
-    checkEmail(email);
+    checkExistingEmail(email);
     user.setEmail(email);
     user.setMetadata(defaultMetaData());
     user.setUserType(UserType.LDAP);

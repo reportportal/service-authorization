@@ -87,7 +87,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     }
     email = normalizeId(email);
     if (!user.getEmail().equals(email)) {
-      checkEmail(email);
+      checkExistingEmail(email);
       user.setEmail(email);
     }
     Metadata metadata = ofNullable(user.getMetadata()).orElse(new Metadata(Maps.newHashMap()));
@@ -133,7 +133,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     }
     email = normalizeId(email);
     if (StringUtils.isBlank(user.getEmail()) || !user.getEmail().equals(email)) {
-      checkEmail(email);
+      checkExistingEmail(email);
       user.setEmail(email);
     }
     user.setFullName(
