@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.model;
 
 import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -35,9 +34,6 @@ import lombok.Setter;
 public class SamlResource extends AbstractAuthResource {
 
   private Long id;
-
-  @JsonProperty(value = "callbackUrl")
-  private String callbackUrl;
 
   /**
    * Provider name associated with IDP

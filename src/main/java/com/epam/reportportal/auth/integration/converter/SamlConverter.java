@@ -16,7 +16,6 @@
 
 package com.epam.reportportal.auth.integration.converter;
 
-import static com.epam.reportportal.auth.integration.parameter.SamlParameter.BASE_PATH;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.EMAIL_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FIRST_NAME_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FULL_NAME_ATTRIBUTE;
@@ -27,17 +26,14 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.IDP_URL;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAST_NAME_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROLES_ATTRIBUTE;
-import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.entity.integration.Integration;
-import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
 import com.epam.reportportal.auth.model.SamlProvidersResource;
 import com.epam.reportportal.auth.model.SamlResource;
 import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -72,11 +68,6 @@ public class SamlConverter {
     IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
     IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
     ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
-    final IntegrationType integrationType = integration.getType();
-    ofNullable(integrationType.getDetails()).flatMap(
-            typeDetails -> Optional.ofNullable(typeDetails.getDetails()))
-        .flatMap(BASE_PATH::getParameter)
-        .ifPresent(resource::setCallbackUrl);
     return resource;
   };
 
