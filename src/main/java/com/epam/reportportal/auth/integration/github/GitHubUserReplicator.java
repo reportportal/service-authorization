@@ -63,7 +63,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
         contentTypeResolver);
     this.userActivityPublisher = userActivityPublisher;
   }
-  
+
   private final UserActivityPublisher userActivityPublisher;
 
   /**

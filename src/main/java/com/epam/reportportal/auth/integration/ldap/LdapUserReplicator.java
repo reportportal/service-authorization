@@ -48,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class LdapUserReplicator extends AbstractUserReplicator {
 
-  private static final String EMAIL_NOT_PROVIDED_MSG = "Email not provided";
   private static final String USER_ALREADY_EXISTS_MSG = "User with login '%s' already exists";
   private static final String EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG = "Email attribute not provided";
   private final UserActivityPublisher userActivityPublisher;
@@ -92,12 +91,6 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     return user;
   }
 
-  private String validateEmail(String email) {
-    if (isNullOrEmpty(email)) {
-      throw new UserSynchronizationException(EMAIL_NOT_PROVIDED_MSG);
-    }
-    return email.toLowerCase();
-  }
 
   private User createNewUser(
       DirContextOperations ctx,
