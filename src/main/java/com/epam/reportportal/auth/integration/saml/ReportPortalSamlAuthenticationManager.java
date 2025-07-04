@@ -21,6 +21,7 @@ import com.epam.reportportal.auth.util.AuthUtils;
 import java.util.Collections;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,6 +59,6 @@ public class ReportPortalSamlAuthenticationManager implements AuthenticationMana
 
       return saml2Authentication;
     }
-    throw new AccessDeniedException("Bad credentials");
+    throw new BadCredentialsException("Bad credentials");
   }
 }

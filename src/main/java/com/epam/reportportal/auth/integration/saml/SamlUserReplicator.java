@@ -35,8 +35,8 @@ import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.model.saml.SamlResponse;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.auth.rules.commons.validation.Suppliers;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
-import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import jakarta.persistence.NonUniqueResultException;
 import java.util.Map;
@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +59,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
+
+  private static final String DEFAULT_EMAIL_ATTR = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
 
   private static final Logger log = LoggerFactory.getLogger(SamlUserReplicator.class);
   private final IntegrationTypeRepository integrationTypeRepository;
@@ -126,8 +129,9 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   private Integration findProvider(SamlResponse samlResponse) {
     var integrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
-        .orElseThrow(() -> new ReportPortalException(
-            ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.SAML.getName()));
+        .orElseThrow(() -> new ProviderNotFoundException(
+            Suppliers.formattedSupplier(ErrorType.AUTH_INTEGRATION_NOT_FOUND.getDescription(),
+                AuthIntegrationType.SAML.getName()).get()));
 
     return integrationRepository.findAllGlobalByType(integrationType)
         .stream()
@@ -136,8 +140,9 @@ public class SamlUserReplicator extends AbstractUserReplicator {
           return alias.isPresent() && alias.get().equalsIgnoreCase(samlResponse.getIssuer());
         })
         .findFirst()
-        .orElseThrow(() -> new ReportPortalException(
-            ErrorType.AUTH_INTEGRATION_NOT_FOUND, samlResponse.getIssuer()));
+        .orElseThrow(() -> new ProviderNotFoundException(
+            Suppliers.formattedSupplier(ErrorType.AUTH_INTEGRATION_NOT_FOUND.getDescription(),
+                samlResponse.getIssuer()).get()));
   }
 
   private User createUser(Map<String, String> details, Integration integration) {
@@ -164,17 +169,11 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   }
 
   private String resolveEmail(Map<String, String> details, Integration integration) {
-    var attr = SamlParameter.EMAIL_ATTRIBUTE
-        .getParameter(integration)
-        .orElse(UserAttribute.EMAIL.toString());
-
-    return Optional.ofNullable(details.get(attr))
+    return Optional.ofNullable(details.get(SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration)))
+        .or(() -> Optional.ofNullable(details.get(DEFAULT_EMAIL_ATTR)))
         .filter(StringUtils::isNotBlank)
         .map(NORMALIZE_STRING)
-        .orElseThrow(() -> new ReportPortalException(
-            ErrorType.ATTRIBUTE_NOT_FOUND,
-            attr
-        ));
+        .orElseThrow(() -> new UserSynchronizationException(EMAIL_NOT_PROVIDED_MSG));
   }
 
   private String resolveName(Map<String, String> details, Integration integration) {
