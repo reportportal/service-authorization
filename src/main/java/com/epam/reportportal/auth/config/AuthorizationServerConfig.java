@@ -39,6 +39,7 @@ import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -108,19 +109,19 @@ public class AuthorizationServerConfig {
   @Value("${rp.jwt.issuer}")
   private String jwtIssuer;
 
-  private final  ServerSettingsRepository serverSettingsRepository;
+  private final ServerSettingsRepository serverSettingsRepository;
 
-  private final  UserDetailsService userDetailsService;
+  private final UserDetailsService userDetailsService;
 
-  private final  IntegrationRepository authConfigRepository;
+  private final IntegrationRepository authConfigRepository;
 
-  private final  LdapUserReplicator ldapUserReplicator;
+  private final LdapUserReplicator ldapUserReplicator;
 
-  private final  ApplicationEventPublisher eventPublisher;
+  private final ApplicationEventPublisher eventPublisher;
 
-  private final  MutableClientRegistrationRepository clientRegistrationRepository;
+  private final MutableClientRegistrationRepository clientRegistrationRepository;
 
-  private final  AuthenticationFailureHandler authenticationFailureHandler;
+  private final AuthenticationFailureHandler authenticationFailureHandler;
 
   private final List<OAuthProvider> authProviders;
 
@@ -179,15 +180,15 @@ public class AuthorizationServerConfig {
   @Bean
   @Profile("!unittest")
   public JwtEncoder jwtEncoder() {
-    SecretKey key = new SecretKeySpec(getSecret().getBytes(),
-        "HmacSHA256");
+    SecretKey key = new SecretKeySpec(getSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     return new NimbusJwtEncoder(new ImmutableSecret<>(key));
   }
 
   @Bean
   @Profile("!unittest")
   public JwtDecoder jwtDecoder() {
-    return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(getSecret().getBytes(), "HmacSHA256")).build();
+    return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(getSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256"))
+        .build();
   }
 
   @Bean
@@ -226,7 +227,8 @@ public class AuthorizationServerConfig {
 
   @Bean
   public AuthenticationProvider ldapAuthProvider() {
-    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
+    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(),
+        new TokenServicesFacade(jwtEncoder(), jwtIssuer));
   }
 
   @Bean("ldapDetailsContextMapper")
@@ -263,9 +265,15 @@ public class AuthorizationServerConfig {
     if (StringUtils.hasText(signingKey)) {
       return signingKey;
     }
-    Optional<ServerSettings> secretKey = serverSettingsRepository.findByKey(SECRET_KEY);
-    return secretKey.isPresent() ? secretKey.get().getValue()
-        : serverSettingsRepository.generateSecret();
+
+    return serverSettingsRepository.findByKey(SECRET_KEY)
+        .map(ServerSettings::getValue)
+        .orElseGet(() -> {
+          serverSettingsRepository.generateSecret();
+          return serverSettingsRepository.findByKey(SECRET_KEY)
+              .orElseThrow(() -> new IllegalStateException("Failed to generate secret key"))
+              .getValue();
+        });
   }
 
   @Bean
@@ -305,7 +313,8 @@ public class AuthorizationServerConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(new DelegatingOAuth2UserService<>(getUserServices(authProviders))))
+            .userInfoEndpoint(
+                userInfo -> userInfo.userService(new DelegatingOAuth2UserService<>(getUserServices(authProviders))))
             .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authorization -> authorization
                 .baseUri("/oauth/login")
@@ -364,7 +373,9 @@ public class AuthorizationServerConfig {
   }
 
   public List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> getUserServices(List<OAuthProvider> providers) {
-    return providers.stream().map(provider -> provider.getUserService(clientRegistrationRepository.findOAuthRegistrationById(
-        provider.getName()).map(OAuthRegistrationConverters.TO_RESOURCE).orElse(new OAuthRegistrationResource()))).collect(Collectors.toList());
+    return providers.stream()
+        .map(provider -> provider.getUserService(clientRegistrationRepository.findOAuthRegistrationById(
+            provider.getName()).map(OAuthRegistrationConverters.TO_RESOURCE).orElse(new OAuthRegistrationResource())))
+        .collect(Collectors.toList());
   }
 }
