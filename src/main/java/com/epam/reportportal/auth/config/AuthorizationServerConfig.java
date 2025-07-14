@@ -268,12 +268,9 @@ public class AuthorizationServerConfig {
 
     return serverSettingsRepository.findByKey(SECRET_KEY)
         .map(ServerSettings::getValue)
-        .orElseGet(() -> {
-          serverSettingsRepository.generateSecret();
-          return serverSettingsRepository.findByKey(SECRET_KEY)
-              .orElseThrow(() -> new IllegalStateException("Failed to generate secret key"))
-              .getValue();
-        });
+        .orElseGet(() -> serverSettingsRepository.findByKey(SECRET_KEY)
+            .map(ServerSettings::getValue)
+            .orElseGet(serverSettingsRepository::generateSecret));
   }
 
   @Bean
