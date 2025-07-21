@@ -33,7 +33,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 /**
- * Success handler for external oauth. Generates internal token for authenticated user to be used on UI/Agents side
+ * Success handler for external oauth. Generates internal token for authenticated user to be used on
+ * UI/Agents side
  *
  * @author <a href="mailto:andrei_varabyeu@epam.com">Andrei Varabyeu</a>
  */
