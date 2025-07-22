@@ -26,7 +26,6 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface ServerSettingsRepository extends ReportPortalRepository<ServerSettings, Long> {
 
-  @Modifying
   @Query(value = "INSERT INTO server_settings (key, value) VALUES ('secret.key', gen_random_bytes(32)) RETURNING value", nativeQuery = true)
   String generateSecret();
 
