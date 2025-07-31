@@ -208,10 +208,13 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setRole(UserRole.USER);
   }
 
-  private void populateUserDetailsIfSettingsArePresent(User user, Integration integration,
-      Map<String, String> details) {
-    String email = Optional.ofNullable(details.get(SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration)))
-        .or(() -> Optional.ofNullable(details.get(DEFAULT_EMAIL_ATTR)))
+  private void populateUserDetailsIfSettingsArePresent(
+      User user,
+      Integration integration,
+      Map<String, String> details
+  ) {
+    var emailAttribute = SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(DEFAULT_EMAIL_ATTR);
+    var email = Optional.ofNullable(details.get(emailAttribute))
         .map(NORMALIZE_STRING)
         .orElse(null);
 
