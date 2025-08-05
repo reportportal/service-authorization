@@ -18,7 +18,6 @@ package com.epam.reportportal.auth.dao;
 
 import com.epam.reportportal.auth.entity.ServerSettings;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 /**
