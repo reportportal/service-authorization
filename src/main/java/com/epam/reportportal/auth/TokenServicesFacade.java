@@ -118,6 +118,7 @@ public class TokenServicesFacade {
     JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
         .id(UUID.randomUUID().toString())
         .subject(username)
+        .audience(List.of("reportportal"))
         .claim("user_name", username)
         .claim("authorities", authorities.stream()
             .map(GrantedAuthority::getAuthority)
