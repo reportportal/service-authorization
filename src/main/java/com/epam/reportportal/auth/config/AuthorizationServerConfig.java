@@ -104,6 +104,9 @@ public class AuthorizationServerConfig {
   @Value("${rp.jwt.token.validity-period}")
   private Integer tokenValidity;
 
+  @Value("${rp.jwt.issuer}")
+  private String jwtIssuer;
+
   private final  ServerSettingsRepository serverSettingsRepository;
 
   private final  UserDetailsService userDetailsService;
@@ -222,7 +225,7 @@ public class AuthorizationServerConfig {
 
   @Bean
   public AuthenticationProvider ldapAuthProvider() {
-    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder()));
+    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
   }
 
   @Bean("ldapDetailsContextMapper")
@@ -241,7 +244,7 @@ public class AuthorizationServerConfig {
   @Bean
   public AuthenticationProvider activeDirectoryAuthProvider() {
     return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
-        activeDirectoryDetailsContextMapper(), new TokenServicesFacade(jwtEncoder()));
+        activeDirectoryDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
   }
 
   @Bean("activeDirectoryDetailsContextMapper")
