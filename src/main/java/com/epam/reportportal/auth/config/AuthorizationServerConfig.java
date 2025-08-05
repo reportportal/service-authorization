@@ -41,7 +41,6 @@ import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -262,9 +261,10 @@ public class AuthorizationServerConfig {
     if (StringUtils.hasText(signingKey)) {
       return signingKey;
     }
-    Optional<ServerSettings> secretKey = serverSettingsRepository.findByKey(SECRET_KEY);
-    return secretKey.isPresent() ? secretKey.get().getValue()
-        : serverSettingsRepository.generateSecret();
+
+    return serverSettingsRepository.findByKey(SECRET_KEY)
+        .map(ServerSettings::getValue)
+        .orElseGet(serverSettingsRepository::generateSecret);
   }
 
   @Bean
