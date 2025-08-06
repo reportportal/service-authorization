@@ -41,7 +41,6 @@ import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -103,6 +102,9 @@ public class AuthorizationServerConfig {
 
   @Value("${rp.jwt.token.validity-period}")
   private Integer tokenValidity;
+
+  @Value("${rp.jwt.issuer}")
+  private String jwtIssuer;
 
   private final  ServerSettingsRepository serverSettingsRepository;
 
@@ -222,7 +224,7 @@ public class AuthorizationServerConfig {
 
   @Bean
   public AuthenticationProvider ldapAuthProvider() {
-    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder()));
+    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
   }
 
   @Bean("ldapDetailsContextMapper")
@@ -241,7 +243,7 @@ public class AuthorizationServerConfig {
   @Bean
   public AuthenticationProvider activeDirectoryAuthProvider() {
     return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
-        activeDirectoryDetailsContextMapper(), new TokenServicesFacade(jwtEncoder()));
+        activeDirectoryDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
   }
 
   @Bean("activeDirectoryDetailsContextMapper")
@@ -259,9 +261,10 @@ public class AuthorizationServerConfig {
     if (StringUtils.hasText(signingKey)) {
       return signingKey;
     }
-    Optional<ServerSettings> secretKey = serverSettingsRepository.findByKey(SECRET_KEY);
-    return secretKey.isPresent() ? secretKey.get().getValue()
-        : serverSettingsRepository.generateSecret();
+
+    return serverSettingsRepository.findByKey(SECRET_KEY)
+        .map(ServerSettings::getValue)
+        .orElseGet(serverSettingsRepository::generateSecret);
   }
 
   @Bean
