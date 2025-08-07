@@ -64,6 +64,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
 
+  private static final String DEFAULT_EMAIL_ATTR = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
   private static final Logger log = LoggerFactory.getLogger(SamlUserReplicator.class);
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
@@ -198,7 +199,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   private void populateUserDetails(User user, Map<String, String> details) {
     String email = NORMALIZE_STRING.apply(details.get(UserAttribute.EMAIL.toString()));
-    checkEmail(email);
+    checkExistingEmail(email);
     user.setEmail(email);
     String firstName = details.get(UserAttribute.FIRST_NAME.toString());
     String lastName = details.get(UserAttribute.LAST_NAME.toString());
@@ -207,12 +208,18 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setRole(UserRole.USER);
   }
 
-  private void populateUserDetailsIfSettingsArePresent(User user, Integration integration,
-      Map<String, String> details) {
+  private void populateUserDetailsIfSettingsArePresent(
+      User user,
+      Integration integration,
+      Map<String, String> details
+  ) {
+    var emailAttribute = SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(DEFAULT_EMAIL_ATTR);
+    var email = Optional.ofNullable(details.get(emailAttribute))
+        .map(NORMALIZE_STRING)
+        .orElse(null);
 
-    String email = NORMALIZE_STRING.apply(
-        details.get(SamlParameter.EMAIL_ATTRIBUTE.getParameter(integration).orElse(null)));
-    checkEmail(email);
+    validateEmail(email);
+    checkExistingEmail(email);
     user.setEmail(email);
 
     Optional<String> idpFullNameOptional =
