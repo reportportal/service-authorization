@@ -5,7 +5,12 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - 'develop'
-
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'Image tag for the Docker build'
+        required: true
+        default: 'feature'
 jobs:
   variables-setup:
     name: Setting variables for docker build
@@ -18,7 +23,15 @@ jobs:
       - name: Create variables
         id: vars
         run: |
-          echo "tag=$(echo ${{ github.head_ref }}-${{ github.run_number }} | tr '/' '-')" >> $GITHUB_OUTPUT
+          if [ -n "${{ github.event.inputs.image-tag }}" ]; then
+            echo "Using provided image tag: ${{ github.event.inputs.image-tag }}"
+            echo "tag=${{ github.event.inputs.image-tag }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.head_ref }}" ]; then
+            echo "tag=$(echo ${{ github.head_ref }}-${{ github.run_number }} | tr '/' '-')" >> $GITHUB_OUTPUT
+          else
+            echo "tag=$(echo ${{ github.ref_name }}-${{ github.run_number }} | tr '/' '-')" >> $GITHUB_OUTPUT
+          fi
+          
           echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
@@ -36,3 +49,4 @@ jobs:
       date: ${{ needs.variables-setup.outputs.date }}
       runs-on: ubuntu-latest
     secrets: inherit
+
