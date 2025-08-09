@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 public class AbstractUserReplicator {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
+  protected static final String EMAIL_NOT_PROVIDED_MSG = "Email not provided";
 
   protected final UserRepository userRepository;
   protected final ProjectRepository projectRepository;
