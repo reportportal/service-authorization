@@ -11,6 +11,7 @@ on:
         description: 'Image tag for the Docker build'
         required: true
         default: 'feature'
+        
 jobs:
   variables-setup:
     name: Setting variables for docker build

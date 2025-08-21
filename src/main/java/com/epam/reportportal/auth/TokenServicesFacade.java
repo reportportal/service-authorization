@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -40,37 +42,56 @@ import org.springframework.stereotype.Component;
 public class TokenServicesFacade {
 
   private final JwtEncoder jwtEncoder;
+  private final String issuer;
 
-  public TokenServicesFacade(JwtEncoder jwtEncoder) {
+  public TokenServicesFacade(JwtEncoder jwtEncoder, @Value("${rp.jwt.issuer}") String issuer) {
     this.jwtEncoder = jwtEncoder;
+    this.issuer = issuer;
   }
 
-  public Jwt createToken(ReportPortalClient client, String username,
+  public Jwt createToken(
+      ReportPortalClient client,
+      String username,
       Authentication userAuthentication,
-      Map<String, Serializable> extensionParams) {
+      Map<String, Serializable> extensionParams
+  ) {
     return createNonApiToken(client, username, userAuthentication, extensionParams);
   }
 
-  public Jwt createNonApiToken(ReportPortalClient client, String username,
+  public Jwt createNonApiToken(
+      ReportPortalClient client,
+      String username,
       Authentication userAuthentication,
-      Map<String, Serializable> extensionParams) {
+      Map<String, Serializable> extensionParams
+  ) {
     return createToken(client.name(), username, userAuthentication, extensionParams);
   }
 
-  private Jwt createToken(String clientId, String username, Authentication authentication,
-      Map<String, Serializable> extensionParams) {
+  private Jwt createToken(
+      String clientId,
+      String username,
+      Authentication authentication,
+      Map<String, Serializable> extensionParams
+  ) {
     Instant now = Instant.now();
 
     Instant expiry = now.plus(1, ChronoUnit.DAYS);
 
     JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
         .id(UUID.randomUUID().toString())
+        .subject(username)
+        .audience(List.of("reportportal"))
         .claim("user_name", username)
-        .claim("authorities", authentication.getAuthorities())
-        .issuedAt(Instant.now())
+        .claim("authorities", authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList()))
+        .issuedAt(now)
+        .notBefore(now)
         .expiresAt(expiry)
+        .issuer(issuer)
         .claim(OAuth2ParameterNames.CLIENT_ID, clientId)
-        .claim("scopes", List.of("ui"));
+        .claim("scopes", List.of("ui"))
+        .claim("token_type", "access_token");
 
     if (extensionParams != null) {
       extensionParams.forEach(claimsBuilder::claim);
@@ -84,20 +105,31 @@ public class TokenServicesFacade {
     return jwtEncoder.encode(parameters);
   }
 
-  public Jwt createToken(String clientId, String username, Collection<? extends GrantedAuthority> authorities,
-      Map<String, Serializable> extensionParams) {
+  public Jwt createToken(
+      String clientId,
+      String username,
+      Collection<? extends GrantedAuthority> authorities,
+      Map<String, Serializable> extensionParams
+  ) {
     Instant now = Instant.now();
 
     Instant expiry = now.plus(1, ChronoUnit.DAYS);
 
     JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
         .id(UUID.randomUUID().toString())
+        .subject(username)
+        .audience(List.of("reportportal"))
         .claim("user_name", username)
-        .claim("authorities", authorities)
-        .issuedAt(Instant.now())
+        .claim("authorities", authorities.stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList()))
+        .issuedAt(now)
+        .notBefore(now)
         .expiresAt(expiry)
+        .issuer(issuer)
         .claim(OAuth2ParameterNames.CLIENT_ID, clientId)
-        .claim("scopes", List.of("ui"));
+        .claim("scopes", List.of("ui"))
+        .claim("token_type", "access_token");
 
     if (extensionParams != null) {
       extensionParams.forEach(claimsBuilder::claim);
