@@ -25,9 +25,12 @@ import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
+import org.springframework.security.saml2.provider.service.registration.AssertingPartyMetadata;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
  */
+@Slf4j
 @Component
 public class RelyingPartyBuilder {
 
@@ -60,6 +64,9 @@ public class RelyingPartyBuilder {
   @Value("${rp.auth.saml.signed-requests}")
   private Boolean signedRequests;
 
+  @Value("${rp.auth.saml.network-connection-timeout:5000}")
+  private Integer networkConnectionTimeout;
+
   private static final String CALL_BACK_URL = "{baseUrl}/login/saml2/sso/{registrationId}";
 
   private static final String SAML_TYPE = "saml";
@@ -80,29 +87,58 @@ public class RelyingPartyBuilder {
 
 
   public List<RelyingPartyRegistration> createRelyingPartyRegistrations() {
-    IntegrationType samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
+    try {
+      if (networkReadTimeout != null) {
+        System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(networkReadTimeout));
+      }
+      if (networkConnectionTimeout != null) {
+        System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(networkConnectionTimeout));
+      }
+    } catch (SecurityException se) {
+      log.warn("Unable to set default network timeouts: {}", se.getMessage());
+    }
+    var samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
         .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
 
-    List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
+    var providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
-    return providers.stream().map(provider -> {
-      RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
-          .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
-          .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
-          .assertionConsumerServiceLocation(getCallBackUrl())
-          .entityId(entityId)
-          .signingX509Credentials((c) -> {
-            if (signedRequests) {
-              c.add(getSigningCredential());
-            }
-          })
-          .assertingPartyDetails(party -> party.entityId(SamlParameter.IDP_NAME.getParameter(provider).get())
-              .wantAuthnRequestsSigned(false)
-              .singleSignOnServiceBinding(Saml2MessageBinding.POST))
-          .build();
-      return relyingPartyRegistration;
+    var registrations = providers.stream()
+        .flatMap(provider -> {
+          try {
+            var metadataLocation = SamlParameter.IDP_METADATA_URL.getParameter(provider)
+                .orElseThrow(() -> new IllegalStateException("IDP metadata URL is missing"));
+            var registrationId = SamlParameter.IDP_NAME.getParameter(provider)
+                .orElseThrow(() -> new IllegalStateException("IDP name is missing"));
 
-    }).toList();
+            var rp = RelyingPartyRegistrations
+                .fromMetadataLocation(metadataLocation)
+                .registrationId(registrationId)
+                .assertionConsumerServiceLocation(getCallBackUrl())
+                .entityId(entityId)
+                .signingX509Credentials((c) -> {
+                  if (Boolean.TRUE.equals(signedRequests)) {
+                    c.add(getSigningCredential());
+                  }
+                })
+                .assertingPartyMetadata(meta -> meta
+                    .entityId(registrationId)
+                    .wantAuthnRequestsSigned(false)
+                    .singleSignOnServiceBinding(Saml2MessageBinding.POST)
+                )
+                .build();
+            return Stream.of(rp);
+          } catch (Exception e) {
+            log.warn("Skipping SAML provider due to metadata error: {}", e.getMessage());
+            return Stream.empty();
+          }
+        })
+        .toList();
+
+    if (registrations.isEmpty()) {
+      log.warn("No valid SAML providers registered. SAML login will be unavailable.");
+    }
+
+    return registrations;
   }
 
   private Saml2X509Credential getSigningCredential() {
