@@ -55,14 +55,14 @@ public class RelyingPartyBuilder {
   @Value("${rp.auth.saml.key-store-password}")
   private String keyStorePassword;
 
-  @Value("${rp.auth.saml.network-read-timeout}")
-  private Integer networkReadTimeout;
+  @Value("${rp.auth.saml.network-read-timeout:10000}")
+  private int networkReadTimeout;
 
   @Value("${rp.auth.saml.signed-requests}")
   private Boolean signedRequests;
 
   @Value("${rp.auth.saml.network-connection-timeout:5000}")
-  private Integer networkConnectionTimeout;
+  private int networkConnectionTimeout;
 
   private static final String CALL_BACK_URL = "{baseUrl}/login/saml2/sso/{registrationId}";
 
@@ -75,22 +75,16 @@ public class RelyingPartyBuilder {
   @Value("${server.servlet.context-path}")
   private String pathValue;
 
-
   public RelyingPartyBuilder(IntegrationRepository integrationRepository,
       IntegrationTypeRepository integrationTypeRepository) {
     this.integrationRepository = integrationRepository;
     this.integrationTypeRepository = integrationTypeRepository;
   }
 
-
   public List<RelyingPartyRegistration> createRelyingPartyRegistrations() {
     try {
-      if (networkReadTimeout != null) {
-        System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(networkReadTimeout));
-      }
-      if (networkConnectionTimeout != null) {
-        System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(networkConnectionTimeout));
-      }
+      System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(networkReadTimeout));
+      System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(networkConnectionTimeout));
     } catch (SecurityException se) {
       log.warn("Unable to set default network timeouts: {}", se.getMessage());
     }
