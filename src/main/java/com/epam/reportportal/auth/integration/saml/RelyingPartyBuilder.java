@@ -18,8 +18,6 @@ package com.epam.reportportal.auth.integration.saml;
 
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
-import com.epam.reportportal.auth.entity.integration.Integration;
-import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
@@ -30,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
-import org.springframework.security.saml2.provider.service.registration.AssertingPartyMetadata;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
