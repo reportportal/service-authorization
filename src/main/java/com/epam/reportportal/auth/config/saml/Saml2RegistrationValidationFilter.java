@@ -21,10 +21,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import javax.annotation.Nonnull;
-import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -39,9 +39,14 @@ public class Saml2RegistrationValidationFilter extends OncePerRequestFilter {
   private static final String AUTHENTICATE_PREFIX = "/saml2/authenticate/";
 
   private final RelyingPartyRegistrationRepository relyingPartyRepository;
+  private final AuthenticationFailureHandler failureHandler;
 
-  public Saml2RegistrationValidationFilter(RelyingPartyRegistrationRepository relyingPartyRepository) {
+  public Saml2RegistrationValidationFilter(
+      RelyingPartyRegistrationRepository relyingPartyRepository,
+      AuthenticationFailureHandler failureHandler
+  ) {
     this.relyingPartyRepository = relyingPartyRepository;
+    this.failureHandler = failureHandler;
   }
 
   @Override
@@ -57,16 +62,11 @@ public class Saml2RegistrationValidationFilter extends OncePerRequestFilter {
     if (servletPath != null && servletPath.startsWith(AUTHENTICATE_PREFIX)) {
       var registrationId = servletPath.substring(AUTHENTICATE_PREFIX.length());
       if (!StringUtils.hasText(registrationId) || relyingPartyRepository.findByRegistrationId(registrationId) == null) {
-        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-        var body = String.format(
-            "{\"code\":\"404\",\"error\":\"SAML provider not found. Check SAML integration.\",\"registrationId\":\"%s\"}",
-            registrationId.replace("\\", "\\\\").replace("\"", "\\\"")
+        failureHandler.onAuthenticationFailure(
+            request,
+            response,
+            new AuthenticationServiceException("SAML provider not found. Check SAML integration.")
         );
-
-        response.getWriter().write(body);
 
         return;
       }

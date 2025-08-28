@@ -68,7 +68,7 @@ public class Saml2AuthenticationConfiguration {
     saml2Filter.setAuthenticationFailureHandler(failureHandler);
 
     Saml2RegistrationValidationFilter validationFilter =
-        new Saml2RegistrationValidationFilter(relyingPartyRegistrationRepository);
+        new Saml2RegistrationValidationFilter(relyingPartyRegistrationRepository, failureHandler);
 
     http
         .securityMatcher("/saml2/**", "/login/**")

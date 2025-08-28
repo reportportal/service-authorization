@@ -103,7 +103,7 @@ public class RelyingPartyBuilder {
 
             var registration = RelyingPartyRegistrations.fromMetadataLocation(metadataLocation)
                 .registrationId(registrationId)
-                .assertionConsumerServiceLocation(getCallBackUrl())
+                .assertionConsumerServiceLocation(CALL_BACK_URL)
                 .entityId(entityId)
                 .signingX509Credentials((c) -> {
                   if (Boolean.TRUE.equals(signedRequests)) {
@@ -132,7 +132,7 @@ public class RelyingPartyBuilder {
     return new Saml2X509Credential(privateKey, certificate, Saml2X509Credential.Saml2X509CredentialType.SIGNING);
   }
 
-  private String getCallBackUrl() {
-    return CALL_BACK_URL;
-  }
+//  private String getCallBackUrl() {
+//    return CALL_BACK_URL;
+//  }
 }
