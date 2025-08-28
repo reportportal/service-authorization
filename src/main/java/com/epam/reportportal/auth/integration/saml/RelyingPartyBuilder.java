@@ -25,7 +25,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
@@ -34,7 +33,11 @@ import org.springframework.security.saml2.provider.service.registration.Saml2Mes
 import org.springframework.stereotype.Component;
 
 /**
+ * Builds {@link RelyingPartyRegistration} list from SAML providers stored in DB. Each provider should have at least IDP
+ * metadata URL and IDP name specified.
+ *
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
+ * @author <a href="mailto:Reingold_Shekhtel@epam.com">Reingold Shekhtel</a>
  */
 @Slf4j
 @Component
@@ -55,14 +58,8 @@ public class RelyingPartyBuilder {
   @Value("${rp.auth.saml.key-store-password}")
   private String keyStorePassword;
 
-  @Value("${rp.auth.saml.network-read-timeout:10000}")
-  private int networkReadTimeout;
-
   @Value("${rp.auth.saml.signed-requests}")
   private Boolean signedRequests;
-
-  @Value("${rp.auth.saml.network-connection-timeout:5000}")
-  private int networkConnectionTimeout;
 
   private static final String CALL_BACK_URL = "{baseUrl}/login/saml2/sso/{registrationId}";
 
@@ -72,22 +69,25 @@ public class RelyingPartyBuilder {
 
   private final IntegrationTypeRepository integrationTypeRepository;
 
-  @Value("${server.servlet.context-path}")
-  private String pathValue;
-
+  /**
+   * Constructor with dependencies.
+   *
+   * @param integrationRepository     Integration repository
+   * @param integrationTypeRepository Integration type repository
+   */
   public RelyingPartyBuilder(IntegrationRepository integrationRepository,
       IntegrationTypeRepository integrationTypeRepository) {
     this.integrationRepository = integrationRepository;
     this.integrationTypeRepository = integrationTypeRepository;
   }
 
+  /**
+   * Creates list of {@link RelyingPartyRegistration} from SAML providers stored in DB. Each provider should have at
+   * least IDP metadata URL and IDP name specified.
+   *
+   * @return List of {@link RelyingPartyRegistration}
+   */
   public List<RelyingPartyRegistration> createRelyingPartyRegistrations() {
-    try {
-      System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(networkReadTimeout));
-      System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(networkConnectionTimeout));
-    } catch (SecurityException se) {
-      log.warn("Unable to set default network timeouts: {}", se.getMessage());
-    }
     var samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
         .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
 
@@ -98,11 +98,11 @@ public class RelyingPartyBuilder {
           try {
             var metadataLocation = SamlParameter.IDP_METADATA_URL.getParameter(provider)
                 .orElseThrow(() -> new IllegalStateException("IDP metadata URL is missing"));
+
             var registrationId = SamlParameter.IDP_NAME.getParameter(provider)
                 .orElseThrow(() -> new IllegalStateException("IDP name is missing"));
 
-            var rp = RelyingPartyRegistrations
-                .fromMetadataLocation(metadataLocation)
+            var registration = RelyingPartyRegistrations.fromMetadataLocation(metadataLocation)
                 .registrationId(registrationId)
                 .assertionConsumerServiceLocation(getCallBackUrl())
                 .entityId(entityId)
@@ -111,13 +111,8 @@ public class RelyingPartyBuilder {
                     c.add(getSigningCredential());
                   }
                 })
-                .assertingPartyMetadata(meta -> meta
-                    .entityId(registrationId)
-                    .wantAuthnRequestsSigned(false)
-                    .singleSignOnServiceBinding(Saml2MessageBinding.POST)
-                )
                 .build();
-            return Stream.of(rp);
+            return Stream.of(registration);
           } catch (Exception e) {
             log.warn("Skipping SAML provider due to metadata error: {}", e.getMessage());
             return Stream.empty();
@@ -139,6 +134,6 @@ public class RelyingPartyBuilder {
   }
 
   private String getCallBackUrl() {
-    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat/" ) : CALL_BACK_URL;
+    return CALL_BACK_URL;
   }
 }
