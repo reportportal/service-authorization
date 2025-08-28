@@ -131,8 +131,4 @@ public class RelyingPartyBuilder {
     PrivateKey privateKey = CertificationUtil.getPrivateKey(keyAlias, keyPassword, keyStore, keyStorePassword);
     return new Saml2X509Credential(privateKey, certificate, Saml2X509Credential.Saml2X509CredentialType.SIGNING);
   }
-
-//  private String getCallBackUrl() {
-//    return CALL_BACK_URL;
-//  }
 }
