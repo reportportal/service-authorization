@@ -29,15 +29,8 @@ import com.epam.reportportal.auth.entity.activity.EventSubject;
  *
  * @author Ryhor_Kukharenka
  */
-public class UserCreatedEvent implements ActivityEvent {
-
-  private final Long userId;
-  private final String userLogin;
-
-  public UserCreatedEvent(Long userId, String userLogin) {
-    this.userId = userId;
-    this.userLogin = userLogin;
-  }
+public record UserCreatedEvent(long userId, String userLogin) implements ActivityEvent {
+  private static final String SUBJECT_NAME = "Auth Service";
 
   @Override
   public Activity toActivity() {
@@ -49,9 +42,8 @@ public class UserCreatedEvent implements ActivityEvent {
         .addObjectId(userId)
         .addObjectName(userLogin)
         .addObjectType(EventObject.USER)
-        .addSubjectName("Auth Service")
+        .addSubjectName(SUBJECT_NAME)
         .addSubjectType(EventSubject.APPLICATION)
         .get();
   }
-
 }

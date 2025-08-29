@@ -27,6 +27,7 @@ import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
+import com.epam.reportportal.auth.event.UserActivityPublisher;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
@@ -50,13 +51,15 @@ public class LdapUserReplicator extends AbstractUserReplicator {
   private static final String EMAIL_NOT_PROVIDED_MSG = "Email not provided";
   private static final String USER_ALREADY_EXISTS_MSG = "User with login '%s' already exists";
   private static final String EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG = "Email attribute not provided";
+  private final UserActivityPublisher userActivityPublisher;
 
   @Autowired
   public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver) {
+      ContentTypeResolver contentTypeResolver, UserActivityPublisher userActivityPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver);
+    this.userActivityPublisher = userActivityPublisher;
   }
 
   /**
@@ -116,11 +119,9 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     user.setRole(UserRole.USER);
     user.setExpired(false);
 
-    /* TODO: skip generation until we have new requirements
-    final Project project = generatePersonalProject(user);
-    user.getProjects().add(project.getUsers().iterator().next());
-    */
-    return userRepository.save(user);
+    var saved = userRepository.save(user);
+    userActivityPublisher.publishOnUserCreated(saved);
+    return saved;
   }
 
   private String getFullName(DirContextOperations ctx, Map<String, String> syncAttributes) {

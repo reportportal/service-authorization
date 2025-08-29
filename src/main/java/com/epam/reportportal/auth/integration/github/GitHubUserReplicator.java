@@ -16,35 +16,26 @@
 
 package com.epam.reportportal.auth.integration.github;
 
-import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 import static com.epam.reportportal.auth.util.AuthUtils.NORMALIZE_STRING;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.binary.UserBinaryDataService;
 import com.epam.reportportal.auth.commons.ContentTypeResolver;
 import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.dao.ProjectRepository;
 import com.epam.reportportal.auth.dao.UserRepository;
-import com.epam.reportportal.auth.entity.Metadata;
 import com.epam.reportportal.auth.entity.attachment.BinaryData;
-import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
+import com.epam.reportportal.auth.event.UserActivityPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.auth.rules.commons.validation.BusinessRule;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,10 +58,13 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
    */
   public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver) {
+      ContentTypeResolver contentTypeResolver, UserActivityPublisher userActivityPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver);
+    this.userActivityPublisher = userActivityPublisher;
   }
+  
+  private final UserActivityPublisher userActivityPublisher;
 
   /**
    * Synchronizes user with GitHub account.
@@ -117,7 +111,12 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
             "User with login '" + u.getLogin() + "' already exists");
       }
       return u;
-    }).orElseGet(() -> userRepository.save(createUser(userResource, gitHubClient)));
+    }).orElseGet(() -> {
+      var created = createUser(userResource, gitHubClient);
+      var saved = userRepository.save(created);
+      userActivityPublisher.publishOnUserCreated(saved);
+      return saved;
+    });
 
     return ReportPortalUser.userBuilder().fromUser(user);
   }
@@ -141,10 +140,6 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     user.setUserType(UserType.GITHUB);
     user.setRole(UserRole.USER);
     user.setExpired(false);
-    /* TODO: skip generation until we have requirements
-    final Project project = generatePersonalProject(user);
-    user.getProjects().addAll(project.getUsers());
-    */
     return user;
   }
 
