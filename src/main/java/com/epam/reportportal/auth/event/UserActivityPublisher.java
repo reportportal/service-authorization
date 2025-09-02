@@ -31,10 +31,20 @@ public class UserActivityPublisher {
 
   private final ApplicationEventPublisher publisher;
 
+  /**
+   * Constructor with {@link ApplicationEventPublisher} injection.
+   *
+   * @param publisher Spring application event publisher.
+   */
   public UserActivityPublisher(ApplicationEventPublisher publisher) {
     this.publisher = publisher;
   }
 
+  /**
+   * Publishes {@link UserCreatedEvent} when user is created.
+   *
+   * @param user Created user.
+   */
   public void publishOnUserCreated(User user) {
     publisher.publishEvent(new UserCreatedEvent(user.getId(), user.getLogin()));
   }
