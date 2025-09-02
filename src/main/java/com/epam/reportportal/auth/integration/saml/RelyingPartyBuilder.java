@@ -18,24 +18,27 @@ package com.epam.reportportal.auth.integration.saml;
 
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
-import com.epam.reportportal.auth.entity.integration.Integration;
-import com.epam.reportportal.auth.entity.integration.IntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.saml2.core.Saml2X509Credential;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrations;
-import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
 import org.springframework.stereotype.Component;
 
 /**
+ * Builds {@link RelyingPartyRegistration} list from SAML providers stored in DB. Each provider should have at least IDP
+ * metadata URL and IDP name specified.
+ *
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
+ * @author <a href="mailto:Reingold_Shekhtel@epam.com">Reingold Shekhtel</a>
  */
+@Slf4j
 @Component
 public class RelyingPartyBuilder {
 
@@ -54,9 +57,6 @@ public class RelyingPartyBuilder {
   @Value("${rp.auth.saml.key-store-password}")
   private String keyStorePassword;
 
-  @Value("${rp.auth.saml.network-read-timeout}")
-  private Integer networkReadTimeout;
-
   @Value("${rp.auth.saml.signed-requests}")
   private Boolean signedRequests;
 
@@ -68,50 +68,67 @@ public class RelyingPartyBuilder {
 
   private final IntegrationTypeRepository integrationTypeRepository;
 
-  @Value("${server.servlet.context-path}")
-  private String pathValue;
-
-
+  /**
+   * Constructor with dependencies.
+   *
+   * @param integrationRepository     Integration repository
+   * @param integrationTypeRepository Integration type repository
+   */
   public RelyingPartyBuilder(IntegrationRepository integrationRepository,
       IntegrationTypeRepository integrationTypeRepository) {
     this.integrationRepository = integrationRepository;
     this.integrationTypeRepository = integrationTypeRepository;
   }
 
-
+  /**
+   * Creates list of {@link RelyingPartyRegistration} from SAML providers stored in DB. Each provider should have at
+   * least IDP metadata URL and IDP name specified.
+   *
+   * @return List of {@link RelyingPartyRegistration}
+   */
   public List<RelyingPartyRegistration> createRelyingPartyRegistrations() {
-    IntegrationType samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
+    var samlIntegrationType = integrationTypeRepository.findByName(SAML_TYPE)
         .orElseThrow(() -> new RuntimeException("SAML Integration Type not found"));
 
-    List<Integration> providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
+    var providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
-    return providers.stream().map(provider -> {
-      RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
-          .fromMetadataLocation(SamlParameter.IDP_METADATA_URL.getParameter(provider).get())
-          .registrationId(SamlParameter.IDP_NAME.getParameter(provider).get())
-          .assertionConsumerServiceLocation(getCallBackUrl())
-          .entityId(entityId)
-          .signingX509Credentials((c) -> {
-            if (signedRequests) {
-              c.add(getSigningCredential());
-            }
-          })
-          .assertingPartyDetails(party -> party.entityId(SamlParameter.IDP_NAME.getParameter(provider).get())
-              .wantAuthnRequestsSigned(false)
-              .singleSignOnServiceBinding(Saml2MessageBinding.POST))
-          .build();
-      return relyingPartyRegistration;
+    var registrations = providers.stream()
+        .flatMap(provider -> {
+          try {
+            var metadataLocation = SamlParameter.IDP_METADATA_URL.getParameter(provider)
+                .orElseThrow(() -> new IllegalStateException("IDP metadata URL is missing"));
 
-    }).toList();
+            var registrationId = SamlParameter.IDP_NAME.getParameter(provider)
+                .orElseThrow(() -> new IllegalStateException("IDP name is missing"));
+
+            var registration = RelyingPartyRegistrations.fromMetadataLocation(metadataLocation)
+                .registrationId(registrationId)
+                .assertionConsumerServiceLocation(CALL_BACK_URL)
+                .entityId(entityId)
+                .signingX509Credentials((c) -> {
+                  if (Boolean.TRUE.equals(signedRequests)) {
+                    c.add(getSigningCredential());
+                  }
+                })
+                .build();
+            return Stream.of(registration);
+          } catch (Exception e) {
+            log.warn("Skipping SAML provider due to metadata error: {}", e.getMessage());
+            return Stream.empty();
+          }
+        })
+        .toList();
+
+    if (registrations.isEmpty()) {
+      log.warn("No valid SAML providers registered. SAML login will be unavailable.");
+    }
+
+    return registrations;
   }
 
   private Saml2X509Credential getSigningCredential() {
     X509Certificate certificate = CertificationUtil.getCertificateByName(keyAlias, keyStore, keyStorePassword);
     PrivateKey privateKey = CertificationUtil.getPrivateKey(keyAlias, keyPassword, keyStore, keyStorePassword);
     return new Saml2X509Credential(privateKey, certificate, Saml2X509Credential.Saml2X509CredentialType.SIGNING);
-  }
-
-  private String getCallBackUrl() {
-    return StringUtils.isEmpty(pathValue) || pathValue.equals("/") ? CALL_BACK_URL.replaceFirst("baseUrl}/","baseUrl}/uat/" ) : CALL_BACK_URL;
   }
 }
