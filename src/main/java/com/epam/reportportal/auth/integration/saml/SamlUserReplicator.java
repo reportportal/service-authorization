@@ -28,8 +28,7 @@ import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
-import com.epam.reportportal.auth.event.activity.AssignUserEvent;
-import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
+import com.epam.reportportal.auth.event.UserActivityPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
@@ -42,11 +41,9 @@ import jakarta.persistence.NonUniqueResultException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,13 +53,13 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author <a href="mailto:Reingold_Shekhtel@epam.com">Reingold Shekhtel</a>
  */
+@Slf4j
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
 
-  private static final Logger log = LoggerFactory.getLogger(SamlUserReplicator.class);
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
-  private final ApplicationEventPublisher eventPublisher;
+  private final UserActivityPublisher userActivityPublisher;
 
   /**
    * SAML user replicator constructor.
@@ -80,13 +77,13 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
       IntegrationTypeRepository integrationTypeRepository,
       IntegrationRepository integrationRepository, ContentTypeResolver contentTypeResolver,
-      ApplicationEventPublisher eventPublisher) {
+      UserActivityPublisher userActivityPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver
     );
     this.integrationTypeRepository = integrationTypeRepository;
     this.integrationRepository = integrationRepository;
-    this.eventPublisher = eventPublisher;
+    this.userActivityPublisher = userActivityPublisher;
   }
 
   /**
@@ -158,7 +155,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     userRepository.save(user);
 
-    publishActivityEvents(user);
+    userActivityPublisher.publishOnUserCreated(user);
 
     return user;
   }
@@ -201,13 +198,5 @@ public class SamlUserReplicator extends AbstractUserReplicator {
         .filter(role -> role.toLowerCase().contains("admin"))
         .map(role -> UserRole.ADMINISTRATOR)
         .orElse(UserRole.USER);
-  }
-
-  private void publishActivityEvents(User user) {
-    UserCreatedEvent userCreatedEvent = new UserCreatedEvent(user.getId(), user.getLogin());
-    eventPublisher.publishEvent(userCreatedEvent);
-
-    eventPublisher.publishEvent(
-        new AssignUserEvent(user.getId(), user.getLogin(), null));
   }
 }

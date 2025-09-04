@@ -32,6 +32,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class ActivityEventHandler {
 
   private static final String EXCHANGE_ACTIVITY = "activity";
+  private static final String ORIGIN = "external";
   private final RabbitTemplate rabbitTemplate;
 
   public ActivityEventHandler(RabbitTemplate rabbitTemplate) {
@@ -43,15 +44,14 @@ public class ActivityEventHandler {
   public void onApplicationEvent(ActivityEvent event) {
     Activity activity = event.toActivity();
     String key = generateKey(activity);
-
     rabbitTemplate.convertAndSend(EXCHANGE_ACTIVITY, key, activity);
   }
 
   private String generateKey(Activity activity) {
-    return String.format("activity.%d.%s.%s",
-        activity.getProjectId(),
+    return String.format("activity.%s.%s.%s",
         activity.getObjectType(),
-        activity.getEventName());
+        activity.getEventName(),
+        ORIGIN
+    );
   }
-
 }
