@@ -140,7 +140,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   private User createUser(Map<String, String> details, Integration integration) {
     var email = resolveEmail(details, integration);
-    checkEmail(email);
 
     User user = new User();
     user.setLogin(email);

@@ -16,7 +16,6 @@
 
 package com.epam.reportportal.auth.integration.ldap;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Optional.ofNullable;
 
 import com.epam.reportportal.auth.binary.UserBinaryDataService;
@@ -97,7 +96,6 @@ public class LdapUserReplicator extends AbstractUserReplicator {
       Map<String, String> syncAttributes,
       String email
   ) {
-    checkEmail(email);
 
     User user = new User();
     user.setLogin(email);
