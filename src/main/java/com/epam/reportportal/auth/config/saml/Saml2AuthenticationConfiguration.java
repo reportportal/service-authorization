@@ -23,11 +23,11 @@ import com.epam.reportportal.auth.integration.saml.SamlUserReplicator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
+import org.springframework.security.saml2.provider.service.web.Saml2WebSsoAuthenticationRequestFilter;
 import org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -67,6 +67,9 @@ public class Saml2AuthenticationConfiguration {
     saml2Filter.setAuthenticationSuccessHandler(successHandler);
     saml2Filter.setAuthenticationFailureHandler(failureHandler);
 
+    Saml2RegistrationValidationFilter validationFilter =
+        new Saml2RegistrationValidationFilter(relyingPartyRegistrationRepository, failureHandler);
+
     http
         .securityMatcher("/saml2/**", "/login/**")
         .authorizeHttpRequests(auth -> auth
@@ -74,6 +77,7 @@ public class Saml2AuthenticationConfiguration {
             .anyRequest().authenticated()
         )
         .saml2Login(Customizer.withDefaults())
+        .addFilterBefore(validationFilter, Saml2WebSsoAuthenticationRequestFilter.class)
         .addFilterBefore(saml2Filter, Saml2WebSsoAuthenticationFilter.class)
         .csrf(AbstractHttpConfigurer::disable);
 

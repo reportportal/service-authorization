@@ -57,6 +57,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
 
+  private static final String DEFAULT_EMAIL_ATTR = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
   private final UserActivityPublisher userActivityPublisher;
@@ -139,7 +140,6 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   private User createUser(Map<String, String> details, Integration integration) {
     var email = resolveEmail(details, integration);
-    checkEmail(email);
 
     User user = new User();
     user.setLogin(email);
