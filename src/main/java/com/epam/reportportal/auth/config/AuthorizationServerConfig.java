@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.epam.reportportal.auth.config;
 
 import com.epam.reportportal.auth.OAuthSuccessHandler;
@@ -57,6 +58,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -107,19 +109,17 @@ public class AuthorizationServerConfig {
   @Value("${rp.jwt.issuer}")
   private String jwtIssuer;
 
-  private final  ServerSettingsRepository serverSettingsRepository;
+  private final ServerSettingsRepository serverSettingsRepository;
 
-  private final  UserDetailsService userDetailsService;
+  private final IntegrationRepository authConfigRepository;
 
-  private final  IntegrationRepository authConfigRepository;
+  private final LdapUserReplicator ldapUserReplicator;
 
-  private final  LdapUserReplicator ldapUserReplicator;
+  private final ApplicationEventPublisher eventPublisher;
 
-  private final  ApplicationEventPublisher eventPublisher;
+  private final MutableClientRegistrationRepository clientRegistrationRepository;
 
-  private final  MutableClientRegistrationRepository clientRegistrationRepository;
-
-  private final  AuthenticationFailureHandler authenticationFailureHandler;
+  private final AuthenticationFailureHandler authenticationFailureHandler;
 
   private final List<OAuthProvider> authProviders;
 
@@ -218,14 +218,15 @@ public class AuthorizationServerConfig {
   @Bean
   public AuthenticationProvider basicPasswordAuthProvider() {
     BasicPasswordAuthenticationProvider provider = new BasicPasswordAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService);
+    provider.setUserDetailsService(userDetailsService());
     provider.setPasswordEncoder(passwordEncoder());
     return provider;
   }
 
   @Bean
   public AuthenticationProvider ldapAuthProvider() {
-    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
+    return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(),
+        new TokenServicesFacade(jwtEncoder(), jwtIssuer));
   }
 
   @Bean("ldapDetailsContextMapper")
@@ -274,7 +275,7 @@ public class AuthorizationServerConfig {
   }
 
   @Bean
-  @Order(5)
+  @Order(10)
   public SecurityFilterChain globalWebSecurityFilterChain(
       HttpSecurity http,
       OAuth2AuthorizationRequestResolver authorizationRequestResolver,
@@ -294,18 +295,15 @@ public class AuthorizationServerConfig {
             ).permitAll()
             .anyRequest().authenticated()
         )
-        .oauth2ResourceServer(oauth2 -> oauth2
-            .jwt(jwt -> jwt
-                .decoder(jwtDecoder())
-                .jwtAuthenticationConverter(new JwtReportPortalUserConverter(userDetailsService()))
-            ))
-        .csrf().disable()
-        .formLogin().disable()
+        .oauth2ResourceServer(oauth2ResourceServerCustomizer())
+        .csrf(AbstractHttpConfigurer::disable)
+        .formLogin(AbstractHttpConfigurer::disable)
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(new DelegatingOAuth2UserService<>(getUserServices(authProviders))))
+            .userInfoEndpoint(
+                userInfo -> userInfo.userService(new DelegatingOAuth2UserService<>(getUserServices(authProviders))))
             .clientRegistrationRepository(clientRegistrationRepository)
             .authorizationEndpoint(authorization -> authorization
                 .baseUri("/oauth/login")
@@ -323,15 +321,16 @@ public class AuthorizationServerConfig {
   }
 
   @Bean
-  @Order(10)
+  @Order(5)
   public SecurityFilterChain ssoSecurityFilterChain(HttpSecurity http) throws Exception {
     http
         .securityMatcher("/sso/me/**", "/sso/internal/**", "/settings/**")
-        .authorizeRequests(auth -> auth
+        .authorizeHttpRequests(auth -> auth
             .requestMatchers("/settings/**").hasRole("ADMINISTRATOR")
             .requestMatchers("/sso/internal/**").hasRole("INTERNAL")
             .anyRequest().authenticated()
         )
+        .oauth2ResourceServer(oauth2ResourceServerCustomizer())
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
@@ -363,8 +362,20 @@ public class AuthorizationServerConfig {
     return new DatabaseUserDetailsService();
   }
 
+  private Customizer<OAuth2ResourceServerConfigurer<HttpSecurity>> oauth2ResourceServerCustomizer() {
+    return oauth2 -> oauth2
+        .jwt(jwt -> jwt
+            .decoder(jwtDecoder())
+            .jwtAuthenticationConverter(new JwtReportPortalUserConverter(userDetailsService()))
+        );
+  }
+
   public List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> getUserServices(List<OAuthProvider> providers) {
-    return providers.stream().map(provider -> provider.getUserService(clientRegistrationRepository.findOAuthRegistrationById(
-        provider.getName()).map(OAuthRegistrationConverters.TO_RESOURCE).orElse(new OAuthRegistrationResource()))).collect(Collectors.toList());
+    return providers.stream()
+        .map(provider ->
+            provider.getUserService(clientRegistrationRepository.findOAuthRegistrationById(provider.getName())
+                .map(OAuthRegistrationConverters.TO_RESOURCE)
+                .orElse(new OAuthRegistrationResource())))
+        .collect(Collectors.toList());
   }
 }

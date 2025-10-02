@@ -1,6 +1,6 @@
 plugins {
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.springframework.boot' version '3.4.6'
+    id 'org.springframework.boot' version '3.4.10'
     id 'java'
     id 'java-library'
     id "org.owasp.dependencycheck" version "11.1.1"
@@ -19,7 +19,7 @@ repositories {
     }
 }
 
-ext['spring-boot.version'] = '3.4.6'
+ext['spring-boot.version'] = '3.4.10'
 ext['hibernate-validator.version'] = '8.0.2.Final'
 //ext['postgresql.version'] = '42.2.13'
 
@@ -74,7 +74,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-core'
     implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
     implementation 'org.springframework.security:spring-security-ldap'
-    implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.4'
+    implementation 'org.springframework.security:spring-security-saml2-service-provider'
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.opensaml:opensaml-saml-impl:4.0.1'
     runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:9.43.4'
@@ -103,6 +103,8 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:${testContainers}"
     testImplementation "org.testcontainers:postgresql:${testContainers}"
     testImplementation("org.testcontainers:minio:${testContainers}")
+    testImplementation 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    testImplementation 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 }
 
 tasks.register('updateSubmodule', Exec) {
