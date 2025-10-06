@@ -17,6 +17,7 @@
 package com.epam.reportportal;
 
 import com.epam.reportportal.auth.config.TestConfig;
+import com.epam.reportportal.auth.util.OAuthHelper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,21 +28,29 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 
 /**
- * Base class for all test classes. It sets up the PostgreSQL container and applies migration
- * scripts. It also configures dynamic properties for the test context.
+ * Base class for all test classes. It sets up the PostgreSQL container and applies migration scripts. It also
+ * configures dynamic properties for the test context.
  */
+@ExtendWith(SpringExtension.class)
+@AutoConfigureMockMvc
 @Testcontainers
 @Log4j2
 @SpringBootTest(classes = TestConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT)
@@ -55,6 +64,11 @@ public abstract class BaseTest {
   private static final String LDAP_CONTAINER = "bitnami/openldap:latest";
   private static final String MINIO_CONTAINER = "minio/minio";
 
+  @Autowired
+  protected MockMvc mockMvc;
+
+  @Autowired
+  protected OAuthHelper oAuthHelper;
 
   @Value("${local.server.port}")
   private Integer port;
@@ -119,6 +133,13 @@ public abstract class BaseTest {
     registry.add("rp.datasource.username", postgres::getUsername);
     registry.add("rp.datasource.password", postgres::getPassword);
     registry.add("rp.initial.admin.password", () -> "testpassword");
+  }
+
+  protected RequestPostProcessor token(String tokenValue) {
+    return mockRequest -> {
+      mockRequest.addHeader("Authorization", "Bearer " + tokenValue);
+      return mockRequest;
+    };
   }
 
 }

@@ -19,6 +19,7 @@ package com.epam.reportportal.auth.config;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
@@ -40,16 +41,19 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 @ComponentScan(basePackages = {"com.epam.reportportal"})
 public class TestConfig {
 
+  @Value("${rp.oauth2.providers.internal.secret-key}")
+  private String signingKey;
+
   @Bean
   public JwtEncoder jwtEncoder() {
-    SecretKey key = new SecretKeySpec("123".getBytes(),
+    SecretKey key = new SecretKeySpec(signingKey.getBytes(),
         "HmacSHA256");
     return new NimbusJwtEncoder(new ImmutableSecret<>(key));
   }
 
   @Bean
   public JwtDecoder jwtDecoder() {
-    return NimbusJwtDecoder.withSecretKey(new SecretKeySpec("123".getBytes(), "HmacSHA256")).build();
+    return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(signingKey.getBytes(), "HmacSHA256")).build();
   }
 
 

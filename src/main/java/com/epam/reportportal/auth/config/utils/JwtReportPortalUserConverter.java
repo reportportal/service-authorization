@@ -15,14 +15,12 @@
  */
 package com.epam.reportportal.auth.config.utils;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
@@ -33,12 +31,16 @@ public class JwtReportPortalUserConverter implements Converter<Jwt, AbstractAuth
 
   private final UserDetailsService userDetailsService;
 
-  private final Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+  private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter;
 
   private final static String PRINCIPAL_CLAIM_NAME = "user_name";
 
   public JwtReportPortalUserConverter(UserDetailsService userDetailsService) {
     this.userDetailsService = userDetailsService;
+
+    this.jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+    this.jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
+    this.jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
   }
 
   @Override
