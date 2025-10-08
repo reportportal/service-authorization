@@ -27,6 +27,7 @@ import com.epam.reportportal.auth.entity.Metadata;
 import com.epam.reportportal.auth.entity.attachment.BinaryData;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
+import com.epam.reportportal.auth.event.activity.ProjectCreatedEvent;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import com.google.common.collect.Maps;
@@ -35,12 +36,15 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * @author Andrei Varabyeu
  */
+@RequiredArgsConstructor
 public class AbstractUserReplicator {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractUserReplicator.class);
@@ -49,18 +53,9 @@ public class AbstractUserReplicator {
   protected final UserRepository userRepository;
   protected final ProjectRepository projectRepository;
   protected final PersonalProjectService personalProjectService;
-  protected UserBinaryDataService userBinaryDataService;
+  protected final UserBinaryDataService userBinaryDataService;
   private final ContentTypeResolver contentTypeResolver;
-
-  public AbstractUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
-      PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver) {
-    this.userRepository = userRepository;
-    this.projectRepository = projectRepository;
-    this.personalProjectService = personalProjectService;
-    this.userBinaryDataService = userBinaryDataService;
-    this.contentTypeResolver = contentTypeResolver;
-  }
+  protected final ApplicationEventPublisher eventPublisher;
 
   /**
    * Generates personal project if it does NOT exist.
@@ -133,6 +128,9 @@ public class AbstractUserReplicator {
 
   private Project generatePersonalProjectByUser(User user) {
     Project personalProject = personalProjectService.generatePersonalProject(user);
-    return projectRepository.save(personalProject);
+    Project savedProject = projectRepository.save(personalProject);
+    eventPublisher.publishEvent(
+        new ProjectCreatedEvent(savedProject.getId(), savedProject.getName()));
+    return savedProject;
   }
 }

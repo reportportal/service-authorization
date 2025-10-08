@@ -20,12 +20,14 @@ import com.epam.reportportal.auth.commons.ReportPortalUser;
 import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.project.Project;
 import com.epam.reportportal.auth.entity.user.User;
+import com.epam.reportportal.auth.event.activity.ProjectCreatedEvent;
 import com.epam.reportportal.auth.integration.github.RPOAuth2User;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
@@ -40,22 +42,12 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Andrei Varabyeu
  */
 @Component
+@RequiredArgsConstructor
 public class UiAuthenticationSuccessEventHandler {
 
-  private UserRepository userRepository;
-
-  private PersonalProjectService personalProjectService;
-
-  /**
-   * Event handler for successful UI authentication events. Updates the last login date for the user
-   * and generates a personal project if the user has no projects.
-   */
-  @Autowired
-  public UiAuthenticationSuccessEventHandler(UserRepository userRepository,
-      PersonalProjectService personalProjectService) {
-    this.userRepository = userRepository;
-    this.personalProjectService = personalProjectService;
-  }
+  private final UserRepository userRepository;
+  private final PersonalProjectService personalProjectService;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
    * Handles the UI user signed in event. Updates the last login date for the user and generates a
@@ -76,6 +68,7 @@ public class UiAuthenticationSuccessEventHandler {
           .orElseThrow(() -> new ReportPortalException(ErrorType.USER_NOT_FOUND, username));
       Project project = personalProjectService.generatePersonalProject(user);
       user.getProjects().addAll(project.getUsers());
+      eventPublisher.publishEvent(new ProjectCreatedEvent(project.getId(), project.getName()));
     }
   }
 
@@ -98,8 +91,7 @@ public class UiAuthenticationSuccessEventHandler {
         throw new LockedException("User account is locked");
       }
       return ghUser.getReportPortalUser();
-    }
-    else {
+    } else {
       if (!((ReportPortalUser) authentication.getPrincipal()).isEnabled()) {
         SecurityContextHolder.clearContext();
         throw new LockedException("User account is locked");

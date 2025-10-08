@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +55,9 @@ public class LdapUserReplicator extends AbstractUserReplicator {
   @Autowired
   public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver) {
+      ContentTypeResolver contentTypeResolver, ApplicationEventPublisher eventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
-        contentTypeResolver);
+        contentTypeResolver, eventPublisher);
   }
 
   /**
