@@ -47,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -62,9 +63,9 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 
   public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver) {
+      ContentTypeResolver contentTypeResolver, ApplicationEventPublisher eventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
-        contentTypeResolver);
+        contentTypeResolver, eventPublisher);
   }
 
   public User synchronizeUser(String accessToken) {

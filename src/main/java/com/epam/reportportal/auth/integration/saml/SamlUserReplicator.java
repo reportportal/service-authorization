@@ -32,7 +32,6 @@ import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
 import com.epam.reportportal.auth.event.activity.AssignUserEvent;
-import com.epam.reportportal.auth.event.activity.ProjectCreatedEvent;
 import com.epam.reportportal.auth.event.activity.UserCreatedEvent;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
@@ -77,7 +76,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       IntegrationRepository integrationRepository, ContentTypeResolver contentTypeResolver,
       ApplicationEventPublisher eventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
-        contentTypeResolver
+        contentTypeResolver, eventPublisher
     );
     this.integrationTypeRepository = integrationTypeRepository;
     this.integrationRepository = integrationRepository;
@@ -177,19 +176,12 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   private void publishActivityEvents(User user, Project project) {
     publishUserCreatedEvent(user);
-
-    publishProjectCreatedEvent(project);
-
     publishUserAssignToProjectEvent(user, project);
   }
 
   private void publishUserCreatedEvent(User user) {
     UserCreatedEvent userCreatedEvent = new UserCreatedEvent(user.getId(), user.getLogin());
     eventPublisher.publishEvent(userCreatedEvent);
-  }
-
-  private void publishProjectCreatedEvent(Project project) {
-    eventPublisher.publishEvent(new ProjectCreatedEvent(project.getId(), project.getName()));
   }
 
   private void publishUserAssignToProjectEvent(User user, Project project) {
