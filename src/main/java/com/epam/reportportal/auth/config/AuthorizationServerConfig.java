@@ -29,7 +29,6 @@ import com.epam.reportportal.auth.dao.ServerSettingsRepository;
 import com.epam.reportportal.auth.entity.ServerSettings;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.converter.OAuthRegistrationConverters;
-import com.epam.reportportal.auth.integration.ldap.ActiveDirectoryAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.DetailsContextMapper;
 import com.epam.reportportal.auth.integration.ldap.LdapAuthProvider;
 import com.epam.reportportal.auth.integration.ldap.LdapUserReplicator;
@@ -209,7 +208,6 @@ public class AuthorizationServerConfig {
                     .accessTokenRequestConverter(new CustomCodeGrantAuthenticationConverter())
                     .authenticationProvider(basicPasswordAuthProvider())
                     .authenticationProvider(ldapAuthProvider())
-                    .authenticationProvider(activeDirectoryAuthProvider())
         );
 
     return http.build();
@@ -239,23 +237,6 @@ public class AuthorizationServerConfig {
                 .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND))
 
         )
-    );
-  }
-
-  @Bean
-  public AuthenticationProvider activeDirectoryAuthProvider() {
-    return new ActiveDirectoryAuthProvider(authConfigRepository, eventPublisher,
-        activeDirectoryDetailsContextMapper(), new TokenServicesFacade(jwtEncoder(), jwtIssuer));
-  }
-
-  @Bean("activeDirectoryDetailsContextMapper")
-  public DetailsContextMapper activeDirectoryDetailsContextMapper() {
-    return new DetailsContextMapper(
-        ldapUserReplicator,
-        () -> ParameterUtils.getLdapSyncAttributes(
-            authConfigRepository.findAllByTypeIn(AuthIntegrationType.ACTIVE_DIRECTORY.getName())
-                .stream().findFirst()
-                .orElseThrow(() -> new ReportPortalException(ErrorType.INTEGRATION_NOT_FOUND)))
     );
   }
 
