@@ -126,6 +126,7 @@ public class S3DataStore implements DataStore {
 
   @Override
   public boolean exists(String filePath) {
+    LOGGER.info(blobStore.getClass().getSimpleName());
     if (filePath == null) {
       return false;
     }

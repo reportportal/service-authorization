@@ -127,10 +127,9 @@ public class EncryptConfiguration implements InitializingBean {
     if (!dataStore.exists(secretFilePath)) {
       byte[] bytes = new byte[20];
       new SecureRandom().nextBytes(bytes);
-      try (InputStream secret = new ByteArrayInputStream(
-          Base64.getUrlEncoder().withoutPadding().encode(bytes))) {
+      try (InputStream secret = new ByteArrayInputStream(Base64.getUrlEncoder().withoutPadding().encode(bytes))) {
         dataStore.save(secretFilePath, secret);
-      } catch (IOException ioEx) {
+      } catch (Exception ioEx) {
         LOGGER.error("Unable to generate secret file", ioEx);
       }
     }
