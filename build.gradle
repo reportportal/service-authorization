@@ -22,7 +22,6 @@ repositories {
 ext['spring-boot.version'] = '3.4.12'
 ext['hibernate-validator.version'] = '8.0.2.Final'
 
-
 dependencies {
 
     // Spring Boot Starters
