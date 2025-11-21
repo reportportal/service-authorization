@@ -76,10 +76,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.5.3'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
     implementation 'org.springframework.security:spring-security-oauth2-core'
-    implementation('org.springframework.security:spring-security-jwt:1.1.1.RELEASE') {
-        exclude group: 'org.bouncycastle', module: 'bcpkix-jdk15on'
-        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
-    }
+    implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
     implementation 'org.springframework.security:spring-security-ldap'
     implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.2'
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
