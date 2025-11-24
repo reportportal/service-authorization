@@ -80,7 +80,7 @@ dependencies {
     //Others dependencies
     implementation 'org.jasypt:jasypt:1.9.3'
     implementation 'net.minidev:json-smart:2.6.0'
-    implementation 'org.apache.santuario:xmlsec:4.0.4'
+    implementation 'org.apache.santuario:xmlsec:3.0.3'
     implementation 'org.cryptacular:cryptacular:1.2.7'
     implementation 'org.apache.velocity:velocity-engine-core:2.4.1'
     implementation 'com.rabbitmq:http-client:5.4.0'
