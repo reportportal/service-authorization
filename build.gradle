@@ -60,7 +60,7 @@ dependencies {
 
     // Cloud & Storage
     implementation "software.amazon.awssdk:aws-core:${aws}"
-    implementation "io.netty:netty-handler:4.2.7.Final"
+    implementation "io.netty:netty-handler:4.1.128.Final"
     implementation "software.amazon.awssdk:sts:${aws}"
     api "org.apache.jclouds.api:s3:${jclouds}"
     implementation "org.apache.jclouds.provider:aws-s3:${jclouds}"
@@ -105,7 +105,7 @@ dependencies {
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:10.0.0'
+    testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:6.1.0'
     implementation platform("org.testcontainers:testcontainers-bom:${testContainers}")
     testImplementation "org.testcontainers:junit-jupiter:${testContainers}"
     testImplementation "org.testcontainers:postgresql:${testContainers}"
