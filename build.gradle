@@ -81,7 +81,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.2'
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.opensaml:opensaml-saml-impl:4.0.1'
-    runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:9.43.4'
+    runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:10.15.1'
 
     //Others dependencies
     implementation 'org.jasypt:jasypt:1.9.3'
