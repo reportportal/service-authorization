@@ -153,11 +153,10 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
     user.setMetadata(defaultMetaData());
 
-    userRepository.save(user);
+    var saved = userRepository.save(user);
+    userActivityPublisher.publishOnUserCreated(saved);
 
-    userActivityPublisher.publishOnUserCreated(user);
-
-    return user;
+    return saved;
   }
 
   private String resolveEmail(Map<String, String> details, Integration integration) {
