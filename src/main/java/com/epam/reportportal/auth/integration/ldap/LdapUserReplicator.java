@@ -25,7 +25,7 @@ import com.epam.reportportal.auth.dao.UserRepository;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
-import com.epam.reportportal.auth.event.UserActivityPublisher;
+import com.epam.reportportal.auth.event.UserEventPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
@@ -49,15 +49,15 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
   private static final String USER_ALREADY_EXISTS_MSG = "User with login '%s' already exists";
   private static final String EMAIL_ATTRIBUTE_NOT_PROVIDED_MSG = "Email attribute not provided";
-  private final UserActivityPublisher userActivityPublisher;
+  private final UserEventPublisher userEventPublisher;
 
   @Autowired
   public LdapUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver, UserActivityPublisher userActivityPublisher) {
+      ContentTypeResolver contentTypeResolver, UserEventPublisher userEventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver);
-    this.userActivityPublisher = userActivityPublisher;
+    this.userEventPublisher = userEventPublisher;
   }
 
   /**
@@ -111,7 +111,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
     user.setExpired(false);
 
     var saved = userRepository.save(user);
-    userActivityPublisher.publishOnUserCreated(saved);
+    userEventPublisher.publishOnUserCreated(saved);
     return saved;
   }
 
