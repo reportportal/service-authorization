@@ -28,7 +28,7 @@ import com.epam.reportportal.auth.entity.attachment.BinaryData;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
-import com.epam.reportportal.auth.event.UserActivityPublisher;
+import com.epam.reportportal.auth.event.UserEventPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
@@ -58,13 +58,13 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
    */
   public GitHubUserReplicator(UserRepository userRepository, ProjectRepository projectRepository,
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
-      ContentTypeResolver contentTypeResolver, UserActivityPublisher userActivityPublisher) {
+      ContentTypeResolver contentTypeResolver, UserEventPublisher userEventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver);
-    this.userActivityPublisher = userActivityPublisher;
+    this.userEventPublisher = userEventPublisher;
   }
 
-  private final UserActivityPublisher userActivityPublisher;
+  private final UserEventPublisher userEventPublisher;
 
   /**
    * Synchronizes user with GitHub account.
@@ -114,7 +114,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
     }).orElseGet(() -> {
       var created = createUser(userResource, gitHubClient);
       var saved = userRepository.save(created);
-      userActivityPublisher.publishOnUserCreated(saved);
+      userEventPublisher.publishOnUserCreated(saved);
       return saved;
     });
 
@@ -160,8 +160,8 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
   }
 
   /**
-   * Retrieves all emails from GitHub API including non-public ones.
-   * It is assumed that the user has only one verified email address.
+   * Retrieves all emails from GitHub API including non-public ones. It is assumed that the user has
+   * only one verified email address.
    *
    * @param gitHubClient GitHub client
    * @return Optional email address

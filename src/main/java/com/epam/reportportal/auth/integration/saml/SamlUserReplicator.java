@@ -28,7 +28,7 @@ import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
-import com.epam.reportportal.auth.event.UserActivityPublisher;
+import com.epam.reportportal.auth.event.UserEventPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
@@ -60,7 +60,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   private static final String DEFAULT_EMAIL_ATTR = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
-  private final UserActivityPublisher userActivityPublisher;
+  private final UserEventPublisher userEventPublisher;
 
   /**
    * SAML user replicator constructor.
@@ -78,13 +78,13 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       PersonalProjectService personalProjectService, UserBinaryDataService userBinaryDataService,
       IntegrationTypeRepository integrationTypeRepository,
       IntegrationRepository integrationRepository, ContentTypeResolver contentTypeResolver,
-      UserActivityPublisher userActivityPublisher) {
+      UserEventPublisher userEventPublisher) {
     super(userRepository, projectRepository, personalProjectService, userBinaryDataService,
         contentTypeResolver
     );
     this.integrationTypeRepository = integrationTypeRepository;
     this.integrationRepository = integrationRepository;
-    this.userActivityPublisher = userActivityPublisher;
+    this.userEventPublisher = userEventPublisher;
   }
 
   /**
@@ -119,7 +119,8 @@ public class SamlUserReplicator extends AbstractUserReplicator {
           + "' already exists, but multiple records found. Please contact administrator to resolve this issue.");
     }
 
-    return userOptional.orElseGet(() -> createUser(samlResponse.getAttributes(), findProvider(samlResponse)));
+    return userOptional.orElseGet(
+        () -> createUser(samlResponse.getAttributes(), findProvider(samlResponse)));
   }
 
   private Integration findProvider(SamlResponse samlResponse) {
@@ -154,7 +155,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setMetadata(defaultMetaData());
 
     var saved = userRepository.save(user);
-    userActivityPublisher.publishOnUserCreated(saved);
+    userEventPublisher.publishOnUserCreated(saved);
 
     return saved;
   }

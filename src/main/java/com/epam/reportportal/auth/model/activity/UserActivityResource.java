@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EPAM Systems
+ * Copyright 2025 EPAM Systems
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,40 +14,31 @@
  * limitations under the License.
  */
 
-package com.epam.reportportal.auth.entity.activity;
+package com.epam.reportportal.auth.model.activity;
 
-import com.epam.reportportal.auth.commons.JsonbUserType;
-import com.google.common.collect.Lists;
-import java.io.Serializable;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
- * @author Ihar Kahadouski
+ * @author <a href="mailto:ihar_kahadouski@epam.com">Ihar Kahadouski</a>
  */
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActivityDetails extends JsonbUserType<ActivityDetails> implements Serializable {
+@ToString
+public class UserActivityResource {
 
-  private List<HistoryField> history = Lists.newArrayList();
+  @JsonProperty(value = "id", required = true)
+  private Long id;
 
-  @Override
-  public Class<ActivityDetails> returnedClass() {
-    return ActivityDetails.class;
-  }
+  @JsonProperty(value = "defaultProjectId")
+  private Long defaultProjectId;
 
-  public void addHistoryField(HistoryField historyField) {
-    history.add(historyField);
-  }
-
-  @Override
-  public String toString() {
-    return "ActivityDetails{" + "history=" + history + '}';
-  }
-
+  @JsonProperty(value = "fullName", required = true)
+  private String fullName;
 }
