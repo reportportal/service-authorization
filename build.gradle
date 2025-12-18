@@ -1,6 +1,6 @@
 plugins {
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.springframework.boot' version '3.4.6'
+    id 'org.springframework.boot' version '3.4.12'
     id 'java'
     id 'java-library'
     id "org.owasp.dependencycheck" version "11.1.1"
@@ -19,23 +19,22 @@ repositories {
     }
 }
 
-ext['spring-boot.version'] = '3.4.4'
+ext['spring-boot.version'] = '3.4.12'
 ext['hibernate-validator.version'] = '8.0.2.Final'
-//ext['postgresql.version'] = '42.2.13'
 
 
 dependencies {
 
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.41'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-el:10.1.41'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.41'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.14'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.14'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:11.0.14'
 
     // Spring Boot Starters
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
     api 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
-    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
+    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
     // Spring Framework Core
     api 'org.springframework:spring-jdbc'
@@ -44,25 +43,24 @@ dependencies {
     implementation 'org.springframework:spring-core'
 
     // Database & Persistence
-    implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'org.postgresql:postgresql:42.7.8'
     implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
 
     // Utilities
-    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-collections4:4.5.0'
     implementation 'com.google.guava:guava:33.3.0-jre'
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
-    implementation 'net.coobird:thumbnailator:0.4.20'
-    api 'commons-validator:commons-validator:1.9.0'
-    api 'org.apache.commons:commons-compress:1.26.0'
+    implementation 'net.coobird:thumbnailator:0.4.21'
+    api 'commons-validator:commons-validator:1.10.0'
+    api 'org.apache.commons:commons-compress:1.28.0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     api 'jakarta.servlet:jakarta.servlet-api:6.1.0'
-    api 'org.apache.tika:tika-core:3.1.0'
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.81'
+    api 'org.apache.tika:tika-core:3.2.3'
     implementation 'commons-beanutils:commons-beanutils:1.11.0'
 
     // Cloud & Storage
     implementation "software.amazon.awssdk:aws-core:${aws}"
-    implementation "io.netty:netty-handler:4.1.119.Final"
+    implementation "io.netty:netty-handler:4.1.128.Final"
     implementation "software.amazon.awssdk:sts:${aws}"
     api "org.apache.jclouds.api:s3:${jclouds}"
     implementation "org.apache.jclouds.provider:aws-s3:${jclouds}"
@@ -75,7 +73,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-oauth2-client'
     api 'org.springframework.boot:spring-boot-starter-security'
     api 'org.springframework.security:spring-security-oauth2-client'
-    implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.4.2'
+    implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.5.3'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
     implementation 'org.springframework.security:spring-security-oauth2-core'
     implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
@@ -83,18 +81,21 @@ dependencies {
     implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.2'
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.opensaml:opensaml-saml-impl:4.0.1'
-    runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:9.43.4'
+    runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:10.15.1'
 
     //Others dependencies
     implementation 'org.jasypt:jasypt:1.9.3'
-    implementation 'net.minidev:json-smart:2.4.10'
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
+    implementation 'net.minidev:json-smart:2.6.0'
     implementation 'org.apache.santuario:xmlsec:3.0.3'
-    implementation 'org.cryptacular:cryptacular:1.1.4'
+    implementation 'org.cryptacular:cryptacular:1.2.7'
     implementation 'org.apache.velocity:velocity-engine-core:2.4.1'
-    implementation 'com.rabbitmq:http-client:5.3.0'
-    api 'org.apache.httpcomponents.client5:httpclient5:5.4.3'
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
+    implementation 'com.rabbitmq:http-client:5.4.0'
+    api 'org.apache.httpcomponents.client5:httpclient5:5.5.1'
+
+    // Explicit secure versions to override vulnerable transitive dependencies
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.82'
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -164,6 +165,9 @@ springBoot {
 configurations {
     all {
         exclude group: 'commons-logging', module: 'commons-logging'
+        // Exclude obsolete and vulnerable jdk15on versions globally
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+        exclude group: 'org.bouncycastle', module: 'bcpkix-jdk15on'
     }
 }
 
