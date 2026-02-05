@@ -60,11 +60,26 @@ dependencies {
 
     // Cloud & Storage
     implementation "software.amazon.awssdk:aws-core:${aws}"
-    implementation "io.netty:netty-handler:4.1.128.Final"
     implementation "software.amazon.awssdk:sts:${aws}"
     api "org.apache.jclouds.api:s3:${jclouds}"
     implementation "org.apache.jclouds.provider:aws-s3:${jclouds}"
     implementation "org.apache.jclouds.api:filesystem:${jclouds}"
+
+    // Netty (Networking)
+    implementation 'io.netty:netty-buffer:4.1.130.Final'
+    implementation 'io.netty:netty-codec:4.1.130.Final'
+    implementation 'io.netty:netty-codec-http:4.1.130.Final'
+    implementation 'io.netty:netty-codec-http2:4.1.130.Final'
+    implementation 'io.netty:netty-common:4.1.130.Final'
+    implementation 'io.netty:netty-handler:4.1.130.Final'
+    implementation 'io.netty:netty-resolver:4.1.130.Final'
+    implementation 'io.netty:netty-transport:4.1.130.Final'
+    implementation 'io.netty:netty-transport-classes-epoll:4.1.130.Final'
+    implementation 'io.netty:netty-transport-native-unix-common:4.1.130.Final'
+
+    // Logging
+    implementation 'ch.qos.logback:logback-classic:1.5.27'
+    implementation 'ch.qos.logback:logback-core:1.5.27'
 
     // Security
     implementation 'org.springframework.security:spring-security-core'
