@@ -29,9 +29,9 @@ jobs:
     uses: reportportal/.github/.github/workflows/build-docker-image.yaml@main
     with:
       aws-region: ${{ vars.AWS_REGION }}
+      aws-role-arn: ${{ vars.AWS_ROLE_ARN }}
       image-tag: 'develop-${{ github.run_number }}'
       additional-tag: 'develop-latest'
       version: 'develop-${{ github.run_number }}'
       date: ${{ needs.variables-setup.outputs.date }}
       runs-on: ubuntu-latest
-    secrets: inherit
