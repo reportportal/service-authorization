@@ -22,6 +22,7 @@ repositories {
 ext['spring-boot.version'] = '3.4.12'
 ext['spring-framework.version'] = '6.2.17' // CVE-2026-22735, CVE-2026-22737
 ext['spring-security.version'] = '6.5.9'    // CVE-2026-22732 (OSS; 6.4.x fix commercial-only)
+ext['logback.version'] = '1.5.32' // keep classic + core aligned (do not override core alone)
 ext['hibernate-validator.version'] = '8.0.2.Final'
 
 
@@ -31,7 +32,6 @@ dependencies {
     implementation 'io.netty:netty-codec-http:4.1.132.Final'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.21'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.21.2'
-    implementation 'ch.qos.logback:logback-core:1.5.32'
 
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.20'
     implementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.20'
