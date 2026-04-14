@@ -30,9 +30,10 @@ dependencies {
 
     implementation 'io.netty:netty-codec-http2:4.1.132.Final'
     implementation 'io.netty:netty-codec-http:4.1.132.Final'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.21'
+
     implementation 'com.fasterxml.jackson.core:jackson-core:2.21.2'
 
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.21'
     implementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.21'
     implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:11.0.21'
 
