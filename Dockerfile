@@ -9,19 +9,8 @@ RUN if [ "${RELEASE_MODE}" = true ]; then \
         -Dorg.gradle.project.version=${APP_VERSION}; \
     else gradle build --no-build-cache --exclude-task test -Dorg.gradle.project.version=${APP_VERSION}; fi
 
-FROM amazoncorretto:21.0.10
+FROM amazoncorretto:21.0.11
 ARG APP_VERSION
-RUN if command -v dnf >/dev/null 2>&1; then \
-      dnf -y upgrade && \
-      dnf -y install openssl openssl-libs zlib && \
-      dnf clean all && rm -rf /var/cache/dnf; \
-    elif command -v yum >/dev/null 2>&1; then \
-      yum -y update && \
-      yum -y install openssl openssl-libs zlib && \
-      yum clean all && rm -rf /var/cache/yum; \
-    else \
-      echo "No supported package manager found (dnf/yum)" && exit 1; \
-    fi
 LABEL version=${APP_VERSION} description="EPAM ReportPortal. Auth Service" maintainer="Andrei Varabyeu <andrei_varabyeu@epam.com>, Hleb Kanonik <hleb_kanonik@epam.com>"
 ENV APP_DIR=/usr/app
 ENV JAVA_OPTS="-Xmx1g -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -Djava.security.egd=file:/dev/./urandom"
