@@ -144,36 +144,6 @@ public class DataStoreConfiguration {
     }
   }
 
-  /**
-   * Overrides jclouds' default {@link S3HttpApiModule} for the SeaweedFS provider so that chunked upload
-   * ({@code Content-Encoding: aws-chunked}) is never used.
-   * <p>
-   * When the payload is non-repeatable and its content-length is positive, the default
-   * {@link RequestAuthorizeSignatureV4} delegates to {@link Aws4SignerForChunkedUpload}, which adds
-   * {@code Content-Encoding: aws-chunked} and {@code x-amz-decoded-content-length}. SeaweedFS does not implement the
-   * AWS chunked-upload protocol and returns HTTP 413 for those requests. By always returning {@code false} from
-   * {@code useChunkedUpload()} we force standard Authorization-header signing for every PUT, regardless of payload
-   * size.
-   */
-  @ConfiguresHttpApi
-  private static class NoChunkedUploadS3HttpApiModule extends S3HttpApiModule {
-
-    @Override
-    protected RequestAuthorizeSignature providesRequestAuthorizeSignature(Injector i, int version) {
-      if (version == 4) {
-        return new RequestAuthorizeSignatureV4(
-            i.getInstance(Aws4SignerForAuthorizationHeader.class),
-            i.getInstance(Aws4SignerForChunkedUpload.class),
-            i.getInstance(Aws4SignerForQueryString.class)) {
-          @Override
-          protected boolean useChunkedUpload(HttpRequest request) {
-            return false;
-          }
-        };
-      }
-      return super.providesRequestAuthorizeSignature(i, version);
-    }
-  }
 
   @Bean
   @ConditionalOnProperty(name = "datastore.type", havingValue = "filesystem")
@@ -276,7 +246,6 @@ public class DataStoreConfiguration {
         .endpoint(endpoint)
         .credentials(accessKey, secretKey)
         .overrides(overrides)
-        .modules(ImmutableSet.of(new NoChunkedUploadS3HttpApiModule()))
         .buildView(BlobStoreContext.class);
 
     return blobStoreContext.getBlobStore();
