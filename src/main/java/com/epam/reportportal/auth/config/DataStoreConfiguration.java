@@ -27,6 +27,7 @@ import com.google.common.base.Supplier;
 import com.google.common.cache.CacheLoader;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import java.util.Properties;
 import java.util.Set;
@@ -37,9 +38,16 @@ import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.ContainerNotFoundException;
 import org.jclouds.filesystem.reference.FilesystemConstants;
+import org.jclouds.http.HttpRequest;
 import org.jclouds.location.reference.LocationConstants;
 import org.jclouds.rest.ConfiguresHttpApi;
 import org.jclouds.s3.S3Client;
+import org.jclouds.s3.config.S3HttpApiModule;
+import org.jclouds.s3.filters.Aws4SignerForAuthorizationHeader;
+import org.jclouds.s3.filters.Aws4SignerForChunkedUpload;
+import org.jclouds.s3.filters.Aws4SignerForQueryString;
+import org.jclouds.s3.filters.RequestAuthorizeSignature;
+import org.jclouds.s3.filters.RequestAuthorizeSignatureV4;
 import org.jclouds.s3.reference.S3Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -136,6 +144,37 @@ public class DataStoreConfiguration {
     }
   }
 
+  /**
+   * Overrides jclouds' default {@link S3HttpApiModule} for the SeaweedFS provider so that chunked upload
+   * ({@code Content-Encoding: aws-chunked}) is never used.
+   * <p>
+   * When the payload is non-repeatable and its content-length is positive, the default
+   * {@link RequestAuthorizeSignatureV4} delegates to {@link Aws4SignerForChunkedUpload}, which adds
+   * {@code Content-Encoding: aws-chunked} and {@code x-amz-decoded-content-length}. SeaweedFS does not implement the
+   * AWS chunked-upload protocol and returns HTTP 413 for those requests. By always returning {@code false} from
+   * {@code useChunkedUpload()} we force standard Authorization-header signing for every PUT, regardless of payload
+   * size.
+   */
+  @ConfiguresHttpApi
+  private static class NoChunkedUploadS3HttpApiModule extends S3HttpApiModule {
+
+    @Override
+    protected RequestAuthorizeSignature providesRequestAuthorizeSignature(Injector i, int version) {
+      if (version == 4) {
+        return new RequestAuthorizeSignatureV4(
+            i.getInstance(Aws4SignerForAuthorizationHeader.class),
+            i.getInstance(Aws4SignerForChunkedUpload.class),
+            i.getInstance(Aws4SignerForQueryString.class)) {
+          @Override
+          protected boolean useChunkedUpload(HttpRequest request) {
+            return false;
+          }
+        };
+      }
+      return super.providesRequestAuthorizeSignature(i, version);
+    }
+  }
+
   @Bean
   @ConditionalOnProperty(name = "datastore.type", havingValue = "filesystem")
   public BlobStore filesystemBlobStore(
@@ -202,7 +241,7 @@ public class DataStoreConfiguration {
       @Value("${datastore.defaultBucketName}") String defaultBucketName,
       @Value("${datastore.region}") String region, FeatureFlagHandler featureFlagHandler) {
     return new S3DataStore(
-        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler);
+        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler, false);
   }
 
   /**
@@ -237,6 +276,7 @@ public class DataStoreConfiguration {
         .endpoint(endpoint)
         .credentials(accessKey, secretKey)
         .overrides(overrides)
+        .modules(ImmutableSet.of(new NoChunkedUploadS3HttpApiModule()))
         .buildView(BlobStoreContext.class);
 
     return blobStoreContext.getBlobStore();
@@ -261,7 +301,8 @@ public class DataStoreConfiguration {
       @Value("${datastore.defaultBucketName}") String defaultBucketName,
       @Value("${datastore.region:eu-central-1}") String region, FeatureFlagHandler featureFlagHandler) {
     return new S3DataStore(
-        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler);
+        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler,
+        true);
   }
 
   /**
@@ -303,7 +344,7 @@ public class DataStoreConfiguration {
       @Value("${datastore.defaultBucketName}") String defaultBucketName,
       @Value("${datastore.region}") String region, FeatureFlagHandler featureFlagHandler) {
     return new S3DataStore(blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region,
-        featureFlagHandler
+        featureFlagHandler, false
     );
   }
 
