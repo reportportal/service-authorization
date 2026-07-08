@@ -23,6 +23,8 @@ import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.FeatureFlagHandler;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -38,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implimitation of basic operations with blob storages.
+ * Implementation of basic operations with blob storages.
  *
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
@@ -53,6 +55,7 @@ public class S3DataStore implements DataStore {
   private final String bucketPostfix;
   private final String defaultBucketName;
   private final Location location;
+  private final boolean legacyEncodedKeyFallback;
 
   private final FeatureFlagHandler featureFlagHandler;
 
@@ -67,13 +70,15 @@ public class S3DataStore implements DataStore {
    * @param featureFlagHandler {@link FeatureFlagHandler}
    */
   public S3DataStore(BlobStore blobStore, String bucketPrefix, String bucketPostfix,
-      String defaultBucketName, String region, FeatureFlagHandler featureFlagHandler) {
+      String defaultBucketName, String region, FeatureFlagHandler featureFlagHandler,
+      boolean legacyEncodedKeyFallback) {
     this.blobStore = blobStore;
     this.bucketPrefix = bucketPrefix;
     this.bucketPostfix = Objects.requireNonNullElse(bucketPostfix, "");
     this.defaultBucketName = defaultBucketName;
     this.location = getLocationFromString(region);
     this.featureFlagHandler = featureFlagHandler;
+    this.legacyEncodedKeyFallback = legacyEncodedKeyFallback;
   }
 
   @Override
@@ -113,6 +118,12 @@ public class S3DataStore implements DataStore {
     }
     StoredFile storedFile = getStoredFile(filePath);
     Blob fileBlob = blobStore.getBlob(storedFile.bucket(), storedFile.filePath());
+    if (fileBlob == null && legacyEncodedKeyFallback) {
+      String legacyKey = urlEncodeKey(storedFile.filePath());
+      if (!legacyKey.equals(storedFile.filePath())) {
+        fileBlob = blobStore.getBlob(storedFile.bucket(), legacyKey);
+      }
+    }
     if (fileBlob != null) {
       try {
         return fileBlob.getPayload().openStream();
@@ -130,7 +141,15 @@ public class S3DataStore implements DataStore {
       return false;
     }
     StoredFile storedFile = getStoredFile(filePath);
-    return blobStore.blobExists(storedFile.bucket(), storedFile.filePath());
+    if (blobStore.blobExists(storedFile.bucket(), storedFile.filePath())) {
+      return true;
+    }
+    if (legacyEncodedKeyFallback) {
+      String legacyKey = urlEncodeKey(storedFile.filePath());
+      return !legacyKey.equals(storedFile.filePath())
+          && blobStore.blobExists(storedFile.bucket(), legacyKey);
+    }
+    return false;
   }
 
   @Override
@@ -141,6 +160,12 @@ public class S3DataStore implements DataStore {
     StoredFile storedFile = getStoredFile(filePath);
     try {
       blobStore.removeBlob(storedFile.bucket(), storedFile.filePath());
+      if (legacyEncodedKeyFallback) {
+        String legacyKey = urlEncodeKey(storedFile.filePath());
+        if (!legacyKey.equals(storedFile.filePath())) {
+          blobStore.removeBlob(storedFile.bucket(), legacyKey);
+        }
+      }
     } catch (Exception e) {
       LOGGER.error("Unable to delete file '{}'", filePath, e);
       throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, "Unable to delete file");
@@ -149,10 +174,14 @@ public class S3DataStore implements DataStore {
 
   @Override
   public void deleteAll(List<String> filePaths, String bucketName) {
-    if (!featureFlagHandler.isEnabled(FeatureFlag.SINGLE_BUCKET)) {
-      blobStore.removeBlobs(bucketPrefix + bucketName + bucketPostfix, filePaths);
-    } else {
-      blobStore.removeBlobs(bucketName, filePaths);
+    try {
+      filePaths.forEach(filePath -> {
+        StoredFile storedFile = getStoredFile(filePath);
+        blobStore.removeBlob(storedFile.bucket(), storedFile.filePath());
+      });
+    } catch (Exception e) {
+      LOGGER.error("Unable to delete files from bucket '{}'", bucketName, e);
+      throw new ReportPortalException(ErrorType.INCORRECT_REQUEST, "Unable to delete files");
     }
   }
 
@@ -182,18 +211,27 @@ public class S3DataStore implements DataStore {
   }
 
   private Location getLocationFromString(String locationString) {
-    Location loc = null;
+    Location location = null;
     if (locationString != null) {
-      loc = new LocationBuilder()
-          .scope(LocationScope.REGION)
-          .id(locationString)
-          .description("region")
+      location = new LocationBuilder().scope(LocationScope.REGION).id(locationString).description("region")
           .build();
     }
-    return loc;
+    return location;
   }
 
   private String retrievePath(Path path, int beginIndex, int endIndex) {
     return String.valueOf(path.subpath(beginIndex, endIndex));
+  }
+
+  private String urlEncodeKey(String key) {
+    String[] segments = key.split("/", -1);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < segments.length; i++) {
+      if (i > 0) {
+        sb.append('/');
+      }
+      sb.append(URLEncoder.encode(segments[i], StandardCharsets.UTF_8).replace("+", "%20"));
+    }
+    return sb.toString();
   }
 }

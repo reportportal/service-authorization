@@ -27,6 +27,7 @@ import com.google.common.base.Supplier;
 import com.google.common.cache.CacheLoader;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import java.util.Properties;
 import java.util.Set;
@@ -37,8 +38,17 @@ import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.ContainerNotFoundException;
 import org.jclouds.filesystem.reference.FilesystemConstants;
+import org.jclouds.http.HttpRequest;
+import org.jclouds.location.reference.LocationConstants;
 import org.jclouds.rest.ConfiguresHttpApi;
 import org.jclouds.s3.S3Client;
+import org.jclouds.s3.config.S3HttpApiModule;
+import org.jclouds.s3.filters.Aws4SignerForAuthorizationHeader;
+import org.jclouds.s3.filters.Aws4SignerForChunkedUpload;
+import org.jclouds.s3.filters.Aws4SignerForQueryString;
+import org.jclouds.s3.filters.RequestAuthorizeSignature;
+import org.jclouds.s3.filters.RequestAuthorizeSignatureV4;
+import org.jclouds.s3.reference.S3Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -134,6 +144,7 @@ public class DataStoreConfiguration {
     }
   }
 
+
   @Bean
   @ConditionalOnProperty(name = "datastore.type", havingValue = "filesystem")
   public BlobStore filesystemBlobStore(
@@ -200,7 +211,67 @@ public class DataStoreConfiguration {
       @Value("${datastore.defaultBucketName}") String defaultBucketName,
       @Value("${datastore.region}") String region, FeatureFlagHandler featureFlagHandler) {
     return new S3DataStore(
-        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler);
+        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler, false);
+  }
+
+  /**
+   * Creates BlobStore bean to work with SeaweedFS.
+   *
+   * <p>Uses the generic {@code s3} jclouds provider with a custom {@code endpoint}. Signing is
+   * forced to AWS Signature Version 4 ({@link S3Constants#PROPERTY_SIGNER_VERSION}) because SigV2 canonicalizes the
+   * URL-encoded path (e.g. {@code /bucket/Azure%20DevOps}), while SeaweedFS verifies the signature against the decoded
+   * path ({@code /bucket/Azure DevOps}), causing a {@code SignatureDoesNotMatch} → 403 →
+   * {@code ProtocolException: Server rejected operation} during the {@code Expect: 100-continue} preflight.
+   *
+   * @param accessKey access key
+   * @param secretKey secret key
+   * @param endpoint  SeaweedFS S3 gateway endpoint URL
+   * @param region    region used for SigV4 credential scope (must match the backend expectation, e.g.
+   *                  {@code us-east-1})
+   * @return {@link BlobStore}
+   */
+  @Bean
+  @ConditionalOnProperty(name = "datastore.type", havingValue = "seaweedfs")
+  public BlobStore seaweedFsBlobStore(@Value("${datastore.accessKey}") String accessKey,
+      @Value("${datastore.secretKey}") String secretKey,
+      @Value("${datastore.endpoint}") String endpoint,
+      @Value("${datastore.region:eu-central-1}") String region) {
+
+    Properties overrides = new Properties();
+    overrides.setProperty(S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS, "false");
+    overrides.setProperty(S3Constants.PROPERTY_SIGNER_VERSION, "4");
+    overrides.setProperty(LocationConstants.PROPERTY_REGION, region);
+
+    BlobStoreContext blobStoreContext = ContextBuilder.newBuilder("s3")
+        .endpoint(endpoint)
+        .credentials(accessKey, secretKey)
+        .overrides(overrides)
+        .buildView(BlobStoreContext.class);
+
+    return blobStoreContext.getBlobStore();
+  }
+
+  /**
+   * Creates DataStore bean to work with SeaweedFS.
+   *
+   * @param blobStore          {@link BlobStore} object
+   * @param bucketPrefix       prefix for bucket name
+   * @param bucketPostfix      postfix for bucket name
+   * @param defaultBucketName  name of default bucket to use
+   * @param region             region to store
+   * @param featureFlagHandler instance of {@link FeatureFlagHandler} to check enabled features
+   * @return {@link DataStore} object
+   */
+  @Bean
+  @ConditionalOnProperty(name = "datastore.type", havingValue = "seaweedfs")
+  public DataStore seaweedFsDataStore(@Autowired BlobStore blobStore,
+      @Value("${datastore.bucketPrefix}") String bucketPrefix,
+      @Value("${datastore.bucketPostfix}") String bucketPostfix,
+      @Value("${datastore.defaultBucketName}") String defaultBucketName,
+      @Value("${datastore.region:eu-central-1}") String region, FeatureFlagHandler featureFlagHandler) {
+    return new S3DataStore(
+        blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region, featureFlagHandler,
+        true);
   }
 
   /**
@@ -242,7 +313,7 @@ public class DataStoreConfiguration {
       @Value("${datastore.defaultBucketName}") String defaultBucketName,
       @Value("${datastore.region}") String region, FeatureFlagHandler featureFlagHandler) {
     return new S3DataStore(blobStore, bucketPrefix, bucketPostfix, defaultBucketName, region,
-        featureFlagHandler
+        featureFlagHandler, false
     );
   }
 
