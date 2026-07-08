@@ -29,8 +29,8 @@ ext['netty.version'] = '4.1.135.Final'
 
 dependencies {
 
-    implementation 'io.netty:netty-codec-http2:4.1.132.Final'
-    implementation 'io.netty:netty-codec-http:4.1.132.Final'
+    implementation 'io.netty:netty-codec-http2:4.1.135.Final'
+    implementation 'io.netty:netty-codec-http:4.1.135.Final'
 
     implementation 'com.fasterxml.jackson.core:jackson-core:2.21.2'
 
