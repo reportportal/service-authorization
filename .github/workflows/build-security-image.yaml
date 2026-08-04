@@ -38,8 +38,7 @@ jobs:
       build-platforms: ${{ vars.BUILD_PLATFORMS || 'linux/amd64,linux/arm64' }}
       image-tag: ${{ needs.variables-setup.outputs.image-tag }}
       version: ${{ needs.variables-setup.outputs.version }}
-      release-mode: false
       additional-tag: 'secure-latest'
       date: ${{ needs.variables-setup.outputs.date }}
-      runs-on: ubuntu-latest
-    secrets: inherit
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}

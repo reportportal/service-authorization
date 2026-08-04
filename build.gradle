@@ -1,6 +1,6 @@
 plugins {
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.springframework.boot' version '3.5.14'
+    id 'org.springframework.boot' version '3.5.15'
     id 'java'
     id 'java-library'
     id "org.owasp.dependencycheck" version "11.1.1"
@@ -19,23 +19,24 @@ repositories {
     }
 }
 
-ext['spring-boot.version'] = '3.5.14'
-ext['spring-framework.version'] = '6.2.18' // includes fix for request smuggling advisory
-ext['spring-security.version'] = '6.5.10'   // includes fixes for latest core/jose advisories
-ext['logback.version'] = '1.5.32' // keep classic + core aligned (do not override core alone)
+ext['spring-boot.version'] = '3.5.15'
 ext['hibernate-validator.version'] = '8.0.2.Final'
+ext['spring-security.version'] = '6.5.10'
+ext['spring-framework.version'] = '6.2.19'
+ext['logback.version'] = '1.5.34'
+ext['netty.version'] = '4.1.135.Final'
 
 
 dependencies {
 
-    implementation 'io.netty:netty-codec-http2:4.1.132.Final'
-    implementation 'io.netty:netty-codec-http:4.1.132.Final'
+    implementation 'io.netty:netty-codec-http2:4.1.135.Final'
+    implementation 'io.netty:netty-codec-http:4.1.135.Final'
 
     implementation 'com.fasterxml.jackson.core:jackson-core:2.21.2'
 
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.21'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.21'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:11.0.21'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.22'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.22'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:11.0.22'
 
     // Spring Boot Starters
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -51,12 +52,12 @@ dependencies {
     implementation 'org.springframework:spring-core'
 
     // Database & Persistence
-    implementation 'org.postgresql:postgresql:42.7.8'
+    implementation 'org.postgresql:postgresql:42.7.11'
     implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
 
     // Utilities
     implementation 'org.apache.commons:commons-collections4:4.5.0'
-    implementation 'com.google.guava:guava:33.3.0-jre'
+    implementation 'com.google.guava:guava:33.6.0-jre'
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
     implementation 'net.coobird:thumbnailator:0.4.21'
     api 'commons-validator:commons-validator:1.10.0'
@@ -68,7 +69,8 @@ dependencies {
 
     // Cloud & Storage
     implementation "software.amazon.awssdk:aws-core:${aws}"
-    implementation "io.netty:netty-handler:4.1.128.Final"
+    implementation "io.netty:netty-handler:4.1.135.Final"
+
     implementation "software.amazon.awssdk:sts:${aws}"
     api "org.apache.jclouds.api:s3:${jclouds}"
     implementation "org.apache.jclouds.provider:aws-s3:${jclouds}"
