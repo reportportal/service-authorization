@@ -29,6 +29,11 @@ ext['netty.version'] = '4.1.135.Final'
 
 dependencies {
 
+    implementation 'io.netty:netty-codec-http2:4.1.135.Final'
+    implementation 'io.netty:netty-codec-http:4.1.135.Final'
+
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.21.4'
+
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.22'
     implementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.22'
     implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:11.0.22'
@@ -80,13 +85,14 @@ dependencies {
     api 'org.springframework.security:spring-security-oauth2-client'
     implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.5.7'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2' // CVE-2025-53864 (scanner fixed-version: 10.0.2+)
     implementation 'org.springframework.security:spring-security-oauth2-core'
     implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
     implementation 'org.springframework.security:spring-security-ldap'
-    implementation 'org.springframework.security:spring-security-saml2-service-provider:6.4.2'
+    implementation 'org.springframework.security:spring-security-saml2-service-provider:6.5.10'
     implementation 'org.opensaml:opensaml-saml-api:4.0.1'
     implementation 'org.opensaml:opensaml-saml-impl:4.0.1'
-    runtimeOnly 'com.nimbusds:oauth2-oidc-sdk:10.15.1'
+    implementation 'com.nimbusds:oauth2-oidc-sdk:10.15.1'
 
     //Others dependencies
     implementation 'org.jasypt:jasypt:1.9.3'
@@ -173,6 +179,11 @@ configurations {
         // Exclude obsolete and vulnerable jdk15on versions globally
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
         exclude group: 'org.bouncycastle', module: 'bcpkix-jdk15on'
+
+        resolutionStrategy {
+            force 'com.nimbusds:nimbus-jose-jwt:10.0.2'
+            force 'com.nimbusds:oauth2-oidc-sdk:10.15.1'
+        }
     }
 }
 
