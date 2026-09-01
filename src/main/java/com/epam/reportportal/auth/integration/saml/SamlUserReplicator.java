@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,7 +91,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
       samlResponse = SamlResponseParser.parseSamlResponse(
           samlAuthentication.getSaml2Response());
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new AuthenticationServiceException("Unable to parse SAML response", e);
     }
     String userEmail = samlResponse.getNameId().value();
     Optional<User> userOptional;
