@@ -57,6 +57,12 @@ public abstract class OAuthProvider {
     return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
   }
 
+  /**
+   * Returns the Spring OAuth2 user service that loads user details from this provider.
+   *
+   * @param registrationSupplier supplier of the OAuth registration settings for this provider
+   * @return user service used to load the OAuth2 user after the authorization code exchange
+   */
   public abstract OAuth2UserService<OAuth2UserRequest, OAuth2User> getUserService(
       Supplier<OAuthRegistrationResource> registrationSupplier);
 }

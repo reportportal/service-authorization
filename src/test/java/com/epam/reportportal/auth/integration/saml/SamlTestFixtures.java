@@ -89,6 +89,12 @@ public final class SamlTestFixtures {
    */
   public record Identity(KeyPair keyPair, X509Certificate certificate) {
 
+    /**
+     * Generates a new 2048-bit RSA key pair and a self-signed certificate for the given name.
+     *
+     * @param commonName common name (CN) put into the certificate subject
+     * @return identity holding the key pair and certificate
+     */
     public static Identity generate(String commonName) {
       try {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -107,6 +113,13 @@ public final class SamlTestFixtures {
     }
   }
 
+  /**
+   * Creates a relying party registration for the test service provider.
+   *
+   * @param acsLocation assertion consumer service URL of the test service provider
+   * @param idpCertificates certificates the identity provider signs responses with
+   * @return registration with the given ACS location and verification certificates
+   */
   public static RelyingPartyRegistration registration(String acsLocation,
       X509Certificate... idpCertificates) {
     return RelyingPartyRegistration.withRegistrationId(REGISTRATION_ID)
@@ -123,6 +136,11 @@ public final class SamlTestFixtures {
         .build();
   }
 
+  /**
+   * Creates a new builder for a SAML response.
+   *
+   * @return response builder with default values
+   */
   public static ResponseBuilder response() {
     return new ResponseBuilder();
   }
@@ -141,46 +159,100 @@ public final class SamlTestFixtures {
     private Instant notOnOrAfter = Instant.now().plus(Duration.ofMinutes(10));
     private final Map<String, List<String>> attributes = new LinkedHashMap<>();
 
+    /**
+     * Sets the identity whose key signs the response or assertion.
+     *
+     * @param signer key pair and certificate used for signing
+     * @return this builder
+     */
     public ResponseBuilder signedBy(Identity signer) {
       this.signer = signer;
       return this;
     }
 
+    /**
+     * Requests that only the assertion is signed instead of the whole response.
+     *
+     * @return this builder
+     */
     public ResponseBuilder signAssertionOnly() {
       this.signAssertionOnly = true;
       return this;
     }
 
+    /**
+     * Sets the NameID of the assertion subject.
+     *
+     * @param nameId subject identifier
+     * @return this builder
+     */
     public ResponseBuilder nameId(String nameId) {
       this.nameId = nameId;
       return this;
     }
 
+    /**
+     * Sets the Destination attribute of the response.
+     *
+     * @param destination URL the response is delivered to
+     * @return this builder
+     */
     public ResponseBuilder destination(String destination) {
       this.destination = destination;
       return this;
     }
 
+    /**
+     * Sets the audience restriction of the assertion.
+     *
+     * @param audience entity ID the assertion is addressed to
+     * @return this builder
+     */
     public ResponseBuilder audience(String audience) {
       this.audience = audience;
       return this;
     }
 
+    /**
+     * Sets the request ID the response claims to answer (the InResponseTo attribute).
+     *
+     * @param inResponseTo ID of the authentication request
+     * @return this builder
+     */
     public ResponseBuilder inResponseTo(String inResponseTo) {
       this.inResponseTo = inResponseTo;
       return this;
     }
 
+    /**
+     * Sets the instant after which the assertion is no longer valid.
+     *
+     * @param notOnOrAfter expiry instant of the assertion
+     * @return this builder
+     */
     public ResponseBuilder notOnOrAfter(Instant notOnOrAfter) {
       this.notOnOrAfter = notOnOrAfter;
       return this;
     }
 
+    /**
+     * Sets the values of an attribute, replacing any values set earlier under the same name.
+     *
+     * @param name attribute name
+     * @param values attribute values
+     * @return this builder
+     */
     public ResponseBuilder attribute(String name, String... values) {
       this.attributes.put(name, List.of(values));
       return this;
     }
 
+    /**
+     * Adds the email attribute to the response.
+     *
+     * @param email value of the email attribute
+     * @return this builder
+     */
     public ResponseBuilder email(String email) {
       return attribute(EMAIL_ATTRIBUTE, email);
     }
@@ -273,7 +345,8 @@ public final class SamlTestFixtures {
           signature.setSigningCredential(
               new BasicX509Credential(signer.certificate(), signer.keyPair().getPrivate()));
           signature.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256);
-          signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+          signature.setCanonicalizationAlgorithm(
+              SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
           toSign.setSignature(signature);
         }
 

@@ -77,7 +77,8 @@ class SecurityFixesTest {
     JwtEncoder encoder = mock(JwtEncoder.class);
     TokenServicesFacade facade = new TokenServicesFacade(encoder, "iss", configured);
     capturedJwt(facade, encoder);
-    ArgumentCaptor<JwtEncoderParameters> captor = ArgumentCaptor.forClass(JwtEncoderParameters.class);
+    ArgumentCaptor<JwtEncoderParameters> captor =
+        ArgumentCaptor.forClass(JwtEncoderParameters.class);
     org.mockito.Mockito.verify(encoder, org.mockito.Mockito.times(2)).encode(captor.capture());
     return captor.getAllValues().stream().map(p -> {
       var claims = p.getClaims();
@@ -226,7 +227,8 @@ class SecurityFixesTest {
     when(repo.findByLogin("admin@reportportal.internal")).thenReturn(Optional.of(admin));
 
     // no password configured: enforcement must trigger
-    assertThrows(com.epam.reportportal.auth.exception.EnvironmentVariablesNotProvidedException.class,
+    assertThrows(
+        com.epam.reportportal.auth.exception.EnvironmentVariablesNotProvidedException.class,
         () -> initializer(repo, "").run());
     // password configured: it must be applied
     initializer(repo, "newpass").run();

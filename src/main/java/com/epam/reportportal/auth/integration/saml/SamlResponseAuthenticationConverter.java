@@ -46,6 +46,11 @@ public class SamlResponseAuthenticationConverter implements
 
   private final SamlUserReplicator samlUserReplicator;
 
+  /**
+   * Creates the converter that replicates the authenticated SAML user through the given replicator.
+   *
+   * @param samlUserReplicator service that creates or updates the ReportPortal user
+   */
   public SamlResponseAuthenticationConverter(SamlUserReplicator samlUserReplicator) {
     this.samlUserReplicator = samlUserReplicator;
   }

@@ -194,7 +194,8 @@ class SamlResponseValidationTest {
         .signedBy(idp).email("user@example.com").build();
     assertTrue(signed.contains("user@example.com"));
 
-    assertRejectedBeforeUserLookup(Saml2ErrorCodes.INVALID_SIGNATURE, signed.replace("user@example.com", ADMIN_EMAIL));
+    assertRejectedBeforeUserLookup(Saml2ErrorCodes.INVALID_SIGNATURE,
+        signed.replace("user@example.com", ADMIN_EMAIL));
   }
 
   @Test
@@ -212,8 +213,9 @@ class SamlResponseValidationTest {
 
   @Test
   void responseWithUnsolicitedInResponseToIsRejected() {
-    assertRejectedBeforeUserLookup(Saml2ErrorCodes.INVALID_IN_RESPONSE_TO, SamlTestFixtures.response()
-        .signedBy(idp).email("user@example.com").inResponseTo("_not-issued-by-us").build());
+    assertRejectedBeforeUserLookup(Saml2ErrorCodes.INVALID_IN_RESPONSE_TO,
+        SamlTestFixtures.response().signedBy(idp).email("user@example.com")
+            .inResponseTo("_not-issued-by-us").build());
   }
 
   @Test

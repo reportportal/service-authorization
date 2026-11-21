@@ -47,12 +47,21 @@ public class TokenServicesFacade {
   private final String issuer;
   private final Duration validity;
 
+  /**
+   * Creates the facade that signs JWT tokens, falling back to the default validity period when the
+   * configured value is missing or not positive.
+   *
+   * @param jwtEncoder encoder used to sign the tokens
+   * @param issuer issuer claim set on every token
+   * @param validitySeconds configured token lifetime in seconds
+   */
   public TokenServicesFacade(JwtEncoder jwtEncoder, @Value("${rp.jwt.issuer}") String issuer,
       @Value("${rp.jwt.token.validity-period:86400}") Integer validitySeconds) {
     this.jwtEncoder = jwtEncoder;
     this.issuer = issuer;
     this.validity = Duration.ofSeconds(
-        validitySeconds != null && validitySeconds > 0 ? validitySeconds : DEFAULT_VALIDITY_SECONDS);
+        validitySeconds != null && validitySeconds > 0
+            ? validitySeconds : DEFAULT_VALIDITY_SECONDS);
   }
 
   public Jwt createToken(

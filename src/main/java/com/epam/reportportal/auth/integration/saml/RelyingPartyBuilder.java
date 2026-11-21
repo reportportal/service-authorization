@@ -82,9 +82,10 @@ public class RelyingPartyBuilder {
   }
 
   /**
-   * Creates list of {@link RelyingPartyRegistration} from enabled SAML providers stored in DB. Each provider should
-   * have at least IDP metadata URL and IDP name specified, and its metadata must contain at least one signature
-   * verification certificate. Disabled providers and providers without verification certificates are not registered.
+   * Creates list of {@link RelyingPartyRegistration} from enabled SAML providers stored in DB.
+   * Each provider should have at least IDP metadata URL and IDP name specified, and its metadata
+   * must contain at least one signature verification certificate. Disabled providers and providers
+   * without verification certificates are not registered.
    *
    * @return List of {@link RelyingPartyRegistration}
    */

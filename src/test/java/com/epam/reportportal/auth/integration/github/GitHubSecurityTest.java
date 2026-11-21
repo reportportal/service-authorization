@@ -58,22 +58,22 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.util.ReflectionTestUtils;
 
-
 /** Unit tests for GitHub login security fixes. */
 class GitHubSecurityTest {
 
   @Test
   void githubReplicatorRejectsInactiveExistingUser() {
-    UserRepository repo = mock(UserRepository.class);
     User existing = new User();
     existing.setActive(false);
     existing.setLogin("a@b.c");
     existing.setUserType(com.epam.reportportal.auth.entity.user.UserType.GITHUB);
+    UserRepository repo = mock(UserRepository.class);
     when(repo.findByEmail("a@b.c")).thenReturn(Optional.of(existing));
     GitHubUserReplicator replicator = new GitHubUserReplicator(repo, null, null, null, null, null);
     var gh = new UserResource();
     gh.setEmail("a@b.c");
-    assertThrows(DisabledException.class, () -> replicator.replicateUser(gh, mock(GitHubClient.class)));
+    assertThrows(DisabledException.class,
+        () -> replicator.replicateUser(gh, mock(GitHubClient.class)));
     verify(repo, never()).save(any());
   }
 
@@ -100,20 +100,21 @@ class GitHubSecurityTest {
       var service = new GitHubOAuth2UserService(replicator, missing);
       assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(githubRequest()));
       var nullService = new GitHubOAuth2UserService(replicator, () -> null);
-      assertThrows(OAuth2AuthenticationException.class, () -> nullService.loadUser(githubRequest()));
+      assertThrows(OAuth2AuthenticationException.class,
+          () -> nullService.loadUser(githubRequest()));
     }
     verify(replicator, never()).replicateUser(any(), any());
   }
 
   @Test
   void githubOrganizationRestrictionIsReadOnEachLogin() {
-    GitHubUserReplicator replicator = mock(GitHubUserReplicator.class);
     OAuthRegistrationResource registration = new OAuthRegistrationResource();
     GitHubClient client = mock(GitHubClient.class);
     var ghUser = new UserResource();
     ghUser.setLogin("bob");
     when(client.getUser()).thenReturn(ghUser);
     when(client.getUserOrganizations("bob")).thenReturn(List.of());
+    GitHubUserReplicator replicator = mock(GitHubUserReplicator.class);
     when(replicator.replicateUser(any(), any())).thenReturn(
         ReportPortalUser.userBuilder().withUserDetails(
             org.springframework.security.core.userdetails.User.builder().username("bob")
