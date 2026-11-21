@@ -21,6 +21,7 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FIR
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.FULL_NAME_ATTRIBUTE;
 import static com.epam.reportportal.auth.integration.parameter.SamlParameter.LAST_NAME_ATTRIBUTE;
 
+import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.validator.request.param.provider.ParamNamesProvider;
 import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
 import com.epam.reportportal.auth.rules.commons.validation.BusinessRule;
@@ -48,5 +49,7 @@ public class SamlUpdateAuthRequestValidator extends UpdateAuthRequestValidator {
         equalTo(Boolean.FALSE)
     ).verify(ErrorType.BAD_REQUEST_ERROR,
         "Fields Full name or combination of Last name and First name are empty");
+    SamlParameter.normalizeAdminRoleValues(updateRequest.getIntegrationParams()
+        .get(SamlParameter.ADMIN_ROLE_VALUES.getParameterName()));
   }
 }

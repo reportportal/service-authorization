@@ -47,8 +47,13 @@ import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import com.epam.reportportal.auth.entity.user.UserType;
 import com.epam.reportportal.auth.event.UserEventPublisher;
+import com.epam.reportportal.auth.integration.converter.SamlConverter;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.integration.saml.SamlTestFixtures.Identity;
+import com.epam.reportportal.auth.integration.validator.request.SamlUpdateAuthRequestValidator;
+import com.epam.reportportal.auth.integration.validator.request.param.provider.SamlRequiredParamNamesProvider;
+import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
+import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -391,5 +396,128 @@ class SamlResponseValidationTest {
   @Test
   void severalNonAdministratorRoleValuesMapToUser() {
     assertEquals(UserRole.USER, roleOfCreatedUser("non-admin", "badminton"));
+  }
+
+  // ---- configurable administrator role values --------------------------------------------------
+
+  private void configureAdminRoleValues(Object value) {
+    integration.getParams().getParams()
+        .put(SamlParameter.ADMIN_ROLE_VALUES.getParameterName(), value);
+  }
+
+  @Test
+  void emptyAdminRoleValuesFallBackToDefault() {
+    configureAdminRoleValues(List.of());
+    assertEquals(UserRole.USER, roleOfCreatedUser("admin"));
+  }
+
+  @Test
+  void emptyAdminRoleValuesStillAcceptDefaultAdministrator() {
+    configureAdminRoleValues(List.of());
+    assertEquals(UserRole.ADMINISTRATOR, roleOfCreatedUser("Administrator"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"admin", "ADMIN", " Admin ", "rp-admins"})
+  void configuredAdminRoleValueGrantsAdministrator(String roleValue) {
+    configureAdminRoleValues(List.of("admin", "rp-admins"));
+    assertEquals(UserRole.ADMINISTRATOR, roleOfCreatedUser(roleValue));
+  }
+
+  @Test
+  void configuredValuesReplaceTheDefault() {
+    configureAdminRoleValues(List.of("admin"));
+    assertEquals(UserRole.USER, roleOfCreatedUser("ADMINISTRATOR"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"non-admin", "admins", "administrator", "badmin", "admin,user"})
+  void valueContainingConfiguredValueDoesNotGrantAdministrator(String roleValue) {
+    configureAdminRoleValues(List.of("admin"));
+    assertEquals(UserRole.USER, roleOfCreatedUser(roleValue));
+  }
+
+  @Test
+  void secondValueOfMultiValuedAttributeCanGrantConfiguredAdministrator() {
+    configureAdminRoleValues(List.of("rp-admins"));
+    assertEquals(UserRole.ADMINISTRATOR, roleOfCreatedUser("staff", "RP-Admins"));
+  }
+
+  @Test
+  void configuredAdminRoleValuesSurviveSaveAndReadThroughConverter() {
+    Integration target = new Integration();
+    target.setEnabled(true);
+    UpdateAuthRQ request = samlRequest(Map.of(
+        SamlParameter.ADMIN_ROLE_VALUES.getParameterName(),
+        List.of(" admin ", "rp-admins", "ADMIN")));
+
+    SamlConverter.UPDATE_FROM_REQUEST.accept(request, target);
+
+    assertEquals(List.of("admin", "rp-admins"), SamlConverter.TO_RESOURCE.apply(target)
+        .getAdminRoleValues());
+  }
+
+  @Test
+  void absentAdminRoleValuesReadBackAsDefaultAndEmptyListClearsStoredValues() {
+    Integration target = new Integration();
+    target.setEnabled(true);
+    SamlConverter.UPDATE_FROM_REQUEST.accept(samlRequest(Map.of()), target);
+    assertEquals(List.of("ADMINISTRATOR"),
+        SamlConverter.TO_RESOURCE.apply(target).getAdminRoleValues());
+
+    SamlConverter.UPDATE_FROM_REQUEST.accept(samlRequest(Map.of(
+        SamlParameter.ADMIN_ROLE_VALUES.getParameterName(), List.of("admin"))), target);
+    SamlConverter.UPDATE_FROM_REQUEST.accept(samlRequest(Map.of()), target);
+    assertEquals(List.of("admin"), SamlConverter.TO_RESOURCE.apply(target).getAdminRoleValues());
+
+    SamlConverter.UPDATE_FROM_REQUEST.accept(samlRequest(Map.of(
+        SamlParameter.ADMIN_ROLE_VALUES.getParameterName(), List.of())), target);
+    assertEquals(List.of("ADMINISTRATOR"),
+        SamlConverter.TO_RESOURCE.apply(target).getAdminRoleValues());
+  }
+
+  private static UpdateAuthRQ samlRequest(Map<String, Object> extra) {
+    Map<String, Object> params = new HashMap<>(extra);
+    params.put(SamlParameter.IDP_NAME.getParameterName(), REGISTRATION_ID);
+    params.put(SamlParameter.IDP_METADATA_URL.getParameterName(), "https://idp.example.com/meta");
+    params.put(SamlParameter.EMAIL_ATTRIBUTE.getParameterName(), EMAIL_ATTRIBUTE);
+    params.put(SamlParameter.FULL_NAME_ATTRIBUTE.getParameterName(), "name");
+    UpdateAuthRQ request = new UpdateAuthRQ();
+    request.setEnabled(true);
+    request.setIntegrationParams(params);
+    return request;
+  }
+
+  private static void validate(Object adminRoleValues) {
+    new SamlUpdateAuthRequestValidator(new SamlRequiredParamNamesProvider()).validate(
+        samlRequest(Map.of(SamlParameter.ADMIN_ROLE_VALUES.getParameterName(), adminRoleValues)));
+  }
+
+  @Test
+  void validRequestWithAdminRoleValuesPassesValidation() {
+    validate(List.of("admin", " rp-admins "));
+    validate(List.of());
+  }
+
+  @Test
+  void blankAdminRoleValueIsRejected() {
+    assertThrows(ReportPortalException.class, () -> validate(List.of("admin", "  ")));
+    assertThrows(ReportPortalException.class, () -> validate(List.of("")));
+  }
+
+  @Test
+  void nonListAndNonStringAdminRoleValuesAreRejected() {
+    assertThrows(ReportPortalException.class, () -> validate("admin"));
+    assertThrows(ReportPortalException.class, () -> validate(List.of(1)));
+  }
+
+  @Test
+  void tooManyOrTooLongAdminRoleValuesAreRejected() {
+    assertThrows(ReportPortalException.class, () -> validate(
+        java.util.stream.IntStream.range(0, SamlParameter.MAX_ADMIN_ROLE_VALUES + 1)
+            .mapToObj(i -> "role" + i).toList()));
+    assertThrows(ReportPortalException.class, () -> validate(
+        List.of("x".repeat(SamlParameter.MAX_ADMIN_ROLE_VALUE_LENGTH + 1))));
+    validate(List.of("x".repeat(SamlParameter.MAX_ADMIN_ROLE_VALUE_LENGTH)));
   }
 }

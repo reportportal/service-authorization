@@ -207,17 +207,19 @@ public class SamlUserReplicator extends AbstractUserReplicator {
 
   /**
    * Maps the roles attribute to a ReportPortal role. The user becomes an administrator only if one
-   * of the attribute values is exactly the administrator role name ({@code ADMINISTRATOR}),
-   * compared case-insensitively after trimming. Any other value results in a regular user.
+   * of the attribute values is exactly one of the integration's configured administrator role
+   * values ({@code ADMINISTRATOR} by default), compared case-insensitively after trimming. Any
+   * other value results in a regular user.
    */
   private UserRole resolveRole(Map<String, List<Object>> details, Integration integration) {
     var attr = SamlParameter.ROLES_ATTRIBUTE
         .getParameter(integration)
         .orElse(UserAttribute.ROLES.toString());
+    var adminValues = SamlParameter.getAdminRoleValues(integration);
 
     return values(details, attr).stream()
         .map(String::trim)
-        .anyMatch(UserRole.ADMINISTRATOR.name()::equalsIgnoreCase)
+        .anyMatch(value -> adminValues.stream().anyMatch(value::equalsIgnoreCase))
         ? UserRole.ADMINISTRATOR : UserRole.USER;
   }
 

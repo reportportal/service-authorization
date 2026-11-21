@@ -54,6 +54,7 @@ public final class ParameterUtils {
     IDP_ALIAS.setParameter(request, integration);
     IDP_URL.setParameter(request, integration);
     ROLES_ATTRIBUTE.setParameter(request, integration);
+    SamlParameter.setAdminRoleValues(request, integration);
 
     FULL_NAME_ATTRIBUTE.getParameter(request).ifPresentOrElse(fullName -> {
       FIRST_NAME_ATTRIBUTE.removeParameter(integration);

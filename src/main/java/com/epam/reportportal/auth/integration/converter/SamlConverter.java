@@ -29,6 +29,7 @@ import static com.epam.reportportal.auth.integration.parameter.SamlParameter.ROL
 
 import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.parameter.ParameterUtils;
+import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.model.SamlProvidersResource;
 import com.epam.reportportal.auth.model.SamlResource;
 import com.epam.reportportal.auth.model.integration.auth.UpdateAuthRQ;
@@ -68,6 +69,7 @@ public class SamlConverter {
     IDP_URL.getParameter(integration).ifPresent(resource::setIdentityProviderUrl);
     IDP_NAME_ID.getParameter(integration).ifPresent(resource::setIdentityProviderNameId);
     ROLES_ATTRIBUTE.getParameter(integration).ifPresent(resource::setRolesAttribute);
+    resource.setAdminRoleValues(SamlParameter.getAdminRoleValues(integration));
     return resource;
   };
 

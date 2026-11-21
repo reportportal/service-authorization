@@ -20,6 +20,7 @@ import com.epam.reportportal.auth.model.integration.auth.AbstractAuthResource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -78,6 +79,11 @@ public class SamlResource extends AbstractAuthResource {
    * Attribute name associated with roles of user in SAML response
    */
   private String rolesAttribute;
+  /**
+   * Role attribute values that grant the administrator role to a newly created user (exact,
+   * case-insensitive match). Defaults to {@code ["ADMINISTRATOR"]}.
+   */
+  private List<String> adminRoleValues;
   /**
    * Indicates IDP availability for authentication
    */
