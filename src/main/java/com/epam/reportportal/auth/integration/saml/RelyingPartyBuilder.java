@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.integration.saml;
 
 import com.epam.reportportal.auth.dao.IntegrationRepository;
 import com.epam.reportportal.auth.dao.IntegrationTypeRepository;
+import com.epam.reportportal.auth.entity.integration.Integration;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
 import com.epam.reportportal.auth.util.CertificationUtil;
 import java.security.PrivateKey;
@@ -81,8 +82,9 @@ public class RelyingPartyBuilder {
   }
 
   /**
-   * Creates list of {@link RelyingPartyRegistration} from SAML providers stored in DB. Each provider should have at
-   * least IDP metadata URL and IDP name specified.
+   * Creates list of {@link RelyingPartyRegistration} from enabled SAML providers stored in DB. Each provider should
+   * have at least IDP metadata URL and IDP name specified, and its metadata must contain at least one signature
+   * verification certificate. Disabled providers and providers without verification certificates are not registered.
    *
    * @return List of {@link RelyingPartyRegistration}
    */
@@ -93,6 +95,7 @@ public class RelyingPartyBuilder {
     var providers = integrationRepository.findAllGlobalByType(samlIntegrationType);
 
     var registrations = providers.stream()
+        .filter(Integration::isEnabled)
         .flatMap(provider -> {
           try {
             var metadataLocation = SamlParameter.IDP_METADATA_URL.getParameter(provider)
@@ -111,6 +114,13 @@ public class RelyingPartyBuilder {
                   }
                 })
                 .build();
+
+            // Fail closed: without IdP verification credentials responses cannot be validated
+            if (registration.getAssertingPartyMetadata().getVerificationX509Credentials()
+                .isEmpty()) {
+              throw new IllegalStateException(
+                  "IDP metadata contains no signature verification certificates");
+            }
             return Stream.of(registration);
           } catch (Exception e) {
             log.warn("Skipping SAML provider due to metadata error: {}", e.getMessage());

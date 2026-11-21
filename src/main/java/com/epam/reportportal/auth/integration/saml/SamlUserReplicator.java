@@ -32,24 +32,27 @@ import com.epam.reportportal.auth.event.UserEventPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.AuthIntegrationType;
 import com.epam.reportportal.auth.integration.parameter.SamlParameter;
-import com.epam.reportportal.auth.model.saml.SamlResponse;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
-import com.epam.reportportal.auth.rules.exception.ErrorType;
-import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import jakarta.persistence.NonUniqueResultException;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Replicates user from SAML response into database if it is not exist.
+ * Replicates user from a validated SAML assertion into database if it is not exist.
+ *
+ * <p>This class must only be given attributes of an assertion that has already been validated by
+ * Spring Security's SAML authentication provider (see {@link SamlResponseAuthenticationConverter}).
+ * It never parses SAML XML itself.
  *
  * @author <a href="mailto:Reingold_Shekhtel@epam.com">Reingold Shekhtel</a>
  */
@@ -57,7 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SamlUserReplicator extends AbstractUserReplicator {
 
-  private static final String DEFAULT_EMAIL_ATTR = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+  private static final String USER_ALREADY_EXISTS_MSG = "User with login '%s' already exists";
   private final IntegrationTypeRepository integrationTypeRepository;
   private final IntegrationRepository integrationRepository;
   private final UserEventPublisher userEventPublisher;
@@ -88,26 +91,22 @@ public class SamlUserReplicator extends AbstractUserReplicator {
   }
 
   /**
-   * Replicates user from SAML response into database if it is not exist.
+   * Finds the user asserted by the identity provider or creates it if it does not exist.
    *
-   * @param samlAuthentication SAML authentication token
+   * <p>The user is identified by the value of the integration's email attribute, for both lookup
+   * and creation. An existing account is accepted only if it is an active account of type
+   * {@link UserType#SAML}.
+   *
+   * @param registrationId Relying party registration id (identity provider name) the response was
+   *                       validated against
+   * @param attributes     Attributes of the validated assertion
    * @return {@link User}
    */
   @Transactional
-  public User replicateUser(Saml2AuthenticationToken samlAuthentication) {
-    SamlResponse samlResponse;
-    try {
-      samlResponse = SamlResponseParser.parseSamlResponse(samlAuthentication.getSaml2Response());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public User replicateUser(String registrationId, Map<String, List<Object>> attributes) {
+    var integration = findProvider(registrationId);
+    var userEmail = resolveEmail(attributes, integration);
 
-    var userEmail = Optional.ofNullable(samlResponse.getNameId().value())
-        .filter(StringUtils::isNotBlank)
-        .map(NORMALIZE_STRING)
-        .orElseThrow(() -> new UserSynchronizationException(
-            "SAML response does not contain email")
-        );
     Optional<User> userOptional;
 
     try {
@@ -119,29 +118,48 @@ public class SamlUserReplicator extends AbstractUserReplicator {
           + "' already exists, but multiple records found. Please contact administrator to resolve this issue.");
     }
 
-    return userOptional.orElseGet(
-        () -> createUser(samlResponse.getAttributes(), findProvider(samlResponse)));
+    if (userOptional.isPresent()) {
+      var user = userOptional.get();
+      checkUserType(user);
+      checkUserActive(user);
+      return user;
+    }
+
+    return createUser(userEmail, attributes, integration);
   }
 
-  private Integration findProvider(SamlResponse samlResponse) {
-    var integrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
-        .orElseThrow(() -> new ReportPortalException(
-            ErrorType.AUTH_INTEGRATION_NOT_FOUND, AuthIntegrationType.SAML.getName()));
+  private void checkUserType(User user) {
+    if (!UserType.SAML.equals(user.getUserType())) {
+      throw new UserSynchronizationException(
+          String.format(USER_ALREADY_EXISTS_MSG, user.getLogin()));
+    }
+  }
 
+  private void checkUserActive(User user) {
+    if (!Boolean.TRUE.equals(user.getActive())) {
+      throw new LockedException("User account is locked");
+    }
+  }
+
+  private Integration findProvider(String registrationId) {
+    var integrationType = integrationTypeRepository.findByName(AuthIntegrationType.SAML.getName())
+        .orElseThrow(() -> new UserSynchronizationException("SAML integration type not found"));
+
+    // Disabled integrations are refused here as well, so that a stale relying party registration
+    // (e.g. on another instance that has not reloaded yet) cannot be used to log in.
     return integrationRepository.findAllGlobalByType(integrationType)
         .stream()
-        .filter(integration -> {
-          var alias = SamlParameter.IDP_ALIAS.getParameter(integration);
-          return alias.isPresent() && alias.get().equalsIgnoreCase(samlResponse.getIssuer());
-        })
+        .filter(Integration::isEnabled)
+        .filter(integration -> SamlParameter.IDP_NAME.getParameter(integration)
+            .filter(name -> name.equals(registrationId))
+            .isPresent())
         .findFirst()
-        .orElseThrow(() -> new ReportPortalException(
-            ErrorType.AUTH_INTEGRATION_NOT_FOUND, samlResponse.getIssuer()));
+        .orElseThrow(() -> new UserSynchronizationException(
+            "SAML provider not found or disabled. Check SAML integration."));
   }
 
-  private User createUser(Map<String, String> details, Integration integration) {
-    var email = resolveEmail(details, integration);
-
+  private User createUser(String email, Map<String, List<Object>> details,
+      Integration integration) {
     User user = new User();
     user.setLogin(email);
     user.setEmail(email);
@@ -149,7 +167,7 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     user.setFullName(resolveName(details, integration));
     user.setActive(Boolean.TRUE);
     user.setUserType(UserType.SAML);
-    user.setRole(resoleRole(details, integration));
+    user.setRole(resolveRole(details, integration));
     user.setExpired(false);
 
     user.setMetadata(defaultMetaData());
@@ -160,25 +178,23 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     return saved;
   }
 
-  private String resolveEmail(Map<String, String> details, Integration integration) {
+  private String resolveEmail(Map<String, List<Object>> details, Integration integration) {
     var attr = SamlParameter.EMAIL_ATTRIBUTE
         .getParameter(integration)
         .orElse(UserAttribute.EMAIL.toString());
 
-    return Optional.ofNullable(details.get(attr))
+    return Optional.ofNullable(firstValue(details, attr))
         .filter(StringUtils::isNotBlank)
         .map(NORMALIZE_STRING)
-        .orElseThrow(() -> new ReportPortalException(
-            ErrorType.ATTRIBUTE_NOT_FOUND,
-            attr
-        ));
+        .orElseThrow(() -> new UserSynchronizationException(
+            "SAML response does not contain email attribute '" + attr + "'"));
   }
 
-  private String resolveName(Map<String, String> details, Integration integration) {
+  private String resolveName(Map<String, List<Object>> details, Integration integration) {
     Optional<String> fullNameAttr = SamlParameter.FULL_NAME_ATTRIBUTE.getParameter(integration);
 
     if (fullNameAttr.isPresent()) {
-      return details.get(fullNameAttr.get());
+      return firstValue(details, fullNameAttr.get());
     }
 
     var firstNameAttr = SamlParameter.FIRST_NAME_ATTRIBUTE.getParameter(integration)
@@ -186,17 +202,34 @@ public class SamlUserReplicator extends AbstractUserReplicator {
     var lastNameAttr = SamlParameter.LAST_NAME_ATTRIBUTE.getParameter(integration)
         .orElse(UserAttribute.LAST_NAME.toString());
 
-    return String.join(" ", details.get(firstNameAttr), details.get(lastNameAttr));
+    return String.join(" ", firstValue(details, firstNameAttr), firstValue(details, lastNameAttr));
   }
 
-  private UserRole resoleRole(Map<String, String> details, Integration integration) {
+  /**
+   * Maps the roles attribute to a ReportPortal role. The user becomes an administrator only if one
+   * of the attribute values is exactly the administrator role name ({@code ADMINISTRATOR}),
+   * compared case-insensitively after trimming. Any other value results in a regular user.
+   */
+  private UserRole resolveRole(Map<String, List<Object>> details, Integration integration) {
     var attr = SamlParameter.ROLES_ATTRIBUTE
         .getParameter(integration)
         .orElse(UserAttribute.ROLES.toString());
 
-    return Optional.ofNullable(details.get(attr))
-        .filter(role -> role.toLowerCase().contains("admin"))
-        .map(role -> UserRole.ADMINISTRATOR)
-        .orElse(UserRole.USER);
+    return values(details, attr).stream()
+        .map(String::trim)
+        .anyMatch(UserRole.ADMINISTRATOR.name()::equalsIgnoreCase)
+        ? UserRole.ADMINISTRATOR : UserRole.USER;
+  }
+
+  private static List<String> values(Map<String, List<Object>> details, String attribute) {
+    return Optional.ofNullable(details.get(attribute)).orElseGet(List::of)
+        .stream()
+        .filter(Objects::nonNull)
+        .map(Object::toString)
+        .toList();
+  }
+
+  private static String firstValue(Map<String, List<Object>> details, String attribute) {
+    return values(details, attribute).stream().findFirst().orElse(null);
   }
 }
