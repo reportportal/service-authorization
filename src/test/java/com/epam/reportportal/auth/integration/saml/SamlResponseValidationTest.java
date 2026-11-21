@@ -306,6 +306,7 @@ class SamlResponseValidationTest {
   void newUserIsCreatedWithTheSameIdentifierThatIsUsedForLookup() {
     Authentication result = authenticate(SamlTestFixtures.response()
         .signedBy(idp).nameId("opaque-name-id").email("New.User@example.com").build());
+    assertEquals("new.user@example.com", result.getName());
 
     verify(userRepository).findByEmailIgnoreCase("new.user@example.com");
     ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
@@ -314,7 +315,6 @@ class SamlResponseValidationTest {
     assertEquals("new.user@example.com", saved.getValue().getLogin());
     assertEquals(UserType.SAML, saved.getValue().getUserType());
     assertEquals(UserRole.USER, saved.getValue().getRole());
-    assertEquals("new.user@example.com", result.getName());
   }
 
   // ---- account linking -----------------------------------------------------------------------
