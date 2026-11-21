@@ -18,12 +18,14 @@ package com.epam.reportportal.auth.util;
 
 import static com.epam.reportportal.auth.commons.EntityUtils.normalizeId;
 
+import com.epam.reportportal.auth.entity.user.User;
 import com.epam.reportportal.auth.entity.user.UserRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -40,6 +42,20 @@ public final class AuthUtils {
       it -> normalizeId(StringUtils.substringBefore(it, "@"));
   public static final UnaryOperator<String> NORMALIZE_STRING =
       original -> normalizeId(original.trim());
+
+  /**
+   * Rejects deactivated users.
+   *
+   * @param user user loaded from the database
+   * @return the same user if it is active
+   * @throws DisabledException if the user is not active
+   */
+  public static User requireActive(User user) {
+    if (!Boolean.TRUE.equals(user.getActive())) {
+      throw new DisabledException("User account is disabled");
+    }
+    return user;
+  }
 
   private AuthUtils() {
     //statics only

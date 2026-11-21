@@ -33,6 +33,8 @@ import com.epam.reportportal.auth.oauth.OAuthProviderFactory;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
 import com.epam.reportportal.auth.store.MutableClientRegistrationRepository;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -97,11 +99,22 @@ public class CreateAuthIntegrationHandlerImpl implements CreateAuthIntegrationHa
   public OAuthRegistrationResource createOrUpdateOauthSettings(String oauthProviderId,
       OAuthRegistrationResource clientRegistrationResource) {
 
+    Optional<OAuthRegistration> existing =
+        clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId);
+    if (StringUtils.isBlank(clientRegistrationResource.getClientSecret())) {
+      // the secret is write-only: keep the stored one when the client does not send it
+      String storedSecret = existing.map(OAuthRegistration::getClientSecret)
+          .filter(StringUtils::isNotBlank)
+          .orElseThrow(() -> new ReportPortalException(ErrorType.BAD_REQUEST_ERROR,
+              "clientSecret must be provided"));
+      clientRegistrationResource.setClientSecret(storedSecret);
+    }
+
     OAuthRegistration oAuthRegistration = OAuthProviderFactory.fillOAuthRegistration(
         oauthProviderId, clientRegistrationResource, pathValue);
 
     OAuthRegistration updatedOauthRegistration =
-        clientRegistrationRepository.findOAuthRegistrationById(oauthProviderId)
+        existing
             .map(existingRegistration -> {
               clientRegistrationRepository.deleteById(existingRegistration.getId());
               oAuthRegistration.setId(existingRegistration.getId());

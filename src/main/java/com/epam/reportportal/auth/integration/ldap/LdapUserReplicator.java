@@ -29,6 +29,7 @@ import com.epam.reportportal.auth.event.UserEventPublisher;
 import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.integration.parameter.LdapParameter;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
+import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import java.util.Map;
 import java.util.Optional;
@@ -85,6 +86,7 @@ public class LdapUserReplicator extends AbstractUserReplicator {
 
     User user = userOptional.get();
     checkUserType(user);
+    AuthUtils.requireActive(user);
     updateEmailIfNeeded(email, user);
 
     return user;

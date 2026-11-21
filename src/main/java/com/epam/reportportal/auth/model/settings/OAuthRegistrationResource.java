@@ -46,8 +46,11 @@ public class OAuthRegistrationResource implements Serializable {
   @JsonProperty(value = "clientId")
   private String clientId;
 
-  @NotBlank
-  @JsonProperty(value = "clientSecret")
+  /**
+   * Write-only: accepted on input, never serialized in responses. When omitted or blank on update,
+   * the stored secret is kept.
+   */
+  @JsonProperty(value = "clientSecret", access = JsonProperty.Access.WRITE_ONLY)
   private String clientSecret;
 
   @JsonProperty(value = "clientAuthMethod")

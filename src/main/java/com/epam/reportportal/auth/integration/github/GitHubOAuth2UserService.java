@@ -54,6 +54,10 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     UserResource gitHubUser = gitHubClient.getUser();
 
     OAuthRegistrationResource registration = oAuthRegistrationSupplier.get();
+    if (registration == null) {
+      // fail closed: without the registration the organization restriction cannot be evaluated
+      throw new OAuth2AuthenticationException("GitHub OAuth registration is not configured");
+    }
     List<String> allowedOrgs = parseAllowedOrganizations(registration);
     if (!allowedOrgs.isEmpty()) {
       validateUserOrganizations(gitHubUser.getLogin(), gitHubClient, allowedOrgs);

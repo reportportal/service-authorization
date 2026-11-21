@@ -20,6 +20,7 @@ import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.google.common.base.Preconditions;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import java.util.function.Supplier;
 import lombok.Getter;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -56,5 +57,6 @@ public abstract class OAuthProvider {
     return basePath + (basePath.endsWith("/") ? "" : "/") + this.name;
   }
 
-  public abstract OAuth2UserService<OAuth2UserRequest, OAuth2User> getUserService(OAuthRegistrationResource registrationResource);
+  public abstract OAuth2UserService<OAuth2UserRequest, OAuth2User> getUserService(
+      Supplier<OAuthRegistrationResource> registrationSupplier);
 }

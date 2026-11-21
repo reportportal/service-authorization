@@ -18,6 +18,7 @@ package com.epam.reportportal.auth.integration.github;
 
 import com.epam.reportportal.auth.model.settings.OAuthRegistrationResource;
 import com.epam.reportportal.auth.oauth.OAuthProvider;
+import java.util.function.Supplier;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,8 @@ public class GithubOauthProvider extends OAuthProvider {
   }
 
   @Override
-  public OAuth2UserService getUserService(OAuthRegistrationResource registrationResource) {
-    return new GitHubOAuth2UserService(gitHubUserReplicator, () -> registrationResource);
+  public OAuth2UserService getUserService(
+      Supplier<OAuthRegistrationResource> registrationSupplier) {
+    return new GitHubOAuth2UserService(gitHubUserReplicator, registrationSupplier);
   }
 }

@@ -16,8 +16,8 @@
 package com.epam.reportportal.auth;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +42,17 @@ import org.springframework.stereotype.Component;
 public class TokenServicesFacade {
 
   private final JwtEncoder jwtEncoder;
-  private final String issuer;
+  private static final long DEFAULT_VALIDITY_SECONDS = 86400L;
 
-  public TokenServicesFacade(JwtEncoder jwtEncoder, @Value("${rp.jwt.issuer}") String issuer) {
+  private final String issuer;
+  private final Duration validity;
+
+  public TokenServicesFacade(JwtEncoder jwtEncoder, @Value("${rp.jwt.issuer}") String issuer,
+      @Value("${rp.jwt.token.validity-period:86400}") Integer validitySeconds) {
     this.jwtEncoder = jwtEncoder;
     this.issuer = issuer;
+    this.validity = Duration.ofSeconds(
+        validitySeconds != null && validitySeconds > 0 ? validitySeconds : DEFAULT_VALIDITY_SECONDS);
   }
 
   public Jwt createToken(
@@ -75,7 +81,7 @@ public class TokenServicesFacade {
   ) {
     Instant now = Instant.now();
 
-    Instant expiry = now.plus(1, ChronoUnit.DAYS);
+    Instant expiry = now.plus(validity);
 
     JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
         .id(UUID.randomUUID().toString())
@@ -113,7 +119,7 @@ public class TokenServicesFacade {
   ) {
     Instant now = Instant.now();
 
-    Instant expiry = now.plus(1, ChronoUnit.DAYS);
+    Instant expiry = now.plus(validity);
 
     JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
         .id(UUID.randomUUID().toString())

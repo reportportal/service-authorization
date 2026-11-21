@@ -69,7 +69,7 @@ public class LdapAuthProvider extends EnableableAuthProvider {
   @Override
   protected boolean isEnabled() {
     return integrationRepository.findAllByTypeIn(AuthIntegrationType.LDAP.getName()).stream()
-        .findFirst().isPresent();
+        .findFirst().filter(Integration::isEnabled).isPresent();
   }
 
   @Override

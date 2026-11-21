@@ -73,6 +73,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -83,7 +85,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -102,7 +103,7 @@ public class AuthorizationServerConfig {
   @Value("${rp.jwt.signing-key}")
   private String signingKey;
 
-  @Value("${rp.jwt.token.validity-period}")
+  @Value("${rp.jwt.token.validity-period:86400}")
   private Integer tokenValidity;
 
   @Value("${rp.jwt.issuer}")
@@ -134,29 +135,7 @@ public class AuthorizationServerConfig {
         .tokenSettings(tokenSettings())
         .build();
 
-    RegisteredClient apiClient = RegisteredClient.withId(ReportPortalClient.api.name())
-        .clientId(ReportPortalClient.api.name())
-        .clientSecret("apiman")
-        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-        .authorizationGrantType(AuthorizationGrantType.PASSWORD)
-        .scope("api")
-        .tokenSettings(TokenSettings.builder()
-            .accessTokenTimeToLive(Duration.ofDays(1))
-            .build())
-        .build();
-
-    RegisteredClient internalClient = RegisteredClient.withId(ReportPortalClient.internal.name())
-        .clientId(ReportPortalClient.internal.name())
-        .clientSecret("internal_man")
-        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-        .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-        .scope("internal")
-        .clientSettings(ClientSettings.builder()
-            .requireAuthorizationConsent(false)
-            .build())
-        .build();
-
-    return new InMemoryRegisteredClientRepository(uiClient, apiClient, internalClient);
+    return new InMemoryRegisteredClientRepository(uiClient);
   }
 
   private TokenSettings tokenSettings() {
@@ -224,7 +203,7 @@ public class AuthorizationServerConfig {
   @Bean
   public AuthenticationProvider ldapAuthProvider() {
     return new LdapAuthProvider(authConfigRepository, eventPublisher, ldapDetailsContextMapper(),
-        new TokenServicesFacade(jwtEncoder(), jwtIssuer));
+        new TokenServicesFacade(jwtEncoder(), jwtIssuer, tokenValidity));
   }
 
   @Bean("ldapDetailsContextMapper")
@@ -353,10 +332,19 @@ public class AuthorizationServerConfig {
 
   public List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> getUserServices(List<OAuthProvider> providers) {
     return providers.stream()
-        .map(provider ->
-            provider.getUserService(clientRegistrationRepository.findOAuthRegistrationById(provider.getName())
-                .map(OAuthRegistrationConverters.TO_RESOURCE)
-                .orElse(new OAuthRegistrationResource())))
+        .map(provider -> provider.getUserService(() -> currentRegistration(provider.getName())))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Reads the current OAuth registration on every call so that changes made by an administrator
+   * (e.g. allowed organizations) apply immediately. Fails closed if the registration is missing.
+   */
+  private OAuthRegistrationResource currentRegistration(String providerName) {
+    return clientRegistrationRepository.findOAuthRegistrationById(providerName)
+        .map(OAuthRegistrationConverters.TO_RESOURCE)
+        .orElseThrow(() -> new OAuth2AuthenticationException(
+            new OAuth2Error("invalid_client_registration",
+                "OAuth registration '" + providerName + "' is not configured", null)));
   }
 }

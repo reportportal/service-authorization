@@ -33,6 +33,7 @@ import com.epam.reportportal.auth.integration.AbstractUserReplicator;
 import com.epam.reportportal.auth.oauth.UserSynchronizationException;
 import com.epam.reportportal.auth.rules.exception.ErrorType;
 import com.epam.reportportal.auth.rules.exception.ReportPortalException;
+import com.epam.reportportal.auth.util.AuthUtils;
 import com.epam.reportportal.auth.util.PersonalProjectService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,6 +106,7 @@ public class GitHubUserReplicator extends AbstractUserReplicator {
 
     User user = userRepository.findByEmail(email).map(u -> {
       if (UserType.GITHUB.equals(u.getUserType())) {
+        AuthUtils.requireActive(u);
         updateUser(u, userResource, gitHubClient);
       } else {
         throw new UserSynchronizationException(

@@ -60,7 +60,6 @@ public class OAuthRegistrationConverters {
     OAuthRegistrationResource resource = new OAuthRegistrationResource();
     resource.setId(db.getId());
     resource.setClientId(db.getClientId());
-    resource.setClientSecret(db.getClientSecret());
     resource.setClientAuthMethod(db.getClientAuthMethod());
     resource.setAuthGrantType(db.getAuthGrantType());
     resource.setRedirectUrlTemplate(db.getRedirectUrlTemplate());

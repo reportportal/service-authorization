@@ -18,11 +18,11 @@ package com.epam.reportportal.auth.config.utils;
 import java.util.Collection;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 /**
  * @author <a href="mailto:andrei_piankouski@epam.com">Andrei Piankouski</a>
@@ -31,25 +31,22 @@ public class JwtReportPortalUserConverter implements Converter<Jwt, AbstractAuth
 
   private final UserDetailsService userDetailsService;
 
-  private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter;
-
   private final static String PRINCIPAL_CLAIM_NAME = "user_name";
 
   public JwtReportPortalUserConverter(UserDetailsService userDetailsService) {
     this.userDetailsService = userDetailsService;
-
-    this.jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-    this.jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
-    this.jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
   }
 
   @Override
   public final AbstractAuthenticationToken convert(Jwt jwt) {
-    Collection<GrantedAuthority> authorities = this.jwtGrantedAuthoritiesConverter.convert(jwt);
-
     String username = jwt.getClaimAsString(PRINCIPAL_CLAIM_NAME);
     String upstreamToken = jwt.getClaimAsString("upstream_token");
     var principal = userDetailsService.loadUserByUsername(username);
+    if (!principal.isEnabled()) {
+      throw new DisabledException("User account is disabled");
+    }
+    // roles come from the database, not from the token claim, so demotion takes effect at once
+    Collection<? extends GrantedAuthority> authorities = principal.getAuthorities();
 
     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
         principal, null, authorities);
