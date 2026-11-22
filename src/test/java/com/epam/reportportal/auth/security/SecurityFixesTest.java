@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +80,7 @@ class SecurityFixesTest {
     capturedJwt(facade, encoder);
     ArgumentCaptor<JwtEncoderParameters> captor =
         ArgumentCaptor.forClass(JwtEncoderParameters.class);
-    org.mockito.Mockito.verify(encoder, org.mockito.Mockito.times(2)).encode(captor.capture());
+    verify(encoder, times(2)).encode(captor.capture());
     return captor.getAllValues().stream().map(p -> {
       var claims = p.getClaims();
       return Duration.between(claims.getIssuedAt(), claims.getExpiresAt());
@@ -126,8 +127,9 @@ class SecurityFixesTest {
   @Test
   void converterRejectsInactiveUser() {
     UserDetailsService uds = name -> principal(false, UserRole.USER);
-    assertThrows(DisabledException.class,
-        () -> new JwtReportPortalUserConverter(uds).convert(jwtWithAuthorities("ROLE_USER")));
+    var converter = new JwtReportPortalUserConverter(uds);
+    var jwt = jwtWithAuthorities("ROLE_USER");
+    assertThrows(DisabledException.class, () -> converter.convert(jwt));
   }
 
   // ---- deactivated users ----

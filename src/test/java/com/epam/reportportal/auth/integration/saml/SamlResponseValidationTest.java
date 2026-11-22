@@ -231,9 +231,9 @@ class SamlResponseValidationTest {
     String response = SamlTestFixtures.response()
         .signedBy(idp).email("user@example.com").inResponseTo("_another-request").build();
 
+    var token = new Saml2AuthenticationToken(registration, response, storedRequest);
     Saml2AuthenticationException exception = assertThrows(Saml2AuthenticationException.class,
-        () -> authenticationManager.authenticate(
-            new Saml2AuthenticationToken(registration, response, storedRequest)));
+        () -> authenticationManager.authenticate(token));
     assertEquals(Saml2ErrorCodes.INVALID_IN_RESPONSE_TO,
         exception.getSaml2Error().getErrorCode(), exception.getMessage());
     verifyNoInteractions(userRepository, integrationRepository);
@@ -325,9 +325,10 @@ class SamlResponseValidationTest {
     when(userRepository.findByEmailIgnoreCase(ADMIN_EMAIL)).thenReturn(Optional.of(
         user(ADMIN_EMAIL, UserType.valueOf(type), UserRole.ADMINISTRATOR, true)));
 
+    String samlResponse = SamlTestFixtures.response()
+        .signedBy(idp).nameId(ADMIN_EMAIL).email(ADMIN_EMAIL).build();
     AuthenticationException exception = assertThrows(AuthenticationException.class,
-        () -> authenticate(SamlTestFixtures.response()
-            .signedBy(idp).nameId(ADMIN_EMAIL).email(ADMIN_EMAIL).build()));
+        () -> authenticate(samlResponse));
 
     assertTrue(exception.getMessage().contains("already exists"), exception.getMessage());
     verify(userRepository, never()).save(any());
@@ -338,9 +339,10 @@ class SamlResponseValidationTest {
     when(userRepository.findByEmailIgnoreCase("user@example.com")).thenReturn(
         Optional.of(user("user@example.com", UserType.SAML, UserRole.USER, false)));
 
+    String samlResponse = SamlTestFixtures.response()
+        .signedBy(idp).email("user@example.com").build();
     AuthenticationException exception = assertThrows(AuthenticationException.class,
-        () -> authenticate(SamlTestFixtures.response()
-            .signedBy(idp).email("user@example.com").build()));
+        () -> authenticate(samlResponse));
 
     assertTrue(exception.getMessage().contains("locked"), exception.getMessage());
     verify(userRepository, never()).save(any());
@@ -348,8 +350,9 @@ class SamlResponseValidationTest {
 
   @Test
   void responseWithoutEmailAttributeIsRefusedEvenIfNameIdIsAnEmail() {
-    assertThrows(AuthenticationException.class, () -> authenticate(SamlTestFixtures.response()
-        .signedBy(idp).nameId(ADMIN_EMAIL).build()));
+    String samlResponse = SamlTestFixtures.response()
+        .signedBy(idp).nameId(ADMIN_EMAIL).build();
+    assertThrows(AuthenticationException.class, () -> authenticate(samlResponse));
 
     verify(userRepository, never()).findByEmailIgnoreCase(anyString());
     verify(userRepository, never()).save(any());
@@ -359,8 +362,9 @@ class SamlResponseValidationTest {
   void disabledIntegrationIsRefusedEvenWithValidResponse() {
     integration.setEnabled(false);
 
-    assertThrows(AuthenticationException.class, () -> authenticate(SamlTestFixtures.response()
-        .signedBy(idp).email("user@example.com").build()));
+    String samlResponse = SamlTestFixtures.response()
+        .signedBy(idp).email("user@example.com").build();
+    assertThrows(AuthenticationException.class, () -> authenticate(samlResponse));
 
     verifyNoInteractions(userRepository);
   }
@@ -501,23 +505,27 @@ class SamlResponseValidationTest {
 
   @Test
   void blankAdminRoleValueIsRejected() {
-    assertThrows(ReportPortalException.class, () -> validate(List.of("admin", "  ")));
-    assertThrows(ReportPortalException.class, () -> validate(List.of("")));
+    var blankValues = List.of("admin", "  ");
+    assertThrows(ReportPortalException.class, () -> validate(blankValues));
+    var emptyValues = List.of("");
+    assertThrows(ReportPortalException.class, () -> validate(emptyValues));
   }
 
   @Test
   void nonListAndNonStringAdminRoleValuesAreRejected() {
     assertThrows(ReportPortalException.class, () -> validate("admin"));
-    assertThrows(ReportPortalException.class, () -> validate(List.of(1)));
+    var nonStringValues = List.of(1);
+    assertThrows(ReportPortalException.class, () -> validate(nonStringValues));
   }
 
   @Test
   void tooManyOrTooLongAdminRoleValuesAreRejected() {
-    assertThrows(ReportPortalException.class, () -> validate(
-        java.util.stream.IntStream.range(0, SamlParameter.MAX_ADMIN_ROLE_VALUES + 1)
-            .mapToObj(i -> "role" + i).toList()));
-    assertThrows(ReportPortalException.class, () -> validate(
-        List.of("x".repeat(SamlParameter.MAX_ADMIN_ROLE_VALUE_LENGTH + 1))));
+    var tooManyValues = java.util.stream.IntStream
+        .range(0, SamlParameter.MAX_ADMIN_ROLE_VALUES + 1)
+        .mapToObj(i -> "role" + i).toList();
+    assertThrows(ReportPortalException.class, () -> validate(tooManyValues));
+    var tooLongValue = List.of("x".repeat(SamlParameter.MAX_ADMIN_ROLE_VALUE_LENGTH + 1));
+    assertThrows(ReportPortalException.class, () -> validate(tooLongValue));
     validate(List.of("x".repeat(SamlParameter.MAX_ADMIN_ROLE_VALUE_LENGTH)));
   }
 }

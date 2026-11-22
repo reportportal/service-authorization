@@ -98,10 +98,10 @@ class GitHubSecurityTest {
     try (MockedStatic<GitHubClient> st = mockStatic(GitHubClient.class)) {
       st.when(() -> GitHubClient.withAccessToken("tok")).thenReturn(client);
       var service = new GitHubOAuth2UserService(replicator, missing);
-      assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(githubRequest()));
+      var request = githubRequest();
+      assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(request));
       var nullService = new GitHubOAuth2UserService(replicator, () -> null);
-      assertThrows(OAuth2AuthenticationException.class,
-          () -> nullService.loadUser(githubRequest()));
+      assertThrows(OAuth2AuthenticationException.class, () -> nullService.loadUser(request));
     }
     verify(replicator, never()).replicateUser(any(), any());
   }
@@ -126,7 +126,8 @@ class GitHubSecurityTest {
       service.loadUser(githubRequest());
       // admin configures a restriction afterwards: the same service instance must enforce it
       registration.setRestrictions(Map.of("organizations", "acme"));
-      assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(githubRequest()));
+      var request = githubRequest();
+      assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(request));
     }
   }
 
