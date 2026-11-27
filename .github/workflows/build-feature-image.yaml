@@ -11,6 +11,7 @@ on:
         description: 'Image tag for the Docker build'
         required: true
         default: 'feature'
+
 jobs:
   variables-setup:
     name: Setting variables for docker build
@@ -46,9 +47,8 @@ jobs:
       build-platforms: ${{ vars.BUILD_PLATFORMS || 'linux/amd64,linux/arm64' }}
       image-tag: ${{ needs.variables-setup.outputs.tag }}
       version: ${{ needs.variables-setup.outputs.tag }}
-      branch: ${{ github.head_ref }}
+      branch: ${{ github.head_ref != '' && github.head_ref || github.ref_name }}
       date: ${{ needs.variables-setup.outputs.date }}
       runs-on: ubuntu-latest
     secrets:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
-
